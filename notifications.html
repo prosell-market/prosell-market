@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Уведомления</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    body { background: var(--secondary); overflow: auto; }
+    .notif-list { padding: 16px; display: flex; flex-direction: column; gap: 12px; padding-bottom: 40px; }
+    .notif-card {
+      background: var(--card-bg); border-radius: var(--radius-md); padding: 16px;
+      box-shadow: var(--shadow); position: relative; overflow: hidden;
+      transition: opacity 0.3s;
+    }
+    .notif-card.unread { border-left: 4px solid var(--primary); }
+    .notif-header { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 12px; color: var(--text-muted); }
+    .notif-title { font-weight: 700; font-size: 15px; margin-bottom: 4px; }
+    .notif-body { font-size: 14px; line-height: 1.4; }
+    .notif-check { margin-top: 12px; display: flex; align-items: center; justify-content: flex-end; }
+    .btn-check {
+      border: 1px solid var(--border-color); background: transparent;
+      padding: 8px 12px; border-radius: 12px; font-size: 12px; cursor: pointer;
+    }
+    .btn-check.active { background: var(--success); color: white; border-color: var(--success); }
+    .header-nav { padding: 16px; background: var(--bg-color); display: flex; align-items: center; justify-content: space-between; gap: 12px; box-shadow: 0 1px 0 rgba(0,0,0,0.05); }
+    .btn-back { border: none; background: transparent; font-size: 18px; color: var(--primary); cursor: pointer; }
+    .pill { font-size: 12px; color: var(--text-muted); background: rgba(0,0,0,0.04); padding: 6px 10px; border-radius: 999px; }
+    .center { text-align: center; margin-top: 50px; color: #999; }
+  </style>
+</head>
+<body>
+  <div class="header-nav">
+    <button class="btn-back" onclick="history.back()"><i class="fa-solid fa-chevron-left"></i></button>
+    <div style="font-weight: 700; font-size: 18px;">Уведомления</div>
+    <div class="pill" id="unread-pill">0 unread</div>
+  </div>
+
+  <div class="notif-list" id="notif-list">
+    <div class="center" id="loading">Загрузка...</div>
+  </div>
+
+  <script src="api.js"></script>
+  <script>
+    const TG = (window.Telegram && window.Telegram.WebApp) ? window.Telegram.WebApp : null;
+    if (TG) { try { TG.expand(); TG.ready(); } catch (e) {} }
+
+    const userId = TG?.initDataUnsafe?.user?.id || "anon";
+    const processedIds = new Set();
+
+    function fmtTime(ts) {
+      try {
+        const d = new Date(Number(ts));
+        return d.toLocaleString("ru-RU", { hour: "2-digit", minute: "2-digit", day: "2-digit", month: "2-digit" });
+      } catch (e) {
+        return "";
+      }
+    }
+
+    function escapeHtml(s) {
+      return String(s || "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;");
+    }
+
+    function setUnreadCount(n) {
+      const pill = document.getElementById("unread-pill");
+      pill.textContent = String(n) + " unread";
+    }
+
+    async function load() {
+      const list = document.getElementById("notif-list");
+
+      try {
+        const res = await API.getNotifications(userId);
+
+        const items = (res && res.notifications) ? res.notifications : [];
+        const unread = items.filter(x => x && x.status === "unread").length;
+        setUnreadCount(unread);
+
+        if (!items.length) {
+          list.innerHTML = '<div class="center">Нет уведомлений</div>';
+          return;
+        }
+
+        const loading = document.getElementById("loading");
+        if (loading) loading.remove();
+
+        items.forEach((n) => {
+          if (!n || !n.id) return;
+          if (processedIds.has(n.id)) return;
+          processedIds.add(n.id);
+
+          const el = document.createElement("div");
+          el.className = "notif-card " + (n.status === "unread" ? "unread" : "");
+
+          el.innerHTML = `
+            <div class="notif-header">
+              <span>${escapeHtml(fmtTime(n.ts))}</span>
+              ${n.status === "unread" ? '<span style="color:var(--primary)">• New</span>' : ""}
+            </div>
+            <div class="notif-title">${escapeHtml(n.title || "")}</div>
+            <div class="notif-body">${escapeHtml(n.text || "")}</div>
+            ${n.status === "unread" ? `
+              <div class="notif-check">
+                <button class="btn-check" data-read="${escapeHtml(n.id)}">Прочитано</button>
+              </div>
+            ` : ""}
+          `;
+
+          const btn = el.querySelector("[data-read]");
+          if (btn) {
+            btn.addEventListener("click", async () => {
+              btn.classList.add("active");
+              btn.textContent = "...";
+              try {
+                await API.markNotificationRead(userId, n.id);
+                el.classList.remove("unread");
+                btn.remove();
+              } catch (e) {
+                btn.classList.remove("active");
+                btn.textContent = "Ошибка";
+              }
+            });
+          }
+
+          list.prepend(el);
+        });
+      } catch (e) {
+        console.error(e);
+        setUnreadCount(0);
+        list.innerHTML = '<div class="center">Ошибка загрузки уведомлений</div>';
+      }
+    }
+
+    load();
+    setInterval(load, 15000);
+  </script>
+</body>
+</html>
