@@ -1,6 +1,6 @@
 // api.js - Networking layer
 // Вставь сюда URL деплоя Google Apps Script Web App (именно /exec, не /dev)
-const DATA_URL = "https://script.google.com/macros/s/AKfycbw6uJhtg_eXO_xwPc_GjXqfCSh4UwsScsa6p-wx9_mujMH6ZFEeJmwaEq4S1AYyMJI_/exec";
+const DATA_URL = "https://script.google.com/macros/s/AKfycbwdLRpVupqLaeCcs9ytblLsjKtU2V5-7U_-ejtJqLPyVs5ZpyF-loCf9EdHn-Um3f_1/exec";
 
 const API = {
   async fetchJson(action, options = {}) {

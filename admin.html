@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>ProSell - Табло заказов</title>
+  <style>
+    body { font-family: -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Arial,sans-serif; margin: 0; background: #0b0b0f; color: #fff; }
+    .wrap { max-width: 900px; margin: 0 auto; padding: 16px; }
+    .card { background: #141420; border: 1px solid rgba(255,255,255,.08); border-radius: 12px; padding: 12px; margin: 10px 0; }
+    .row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+    .input { flex: 1; min-width: 220px; padding: 10px 12px; border-radius: 10px; border: 1px solid rgba(255,255,255,.15); background: #0f0f18; color: #fff; }
+    .btn { padding: 10px 12px; border-radius: 10px; border: 1px solid rgba(255,255,255,.15); background: #1b1b2a; color: #fff; cursor: pointer; }
+    .btn:hover { background: #22223a; }
+    .muted { color: rgba(255,255,255,.7); font-size: 13px; }
+    .title { font-size: 18px; font-weight: 700; margin: 6px 0 2px; }
+    .pill { font-size: 12px; padding: 4px 8px; border-radius: 999px; border: 1px solid rgba(255,255,255,.15); }
+    .unread { border-color: rgba(255,255,255,.25); }
+    pre { white-space: pre-wrap; word-break: break-word; margin: 8px 0 0; color: rgba(255,255,255,.85); }
+    .empty { padding: 28px 12px; text-align: center; color: rgba(255,255,255,.7); }
+    a { color: #9cc0ff; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <div class="row">
+        <div style="flex:1">
+          <div class="title">Табло заказов</div>
+          <div class="muted">Доступ только по секретному коду. Без кода будет пусто.</div>
+        </div>
+      </div>
+      <div class="row" style="margin-top:10px">
+        <input id="token" class="input" placeholder="Введи секретный код (token)" />
+        <button class="btn" id="save">Сохранить</button>
+        <button class="btn" id="refresh">Обновить</button>
+        <span class="pill" id="status">...</span>
+      </div>
+      <div class="muted" style="margin-top:8px">
+        Если ты открыл это в чужом браузере или без кода - это нормально, будет пусто.
+      </div>
+    </div>
+
+    <div id="list"></div>
+  </div>
+
+  <script>
+    // IMPORTANT: this must be your /exec
+    const DATA_URL = "https://script.google.com/macros/s/AKfycbyPNkz-rB62DfXUtOB792yq2iNG2CPdu1Cxj4cHvnsIiJaLH3jfdtInzVALVHtB1tbm/exec";
+
+    const elToken = document.getElementById("token");
+    const elList = document.getElementById("list");
+    const elStatus = document.getElementById("status");
+
+    function setStatus(text) {
+      elStatus.textContent = text;
+    }
+
+    function tsToLocal(ts) {
+      const d = new Date(Number(ts) || Date.now());
+      return d.toLocaleString();
+    }
+
+    function loadSavedToken() {
+      const saved = localStorage.getItem("prosell_admin_token") || "";
+      elToken.value = saved;
+    }
+
+    function saveToken() {
+      const t = (elToken.value || "").trim();
+      localStorage.setItem("prosell_admin_token", t);
+      return t;
+    }
+
+    async function fetchAdminNotifications(token) {
+      const url = new URL(DATA_URL);
+      url.searchParams.set("action", "admin_notifications");
+      url.searchParams.set("token", token);
+
+      const r = await fetch(url.toString(), { method: "GET", cache: "no-store" });
+      if (!r.ok) throw new Error("HTTP " + r.status);
+      return await r.json();
+    }
+
+    function render(list) {
+      if (!list || !list.length) {
+        elList.innerHTML = '<div class="card empty">Пока пусто. Либо нет новых заказов, либо неверный token.</div>';
+        return;
+      }
+
+      elList.innerHTML = "";
+      for (const n of list) {
+        const card = document.createElement("div");
+        card.className = "card";
+
+        const status = (n.status || "unread");
+        const pill = status === "unread" ? '<span class="pill unread">unread</span>' : '<span class="pill">read</span>';
+
+        card.innerHTML = `
+          <div class="row">
+            <div style="flex:1">
+              <div style="font-weight:700">${escapeHtml(n.title || "")}</div>
+              <div class="muted">${tsToLocal(n.ts)} | ${escapeHtml(n.type || "")} | ${pill}</div>
+            </div>
+          </div>
+          <pre>${escapeHtml(n.text || "")}</pre>
+        `;
+        elList.appendChild(card);
+      }
+    }
+
+    function escapeHtml(s) {
+      return String(s || "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    async function refresh() {
+      const token = (localStorage.getItem("prosell_admin_token") || "").trim();
+      if (!token) {
+        setStatus("no token");
+        render([]);
+        return;
+      }
+
+      setStatus("loading...");
+      try {
+        const data = await fetchAdminNotifications(token);
+        if (!data.ok) {
+          setStatus("unauthorized");
+          render([]);
+          return;
+        }
+        setStatus("ok: " + (data.notifications ? data.notifications.length : 0));
+        render(data.notifications || []);
+      } catch (e) {
+        setStatus("error");
+        render([]);
+      }
+    }
+
+    document.getElementById("save").addEventListener("click", () => {
+      saveToken();
+      refresh();
+    });
+    document.getElementById("refresh").addEventListener("click", refresh);
+
+    loadSavedToken();
+    refresh();
+
+    // auto refresh every 15 seconds
+    setInterval(refresh, 15000);
+  </script>
+</body>
+</html>
