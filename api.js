@@ -1,75 +1,101 @@
-// ProSell API client (for GitHub Pages)
-// Update SCRIPT_URL when you redeploy Apps Script.
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbztH4aMMnNI3J4ZOhr9HJS6-ETNy8TQ50cyjE7s4WDes6vceYejNsAZwbgLZst0pkqV/exec";
+// api.js - Networking layer
+const DATA_URL = "https://script.google.com/macros/s/AKfycbx0yefGl66O-RLVatOk0xD87HcRXI2oC6EaUsxqSNYxpHbtcVwiTGuSsmXAlfSU8qfQ/exec";
 
-function qs(params) {
-  const u = new URLSearchParams();
-  Object.keys(params || {}).forEach(k => {
-    const v = params[k];
-    if (v !== undefined && v !== null && String(v) !== "") u.set(k, String(v));
+// If you enable API_KEY in Code.gs - set it here too
+const API_KEY = "";
+
+// helper
+function buildUrl(action, extraParams = {}) {
+  const url = new URL(DATA_URL);
+  url.searchParams.set("action", action);
+  if (API_KEY) url.searchParams.set("key", API_KEY);
+
+  Object.keys(extraParams || {}).forEach(k => {
+    const v = extraParams[k];
+    if (v !== undefined && v !== null && String(v) !== "") url.searchParams.set(k, String(v));
   });
-  return u.toString();
-}
 
-async function getJSON(url) {
-  const r = await fetch(url, { method: "GET" });
-  return await r.json();
-}
-
-async function postJSON(url, payload) {
-  const r = await fetch(url, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload || {})
-  });
-  return await r.json();
+  return url.toString();
 }
 
 const API = {
-  async ping() {
-    return getJSON(`${SCRIPT_URL}?${qs({ action: "ping" })}`);
+  async fetchJson(action, options = {}) {
+    const { method = "GET", body = null, timeout = 15000, retries = 1, params = {} } = options;
+
+    const url = buildUrl(action, params);
+
+    const fetchOptions = {
+      method,
+      cache: "no-store",
+      headers: {}
+    };
+
+    if (method === "POST") {
+      // text/plain -> "simple request" (no preflight)
+      fetchOptions.headers["Content-Type"] = "text/plain;charset=utf-8";
+      fetchOptions.body = JSON.stringify(body || {});
+    }
+
+    const attemptFetch = async (attempt) => {
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), timeout);
+
+      try {
+        const r = await fetch(url, { ...fetchOptions, signal: controller.signal });
+        clearTimeout(timer);
+
+        if (!r.ok) throw new Error("HTTP " + r.status);
+
+        return await r.json();
+      } catch (err) {
+        clearTimeout(timer);
+        if (attempt < retries) {
+          await new Promise((res) => setTimeout(res, 900));
+          return attemptFetch(attempt + 1);
+        }
+        throw err;
+      }
+    };
+
+    return attemptFetch(0);
   },
 
-  // Public shop data (optional)
-  async getProducts() {
-    return getJSON(`${SCRIPT_URL}?${qs({ action: "products" })}`);
+  // shop
+  async health() {
+    return this.fetchJson("health");
   },
-  async getCategories() {
-    return getJSON(`${SCRIPT_URL}?${qs({ action: "categories" })}`);
+  async getData() {
+    return this.fetchJson("data");
   },
-  async getUiConfig() {
-    return getJSON(`${SCRIPT_URL}?${qs({ action: "ui_config" })}`);
-  },
-
-  // Create order (shop -> backend)
-  async createOrder(orderPayload) {
-    return postJSON(`${SCRIPT_URL}?${qs({ action: "create_order" })}`, orderPayload);
+  async createOrder(payload) {
+    return this.fetchJson("order", { method: "POST", body: payload, retries: 1 });
   },
 
-  // Notifications (optional)
-  async listNotifications(tgId) {
-    return getJSON(`${SCRIPT_URL}?${qs({ action: "notifications_list", tg_id: tgId })}`);
+  // user notifications
+  async getNotifications(tgId) {
+    return this.fetchJson("notifications", { params: { tg_id: tgId || "" }, retries: 0 });
   },
-  async readNotification(tgId, notifId) {
-    return postJSON(`${SCRIPT_URL}?${qs({ action: "notifications_read" })}`, { tg_id: tgId, notif_id: notifId });
+  async markNotificationRead(tgId, notifId) {
+    return this.fetchJson("notifications_read", {
+      method: "POST",
+      body: { tg_id: tgId || "", notif_id: notifId || "" },
+      retries: 0
+    });
   },
 
-  // Admin
+  // admin
   async adminGetOrders(token) {
-    return getJSON(`${SCRIPT_URL}?${qs({ action: "admin_orders", token })}`);
+    return this.fetchJson("admin_orders", { params: { token: token || "" }, retries: 0 });
   },
-
-  async adminUpdateOrderStatus(token, order_id, status) {
-    return postJSON(`${SCRIPT_URL}?${qs({ action: "admin_update_order_status" })}`, { token, order_id, status });
-  },
-
-  // Backward compatible alias (если в админке старое имя)
-  async adminSetOrderStatus(token, order_id, status) {
-    return this.adminUpdateOrderStatus(token, order_id, status);
-  },
-
   async adminGetNotifications(token) {
-    return getJSON(`${SCRIPT_URL}?${qs({ action: "admin_notifications", token })}`);
+    return this.fetchJson("admin_notifications", { params: { token: token || "" }, retries: 0 });
+  },
+  async adminUpdateOrderStatus(token, orderId, status) {
+    return this.fetchJson("admin_update_order_status", {
+      method: "POST",
+      body: { token: token || "", order_id: orderId || "", status: status || "" },
+      retries: 0
+    });
   }
 };
 
