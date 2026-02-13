@@ -1,7 +1,7 @@
 // ProSell front API helper
 
 // 1) Впиши сюда свой текущий /exec URL
-const SCRIPT_URL = "PASTE_YOUR_WEB_APP_EXEC_URL_HERE";
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbycw_LkTdzPPQtwEjh_b4H-HcDxlV-bufLvABzHVvLiNphqwemcw5D7f02RNdw3y-aF/exec";
 
 // 2) Если в Code.gs заполнил API_KEY, то впиши сюда то же значение, иначе оставь ""
 const API_KEY = "";
