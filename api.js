@@ -1,96 +1,53 @@
-// api.js - Networking layer
-// ВАЖНО: тут должна быть ссылка именно вида https://script.google.com/macros/s/.../exec (без ?action=...)
-const DATA_URL = "https://script.google.com/macros/s/AKfycbyK4E03rUIhzXArWhrKvFqJ79ttjfDHFlBnozh3wMssLcS6CIPXjkCmK4gcqeYJBpI/exec";
+// ProSell Frontend API helper (GitHub Pages -> Google Apps Script)
 
-// Если позже включишь защиту API_KEY в Apps Script - впиши сюда такой же ключ.
-// Сейчас оставь пустым, чтобы магазин не сломался.
-const API_KEY = "";
+// 1) Put your current deployed /exec url here
+const DATA_URL = "https://script.google.com/macros/s/AKfycbx8HBoD02RlpQ45Fg-WOwkH2gbcKhmprUMRLHjbXGYxvQ08viZgO7nyZTd7dtm2OW2E/exec";
 
-function buildUrl(action, extraParams = {}) {
-  const url = new URL(DATA_URL);
-  url.searchParams.set("action", action);
+// 2) Optional: if you enabled API_KEY in Apps Script, put it here too
+const API_KEY = ""; // same as API_KEY in Code.gs
 
-  if (API_KEY) url.searchParams.set("key", API_KEY);
-
-  for (const k in extraParams) {
-    if (!Object.prototype.hasOwnProperty.call(extraParams, k)) continue;
-    const v = extraParams[k];
-    if (v === undefined || v === null || v === "") continue;
-    url.searchParams.set(k, String(v));
+function buildUrl(action, params) {
+  const u = new URL(DATA_URL);
+  u.searchParams.set("action", action);
+  if (API_KEY) u.searchParams.set("key", API_KEY);
+  if (params) {
+    Object.keys(params).forEach(k => {
+      if (params[k] === undefined || params[k] === null) return;
+      u.searchParams.set(k, String(params[k]));
+    });
   }
-
-  return url;
+  return u.toString();
 }
 
-const API = {
-  async fetchJson(action, options = {}) {
-    const { method = "GET", body = null, timeout = 15000, retries = 1, params = {} } = options;
+async function getJson(url) {
+  const r = await fetch(url, { method: "GET" });
+  return await r.json();
+}
 
-    const url = buildUrl(action, params);
+async function postJson(url, body) {
+  const r = await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body || {})
+  });
+  return await r.json();
+}
 
-    const fetchOptions = {
-      method,
-      cache: "no-store",
-      headers: {}
-    };
+window.API = {
+  // Public
+  health: () => getJson(buildUrl("health")),
+  getData: () => getJson(buildUrl("data")),
+  createOrder: (payload) => postJson(buildUrl("order"), payload),
+  getNotifications: (tg_id) => getJson(buildUrl("notifications", { tg_id })),
+  markNotificationRead: (tg_id, id) => postJson(buildUrl("notifications_read"), { tg_id, id }),
 
-    if (method === "POST") {
-      // text/plain -> без preflight
-      fetchOptions.headers["Content-Type"] = "text/plain;charset=utf-8";
-      fetchOptions.body = JSON.stringify(body || {});
-    }
+  // Admin
+  adminGetOrders: (token, includeArchived) =>
+    getJson(buildUrl("admin_orders", {
+      token,
+      include_archived: includeArchived ? "1" : ""
+    })),
 
-    const attemptFetch = async (attempt) => {
-      const controller = new AbortController();
-      const timer = setTimeout(() => controller.abort(), timeout);
-
-      try {
-        const r = await fetch(url.toString(), { ...fetchOptions, signal: controller.signal });
-        clearTimeout(timer);
-
-        if (!r.ok) throw new Error("HTTP " + r.status);
-
-        return await r.json();
-      } catch (err) {
-        clearTimeout(timer);
-        if (attempt < retries) {
-          await new Promise((res) => setTimeout(res, 900));
-          return attemptFetch(attempt + 1);
-        }
-        throw err;
-      }
-    };
-
-    return attemptFetch(0);
-  },
-
-  async getData() {
-    return this.fetchJson("data");
-  },
-
-  async createOrder(payload) {
-    return this.fetchJson("order", { method: "POST", body: payload, retries: 1 });
-  },
-
-  async getNotifications(tgId) {
-    return this.fetchJson("notifications", { method: "GET", params: { tg_id: tgId } });
-  },
-
-  async markNotificationRead(tgId, notifId) {
-    return this.fetchJson("notifications_read", {
-      method: "POST",
-      body: { tg_id: tgId || "", id: notifId || "" },
-      retries: 0
-    });
-  },
-
-  // Админ: получить последние заказы (требует token в Apps Script)
-  async adminGetOrders(token) {
-    return this.fetchJson("admin_orders", { method: "GET", params: { token: token || "" }, retries: 0 });
-  },
-
-  // Админ: получить все уведомления (требует token в Apps Script)
-  async adminGetNotifications(token) {
-    return this.fetchJson("admin_notifications", { method: "GET", params: { token: token || "" }, retries: 0 });
-  }
+  adminSetOrderStatus: (token, order_id, status) =>
+    postJson(buildUrl("admin_order_status"), { token, order_id, status })
 };

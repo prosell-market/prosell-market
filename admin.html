@@ -5,327 +5,335 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>ProSell Admin</title>
   <style>
-    :root {
-      --bg: #f3f4f6;
-      --card-bg: #ffffff;
-      --text-main: #111827;
-      --text-muted: #6b7280;
-      --primary: #2563eb;
-      --primary-hover: #1d4ed8;
-      --border: #e5e7eb;
-      --success: #10b981;
-      --danger: #ef4444;
-      --radius: 12px;
-      --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+    :root{
+      --bg:#f3f4f6;
+      --card:#ffffff;
+      --text:#111827;
+      --muted:#6b7280;
+      --primary:#2563eb;
+      --border:#e5e7eb;
+      --success:#10b981;
+      --danger:#ef4444;
+      --radius:12px;
+      --shadow:0 1px 3px rgba(0,0,0,.1),0 1px 2px rgba(0,0,0,.06);
     }
-
-    * { box-sizing: border-box; outline: none; }
-    body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: var(--bg); color: var(--text-main); font-size: 14px; line-height: 1.5; }
-
-    /* Layout */
-    .wrap { max-width: 1000px; margin: 0 auto; padding: 20px; }
-    
-    /* Header & Controls */
-    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 15px; }
-    .logo { font-size: 20px; font-weight: 800; color: var(--text-main); display: flex; align-items: center; gap: 8px; }
-    .logo span { color: var(--primary); }
-    
-    .auth-panel { display: flex; gap: 10px; flex-grow: 1; justify-content: flex-end; }
-    .input-token { padding: 8px 12px; border: 1px solid var(--border); border-radius: 8px; width: 200px; font-size: 13px; transition: 0.2s; }
-    .input-token:focus { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(37,99,235,0.1); }
-    
-    .btn { padding: 8px 16px; border-radius: 8px; border: none; font-weight: 500; cursor: pointer; transition: 0.2s; font-size: 13px; display: inline-flex; align-items: center; gap: 6px; }
-    .btn-primary { background: var(--primary); color: #fff; }
-    .btn-primary:hover { background: var(--primary-hover); }
-    .btn-white { background: #fff; border: 1px solid var(--border); color: var(--text-main); }
-    .btn-white:hover { background: #f9fafb; border-color: #d1d5db; }
-
-    /* Dashboard Stats */
-    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 24px; }
-    .stat-card { background: var(--card-bg); padding: 16px; border-radius: var(--radius); border: 1px solid var(--border); box-shadow: var(--shadow); }
-    .stat-label { color: var(--text-muted); font-size: 12px; font-weight: 500; margin-bottom: 4px; }
-    .stat-value { font-size: 24px; font-weight: 700; color: var(--text-main); }
-    .stat-sub { font-size: 12px; color: var(--success); font-weight: 500; }
-
-    /* Filter Bar */
-    .filter-bar { background: var(--card-bg); padding: 12px; border-radius: var(--radius); border: 1px solid var(--border); margin-bottom: 20px; display: flex; gap: 12px; align-items: center; flex-wrap: wrap; box-shadow: var(--shadow); }
-    .search-input { flex-grow: 1; padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 14px; min-width: 200px; }
-    .search-input:focus { border-color: var(--primary); }
-    
-    .toggle-wrap { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text-muted); cursor: pointer; user-select: none; margin-left: auto; }
-    .toggle-switch { width: 36px; height: 20px; background: #e5e7eb; border-radius: 99px; position: relative; transition: 0.3s; }
-    .toggle-switch::after { content: ''; position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; background: #fff; border-radius: 50%; transition: 0.3s; box-shadow: 0 1px 2px rgba(0,0,0,0.2); }
-    .toggle-active .toggle-switch { background: var(--success); }
-    .toggle-active .toggle-switch::after { transform: translateX(16px); }
-
-    /* Orders List */
-    .orders-container { display: grid; gap: 16px; }
-    .order-card { background: var(--card-bg); border-radius: var(--radius); border: 1px solid var(--border); box-shadow: var(--shadow); overflow: hidden; transition: transform 0.2s; }
-    .order-card:hover { border-color: #d1d5db; }
-    
-    .oc-header { padding: 16px; border-bottom: 1px solid var(--bg); display: flex; justify-content: space-between; align-items: center; background: #f9fafb; }
-    .oc-id { font-weight: 700; font-size: 16px; color: var(--text-main); display: flex; align-items: center; gap: 8px; }
-    .oc-badge { font-size: 11px; padding: 2px 8px; border-radius: 99px; text-transform: uppercase; font-weight: 600; letter-spacing: 0.5px; }
-    .badge-new { background: #dbeafe; color: #1e40af; } /* Blue for everything since backend has no status */
-    
-    .oc-time { font-size: 12px; color: var(--text-muted); text-align: right; }
-    .oc-time span { display: block; font-weight: 600; color: var(--text-main); }
-
-    .oc-body { padding: 16px; display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-    @media (max-width: 600px) { .oc-body { grid-template-columns: 1fr; } }
-    
-    .info-group { margin-bottom: 8px; }
-    .info-label { font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px; }
-    .info-val { font-size: 14px; font-weight: 500; color: var(--text-main); word-break: break-word; }
-
-    .items-list { background: var(--bg); border-radius: 8px; padding: 10px; margin-top: 10px; }
-    .item-row { display: flex; justify-content: space-between; font-size: 13px; padding: 4px 0; border-bottom: 1px dashed #d1d5db; }
-    .item-row:last-child { border-bottom: none; }
-    .item-name { font-weight: 500; color: #374151; }
-    .item-calc { color: var(--text-muted); }
-
-    .oc-footer { padding: 12px 16px; background: #fff; border-top: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
-    .total-price { font-size: 18px; font-weight: 800; color: var(--text-main); }
-    .actions { display: flex; gap: 8px; }
-
-    /* Utilities */
-    .hidden { display: none !important; }
-    .status-msg { text-align: center; padding: 40px; color: var(--text-muted); font-size: 15px; }
-    .spinner { border: 3px solid rgba(0,0,0,0.1); border-left-color: var(--primary); border-radius: 50%; width: 24px; height: 24px; animation: spin 1s linear infinite; display: inline-block; vertical-align: middle; }
-    @keyframes spin { 100% { transform: rotate(360deg); } }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--text);font-size:14px;line-height:1.5}
+    .wrap{max-width:1100px;margin:0 auto;padding:20px}
+    .header{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:16px}
+    .logo{font-size:18px;font-weight:900}
+    .logo b{color:var(--primary)}
+    .auth{display:flex;gap:10px;align-items:center;margin-left:auto}
+    .status{font-size:12px;font-weight:700;color:var(--muted)}
+    .token{padding:8px 12px;border:1px solid var(--border);border-radius:10px;width:220px}
+    .btn{padding:8px 14px;border-radius:10px;border:1px solid var(--border);background:#fff;cursor:pointer;font-weight:700}
+    .btn.primary{background:var(--primary);border-color:var(--primary);color:#fff}
+    .btn:disabled{opacity:.6;cursor:not-allowed}
+    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin:12px 0 16px}
+    .card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow)}
+    .stat{padding:14px}
+    .stat .l{font-size:12px;color:var(--muted);font-weight:700}
+    .stat .v{font-size:24px;font-weight:900;margin-top:2px}
+    .bar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:12px}
+    .search{flex:1;min-width:240px;padding:10px 12px;border:1px solid var(--border);border-radius:10px}
+    .toggle{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:800;color:var(--muted);cursor:pointer;user-select:none}
+    .sw{width:38px;height:22px;background:#e5e7eb;border-radius:999px;position:relative}
+    .sw:after{content:"";position:absolute;top:3px;left:3px;width:16px;height:16px;background:#fff;border-radius:50%;box-shadow:0 1px 2px rgba(0,0,0,.2);transition:.2s}
+    .toggle.on .sw{background:var(--success)}
+    .toggle.on .sw:after{transform:translateX(16px)}
+    .list{display:grid;gap:14px}
+    .order{overflow:hidden}
+    .oh{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;padding:14px;background:#f9fafb;border-bottom:1px solid var(--border)}
+    .oid{font-weight:900;font-size:16px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+    .badge{font-size:11px;font-weight:900;padding:3px 10px;border-radius:999px;border:1px solid var(--border);background:#fff}
+    .b-new{background:#dbeafe;border-color:#bfdbfe;color:#1e40af}
+    .b-work{background:#fff7ed;border-color:#fed7aa;color:#9a3412}
+    .b-asm{background:#ecfccb;border-color:#bef264;color:#3f6212}
+    .b-ship{background:#e0e7ff;border-color:#c7d2fe;color:#3730a3}
+    .b-done{background:#dcfce7;border-color:#bbf7d0;color:#166534}
+    .b-arch{background:#f3f4f6;border-color:#e5e7eb;color:#374151}
+    .time{font-size:12px;color:var(--muted);text-align:right}
+    .time b{display:block;color:var(--text)}
+    .ob{padding:14px;display:grid;grid-template-columns:1fr 1fr;gap:16px}
+    @media(max-width:720px){.ob{grid-template-columns:1fr}}
+    .lab{font-size:11px;color:var(--muted);font-weight:900;letter-spacing:.3px;text-transform:uppercase}
+    .val{font-size:14px;font-weight:800;word-break:break-word}
+    .items{margin-top:8px;background:var(--bg);border-radius:10px;padding:10px}
+    .it{display:flex;justify-content:space-between;gap:10px;padding:6px 0;border-bottom:1px dashed #d1d5db;font-size:13px}
+    .it:last-child{border-bottom:none}
+    .of{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 14px;border-top:1px solid var(--border);flex-wrap:wrap}
+    .total{font-size:18px;font-weight:900}
+    .act{display:flex;gap:8px;flex-wrap:wrap}
+    .msg{padding:40px;text-align:center;color:var(--muted);font-weight:800}
+    .smallbtn{padding:8px 10px;border-radius:10px;border:1px solid var(--border);background:#fff;cursor:pointer;font-weight:900;font-size:12px}
+    .smallbtn.primary{background:var(--primary);border-color:var(--primary);color:#fff}
+    .smallbtn.danger{background:#fff1f2;border-color:#fecdd3;color:#9f1239}
   </style>
 </head>
 <body>
-
   <div class="wrap">
     <div class="header">
-      <div class="logo">
-        <span>PRO</span>SELL Admin
-      </div>
-      <div class="auth-panel">
-        <div id="statusIndicator" style="margin-right: 10px; display: flex; align-items: center; font-size: 12px; font-weight: 600; color: var(--text-muted);">
-          Не подключено
-        </div>
-        <input id="tokenInput" class="input-token" type="password" placeholder="Admin Token" />
-        <button id="saveBtn" class="btn btn-primary">Войти</button>
+      <div class="logo"><b>PRO</b>SELL Admin</div>
+      <div class="auth">
+        <div id="status" class="status">Не подключено</div>
+        <input id="token" class="token" type="password" placeholder="Admin token" />
+        <button id="login" class="btn primary">Войти</button>
       </div>
     </div>
 
-    <div class="stats-grid">
-      <div class="stat-card">
-        <div class="stat-label">Всего заказов</div>
-        <div class="stat-value" id="statTotal">0</div>
+    <div class="grid">
+      <div class="card stat">
+        <div class="l">Всего заказов</div>
+        <div class="v" id="stTotal">0</div>
       </div>
-      <div class="stat-card">
-        <div class="stat-label">Новых сегодня</div>
-        <div class="stat-value" id="statToday">0</div>
+      <div class="card stat">
+        <div class="l">Новых (status=new)</div>
+        <div class="v" id="stNew">0</div>
       </div>
-      <div class="stat-card">
-        <div class="stat-label">Сумма за сегодня</div>
-        <div class="stat-value" id="statSumToday">0 ₽</div>
-      </div>
-    </div>
-
-    <div class="filter-bar">
-      <input id="searchInput" class="search-input" placeholder="Поиск (ID, имя, телефон, город)..." />
-      <button id="refreshBtn" class="btn btn-white">
-        <span id="refreshIcon">↻</span> Обновить
-      </button>
-      <div class="toggle-wrap" id="autoRefreshToggle">
-        <div>Авто (30с)</div>
-        <div class="toggle-switch"></div>
+      <div class="card stat">
+        <div class="l">Сумма сегодня</div>
+        <div class="v" id="stSum">0</div>
       </div>
     </div>
 
-    <div id="ordersContainer" class="orders-container">
-      <div class="status-msg">Введите токен и нажмите "Войти", чтобы загрузить заказы.</div>
+    <div class="card bar">
+      <input id="search" class="search" placeholder="Поиск (ID, имя, телефон, город)..." />
+      <button id="refresh" class="btn">Обновить</button>
+
+      <div id="tAuto" class="toggle">
+        <div>Авто (30с)</div><div class="sw"></div>
+      </div>
+
+      <div id="tArch" class="toggle">
+        <div>Показать архив</div><div class="sw"></div>
+      </div>
+    </div>
+
+    <div id="list" class="list">
+      <div class="msg">Введите токен и нажмите "Войти".</div>
     </div>
   </div>
 
   <script src="api.js"></script>
-  
   <script>
-    /* --- CONFIG & STATE --- */
-    const LS_KEY = "ps_admin_token";
-    const AUTO_REFRESH_INTERVAL = 30000;
-    
-    let state = {
+    const LS_TOKEN = "ps_admin_token";
+    const AUTO_MS = 30000;
+
+    const STATUS_LABEL = {
+      new: "Новый",
+      in_work: "В работе",
+      assembled: "Собран",
+      shipped: "Отправлен",
+      done: "Закрыт",
+      archived: "Архив"
+    };
+
+    const STATUS_BADGE = {
+      new: "b-new",
+      in_work: "b-work",
+      assembled: "b-asm",
+      shipped: "b-ship",
+      done: "b-done",
+      archived: "b-arch"
+    };
+
+    const el = {
+      token: document.getElementById("token"),
+      login: document.getElementById("login"),
+      refresh: document.getElementById("refresh"),
+      status: document.getElementById("status"),
+      search: document.getElementById("search"),
+      list: document.getElementById("list"),
+      stTotal: document.getElementById("stTotal"),
+      stNew: document.getElementById("stNew"),
+      stSum: document.getElementById("stSum"),
+      tAuto: document.getElementById("tAuto"),
+      tArch: document.getElementById("tArch"),
+    };
+
+    const state = {
       orders: [],
-      filter: "",
-      autoRefresh: false,
-      timerId: null
+      q: "",
+      auto: false,
+      showArchived: false,
+      timer: null
     };
 
-    /* --- DOM ELEMENTS --- */
-    const els = {
-      tokenInput: document.getElementById("tokenInput"),
-      saveBtn: document.getElementById("saveBtn"),
-      refreshBtn: document.getElementById("refreshBtn"),
-      ordersContainer: document.getElementById("ordersContainer"),
-      searchInput: document.getElementById("searchInput"),
-      statusInd: document.getElementById("statusIndicator"),
-      toggleAuto: document.getElementById("autoRefreshToggle"),
-      stats: {
-        total: document.getElementById("statTotal"),
-        today: document.getElementById("statToday"),
-        sum: document.getElementById("statSumToday")
-      }
-    };
+    function fmtMoney(n){
+      return new Intl.NumberFormat("ru-RU",{style:"currency",currency:"RUB",maximumFractionDigits:0}).format(n||0);
+    }
 
-    /* --- UTILS --- */
-    const formatCurrency = (val) => new Intl.NumberFormat('ru-RU', { style: 'currency', currency: 'RUB', maximumFractionDigits: 0 }).format(val);
-    
-    function formatDate(ts) {
-      if (!ts) return "—";
-      const date = new Date(ts);
+    function fmtTime(ts){
+      const d = new Date(ts);
       const now = new Date();
-      const diffMin = Math.round((now - date) / 60000);
-      
+      const diffMin = Math.round((now - d) / 60000);
       let rel = "";
       if (diffMin < 1) rel = "Только что";
-      else if (diffMin < 60) rel = `${diffMin} мин. назад`;
-      else if (diffMin < 1440) rel = `${Math.round(diffMin/60)} ч. назад`;
-      else rel = `${Math.round(diffMin/1440)} дн. назад`;
+      else if (diffMin < 60) rel = diffMin + " мин. назад";
+      else if (diffMin < 1440) rel = Math.round(diffMin/60) + " ч. назад";
+      else rel = Math.round(diffMin/1440) + " дн. назад";
 
-      const exact = date.toLocaleString("ru-RU", { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
-      return { rel, exact, isToday: now.toDateString() === date.toDateString() };
+      const exact = d.toLocaleString("ru-RU",{day:"2-digit",month:"short",hour:"2-digit",minute:"2-digit"});
+      const isToday = now.toDateString() === d.toDateString();
+      return { rel, exact, isToday };
     }
 
-    function escapeHtml(str) {
-      if (!str) return "";
-      return String(str).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+    function esc(s){
+      return String(s||"")
+        .replace(/&/g,"&amp;")
+        .replace(/</g,"&lt;")
+        .replace(/>/g,"&gt;")
+        .replace(/"/g,"&quot;");
     }
 
-    /* --- LOGIC --- */
+    function setStatus(ok, text){
+      el.status.textContent = text;
+      el.status.style.color = ok ? "var(--success)" : "var(--danger)";
+    }
 
-    async function loadOrders() {
-      const token = els.tokenInput.value.trim();
-      if (!token) {
-        showStatus(false, "Нет токена");
-        return;
-      }
+    async function load(){
+      const token = el.token.value.trim();
+      if (!token) { setStatus(false,"Нет токена"); return; }
 
-      showStatus(true, "Загрузка...");
-      els.refreshBtn.disabled = true;
-      els.refreshBtn.innerHTML = '<span class="spinner"></span>';
+      setStatus(true,"Загрузка...");
+      el.refresh.disabled = true;
 
-      try {
-        // CALL EXISTING API
-        const res = await API.adminGetOrders(token);
-
-        if (!res || !res.ok) {
-          showStatus(false, "Ошибка доступа");
-          els.ordersContainer.innerHTML = `<div class="status-msg bad">Ошибка: ${res?.error || "Неверный токен или сбой"}</div>`;
-        } else {
-          showStatus(true, "OK");
-          // Sort by time desc (newest first)
-          state.orders = (res.orders || []).sort((a, b) => new Date(b.ts) - new Date(a.ts));
-          updateDashboard();
-          renderList();
+      try{
+        const res = await API.adminGetOrders(token, state.showArchived);
+        if (!res || !res.ok){
+          setStatus(false,"Ошибка");
+          el.list.innerHTML = '<div class="msg">Ошибка: ' + esc(res && res.error ? res.error : "unknown") + "</div>";
+          return;
         }
-      } catch (e) {
+
+        state.orders = (res.orders || []).map(o => ({
+          ...o,
+          status: (o.status || "new").trim() || "new"
+        }));
+
+        updateStats();
+        render();
+        setStatus(true,"OK");
+      }catch(e){
         console.error(e);
-        showStatus(false, "Ошибка сети");
-        els.ordersContainer.innerHTML = `<div class="status-msg bad">Сбой сети. Проверьте консоль.</div>`;
-      } finally {
-        els.refreshBtn.disabled = false;
-        els.refreshBtn.innerHTML = '<span id="refreshIcon">↻</span> Обновить';
+        setStatus(false,"Сеть");
+        el.list.innerHTML = '<div class="msg">Ошибка сети. Открой консоль.</div>';
+      }finally{
+        el.refresh.disabled = false;
       }
     }
 
-    function renderList() {
-      const filter = state.filter.toLowerCase();
-      const list = state.orders.filter(o => {
-        const text = `${o.order_id} ${o.name} ${o.phone} ${o.city}`.toLowerCase();
-        return text.includes(filter);
+    function updateStats(){
+      const total = state.orders.length;
+      const cntNew = state.orders.filter(o => o.status === "new").length;
+
+      const todaySum = state.orders.reduce((acc,o)=>{
+        const t = fmtTime(o.ts);
+        if (!t.isToday) return acc;
+        return acc + (parseFloat(o.total)||0);
+      },0);
+
+      el.stTotal.textContent = total;
+      el.stNew.textContent = cntNew;
+      el.stSum.textContent = fmtMoney(todaySum);
+    }
+
+    function render(){
+      const q = state.q.toLowerCase();
+      const list = state.orders.filter(o=>{
+        const text = (o.order_id + " " + o.name + " " + o.phone + " " + o.city).toLowerCase();
+        return text.includes(q);
       });
 
-      if (list.length === 0) {
-        els.ordersContainer.innerHTML = `<div class="status-msg">Ничего не найдено</div>`;
+      if (!list.length){
+        el.list.innerHTML = '<div class="msg">Ничего не найдено</div>';
         return;
       }
 
-      els.ordersContainer.innerHTML = list.map(o => {
-        const timeObj = formatDate(o.ts);
-        const total = parseFloat(o.total) || 0;
-        
-        // Parse items
-        let itemsHtml = `<div class="items-list">`;
-        let itemsTextForCopy = "";
-        
-        if (Array.isArray(o.items) && o.items.length > 0) {
-           o.items.forEach(it => {
-             const name = it.name || it.sku || "Товар";
-             const qty = it.qty || 1;
-             const price = it.price || 0;
-             const sum = price * qty;
-             
-             itemsHtml += `
-               <div class="item-row">
-                 <span class="item-name">${escapeHtml(name)}</span>
-                 <span class="item-calc">${qty} x ${price} = <b>${sum}</b></span>
-               </div>`;
-             itemsTextForCopy += `- ${name} (x${qty}) = ${sum}\n`;
-           });
-        } else {
-          itemsHtml += `<div class="item-row" style="color:#9ca3af">Нет товаров</div>`;
-          itemsTextForCopy = "Нет товаров";
-        }
-        itemsHtml += `</div>`;
+      el.list.innerHTML = list.map(o=>{
+        const t = fmtTime(o.ts);
+        const total = parseFloat(o.total)||0;
 
-        // Copy text payload
-        const copyPayload = `Заказ: ${o.order_id || "N/A"}
+        const statusLabel = STATUS_LABEL[o.status] || o.status;
+        const badgeClass = STATUS_BADGE[o.status] || "b-new";
+
+        const items = Array.isArray(o.items) ? o.items : [];
+        const itemsHtml = items.length ? items.map(it=>{
+          const name = it.name || it.sku || "Товар";
+          const qty = it.qty || 1;
+          const price = it.price || 0;
+          const sum = qty * price;
+          return '<div class="it"><div><b>' + esc(name) + '</b></div><div>' + qty + " x " + price + " = <b>" + sum + "</b></div></div>";
+        }).join("") : '<div class="it" style="color:#9ca3af">Нет товаров</div>';
+
+        const copyText =
+`Заказ: ${o.order_id}
+Статус: ${statusLabel}
 Имя: ${o.name || ""}
 Тел: ${o.phone || ""}
-Адрес: ${o.city || ""}
+Город/адрес: ${o.city || ""}
 Сумма: ${total}
-Коммент: ${o.comment || ""}
+Комментарий: ${o.comment || ""}
 Товары:
-${itemsTextForCopy}`;
+${items.map(it => "- " + (it.name || it.sku || "Товар") + " x" + (it.qty || 1)).join("\n")}
+`;
+
+        // Buttons are disabled for archived to avoid mistakes (but you can still change if you want)
+        const disabled = (o.status === "archived") ? "disabled" : "";
 
         return `
-          <div class="order-card">
-            <div class="oc-header">
-              <div class="oc-id">
-                #${escapeHtml(o.order_id || "???")}
-                <span class="oc-badge badge-new">Новый</span>
+          <div class="card order">
+            <div class="oh">
+              <div class="oid">
+                #${esc(o.order_id)}
+                <span class="badge ${badgeClass}">${esc(statusLabel)}</span>
               </div>
-              <div class="oc-time">
-                <span>${timeObj.rel}</span>
-                ${timeObj.exact}
+              <div class="time">
+                <b>${esc(t.rel)}</b>
+                ${esc(t.exact)}
               </div>
             </div>
-            <div class="oc-body">
+
+            <div class="ob">
               <div>
-                <div class="info-group">
-                  <div class="info-label">Клиент</div>
-                  <div class="info-val">${escapeHtml(o.name || "Не указано")}</div>
-                </div>
-                <div class="info-group">
-                  <div class="info-label">Телефон</div>
-                  <div class="info-val" style="color:var(--primary)">${escapeHtml(o.phone || "—")}</div>
-                </div>
-                <div class="info-group">
-                  <div class="info-label">Город / Адрес</div>
-                  <div class="info-val">${escapeHtml(o.city || "—")}</div>
-                </div>
+                <div class="lab">Клиент</div>
+                <div class="val">${esc(o.name || "Не указано")}</div>
+
+                <div style="height:8px"></div>
+                <div class="lab">Телефон</div>
+                <div class="val" style="color:var(--primary)">${esc(o.phone || "-")}</div>
+
+                <div style="height:8px"></div>
+                <div class="lab">Город / адрес</div>
+                <div class="val">${esc(o.city || "-")}</div>
+
                 ${o.comment ? `
-                <div class="info-group">
-                  <div class="info-label">Комментарий</div>
-                  <div class="info-val" style="background:#fffbe6; padding:4px 8px; border-radius:4px;">${escapeHtml(o.comment)}</div>
-                </div>` : ''}
+                  <div style="height:8px"></div>
+                  <div class="lab">Комментарий</div>
+                  <div class="val" style="background:#fffbe6;padding:6px 10px;border-radius:10px;border:1px solid #fde68a">${esc(o.comment)}</div>
+                ` : ""}
               </div>
+
               <div>
-                <div class="info-label">Состав заказа</div>
-                ${itemsHtml}
+                <div class="lab">Состав заказа</div>
+                <div class="items">${itemsHtml}</div>
+
+                <div style="height:10px"></div>
+                <div class="lab">Действия со статусом</div>
+                <div class="act" style="margin-top:6px">
+                  <button class="smallbtn" ${disabled} onclick="setOrderStatus('${esc(o.order_id)}','in_work')">В работу</button>
+                  <button class="smallbtn" ${disabled} onclick="setOrderStatus('${esc(o.order_id)}','assembled')">Собран</button>
+                  <button class="smallbtn" ${disabled} onclick="setOrderStatus('${esc(o.order_id)}','shipped')">Отправлен</button>
+                  <button class="smallbtn" ${disabled} onclick="setOrderStatus('${esc(o.order_id)}','done')">Закрыть</button>
+                  <button class="smallbtn danger" onclick="setOrderStatus('${esc(o.order_id)}','archived')">Архив</button>
+                </div>
               </div>
             </div>
-            <div class="oc-footer">
-              <div class="total-price">${formatCurrency(total)}</div>
-              <div class="actions">
-                <button class="btn btn-white" onclick='copyToClipboard(this, ${JSON.stringify(copyPayload)})'>
-                  Копировать
-                </button>
+
+            <div class="of">
+              <div class="total">${fmtMoney(total)}</div>
+              <div class="act">
+                <button class="btn" onclick='copyText(${JSON.stringify(copyText)})'>Копировать</button>
               </div>
             </div>
           </div>
@@ -333,65 +341,65 @@ ${itemsTextForCopy}`;
       }).join("");
     }
 
-    function updateDashboard() {
-      els.stats.total.textContent = state.orders.length;
-      
-      const todayOrders = state.orders.filter(o => formatDate(o.ts).isToday);
-      els.stats.today.textContent = todayOrders.length;
-      
-      const sumToday = todayOrders.reduce((acc, o) => acc + (parseFloat(o.total) || 0), 0);
-      els.stats.sum.textContent = formatCurrency(sumToday);
+    window.copyText = async function(text){
+      try{
+        await navigator.clipboard.writeText(text);
+      }catch(e){
+        alert("Не смог скопировать. Разреши доступ к буферу обмена.");
+      }
     }
 
-    function showStatus(ok, text) {
-      els.statusInd.textContent = text;
-      els.statusInd.style.color = ok ? "var(--success)" : "var(--danger)";
+    window.setOrderStatus = async function(orderId, status){
+      const token = el.token.value.trim();
+      if (!token) return;
+
+      try{
+        const res = await API.adminSetOrderStatus(token, orderId, status);
+        if (!res || !res.ok){
+          alert("Ошибка: " + (res && res.error ? res.error : "unknown"));
+          return;
+        }
+        await load();
+      }catch(e){
+        console.error(e);
+        alert("Ошибка сети");
+      }
     }
 
-    window.copyToClipboard = function(btn, text) {
-      navigator.clipboard.writeText(text).then(() => {
-        const originalText = btn.textContent;
-        btn.textContent = "Скопировано!";
-        btn.classList.add("btn-primary");
-        btn.classList.remove("btn-white");
-        setTimeout(() => {
-          btn.textContent = originalText;
-          btn.classList.remove("btn-primary");
-          btn.classList.add("btn-white");
-        }, 1500);
-      });
-    };
-
-    /* --- EVENT LISTENERS --- */
-
-    els.saveBtn.addEventListener("click", () => {
-      localStorage.setItem(LS_KEY, els.tokenInput.value.trim());
-      loadOrders();
+    el.login.addEventListener("click", ()=>{
+      localStorage.setItem(LS_TOKEN, el.token.value.trim());
+      load();
     });
 
-    els.refreshBtn.addEventListener("click", loadOrders);
+    el.refresh.addEventListener("click", load);
 
-    els.searchInput.addEventListener("input", (e) => {
-      state.filter = e.target.value;
-      renderList();
+    el.search.addEventListener("input", (e)=>{
+      state.q = e.target.value;
+      render();
     });
 
-    els.toggleAuto.addEventListener("click", () => {
-      state.autoRefresh = !state.autoRefresh;
-      els.toggleAuto.classList.toggle("toggle-active", state.autoRefresh);
-      
-      if (state.autoRefresh) {
-        if (!state.timerId) state.timerId = setInterval(loadOrders, AUTO_REFRESH_INTERVAL);
+    el.tAuto.addEventListener("click", ()=>{
+      state.auto = !state.auto;
+      el.tAuto.classList.toggle("on", state.auto);
+
+      if (state.auto){
+        if (!state.timer) state.timer = setInterval(load, AUTO_MS);
       } else {
-        if (state.timerId) { clearInterval(state.timerId); state.timerId = null; }
+        if (state.timer){ clearInterval(state.timer); state.timer = null; }
       }
     });
 
-    // INIT
-    const savedToken = localStorage.getItem(LS_KEY);
-    if (savedToken) {
-      els.tokenInput.value = savedToken;
-      loadOrders();
+    el.tArch.addEventListener("click", ()=>{
+      state.showArchived = !state.showArchived;
+      el.tArch.classList.toggle("on", state.showArchived);
+      load();
+    });
+
+    // init
+    const saved = localStorage.getItem(LS_TOKEN);
+    if (saved){
+      el.token.value = saved;
+      load();
     }
   </script>
 </body>
