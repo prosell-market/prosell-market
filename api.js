@@ -1,53 +1,75 @@
-// ProSell Frontend API helper (GitHub Pages -> Google Apps Script)
+// ProSell front API helper
 
-// 1) Put your current deployed /exec url here
-const DATA_URL = "https://script.google.com/macros/s/AKfycbx8HBoD02RlpQ45Fg-WOwkH2gbcKhmprUMRLHjbXGYxvQ08viZgO7nyZTd7dtm2OW2E/exec";
+// 1) Впиши сюда свой текущий /exec URL
+const SCRIPT_URL = "PASTE_YOUR_WEB_APP_EXEC_URL_HERE";
 
-// 2) Optional: if you enabled API_KEY in Apps Script, put it here too
-const API_KEY = ""; // same as API_KEY in Code.gs
+// 2) Если в Code.gs заполнил API_KEY, то впиши сюда то же значение, иначе оставь ""
+const API_KEY = "";
 
-function buildUrl(action, params) {
-  const u = new URL(DATA_URL);
-  u.searchParams.set("action", action);
+/* Internal helpers */
+
+function buildUrl(params) {
+  const u = new URL(SCRIPT_URL);
+  Object.keys(params || {}).forEach(k => {
+    if (params[k] !== undefined && params[k] !== null) u.searchParams.set(k, String(params[k]));
+  });
   if (API_KEY) u.searchParams.set("key", API_KEY);
-  if (params) {
-    Object.keys(params).forEach(k => {
-      if (params[k] === undefined || params[k] === null) return;
-      u.searchParams.set(k, String(params[k]));
-    });
-  }
   return u.toString();
 }
 
-async function getJson(url) {
-  const r = await fetch(url, { method: "GET" });
-  return await r.json();
+async function getJson(params) {
+  const url = buildUrl(params);
+  const res = await fetch(url, { method: "GET" });
+  return await res.json();
 }
 
-async function postJson(url, body) {
-  const r = await fetch(url, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body || {})
+async function postForm(params) {
+  const body = new URLSearchParams();
+  Object.keys(params || {}).forEach(k => {
+    if (params[k] !== undefined && params[k] !== null) body.set(k, String(params[k]));
   });
-  return await r.json();
+  if (API_KEY) body.set("key", API_KEY);
+
+  const res = await fetch(SCRIPT_URL, { method: "POST", body });
+  return await res.json();
 }
+
+/* Public API */
 
 window.API = {
-  // Public
-  health: () => getJson(buildUrl("health")),
-  getData: () => getJson(buildUrl("data")),
-  createOrder: (payload) => postJson(buildUrl("order"), payload),
-  getNotifications: (tg_id) => getJson(buildUrl("notifications", { tg_id })),
-  markNotificationRead: (tg_id, id) => postJson(buildUrl("notifications_read"), { tg_id, id }),
+  // Health
+  ping: () => getJson({ action: "ping" }),
+
+  // Store data
+  getData: () => getJson({ action: "data" }),
+
+  // Orders (store)
+  createOrder: (order) => {
+    // order: { tg_id, name, phone, city, comment, items: [] }
+    const payload = {
+      action: "create_order",
+      tg_id: order && order.tg_id ? order.tg_id : "",
+      name: order && order.name ? order.name : "",
+      phone: order && order.phone ? order.phone : "",
+      city: order && order.city ? order.city : "",
+      comment: order && order.comment ? order.comment : "",
+      items: JSON.stringify((order && order.items) ? order.items : [])
+    };
+    return postForm(payload);
+  },
+
+  // Notifications (user)
+  getNotifications: (tgId) => getJson({ action: "notifications", tg_id: tgId }),
+  markNotificationRead: (tgId, notifId) => postForm({ action: "notifications_read", tg_id: tgId, id: notifId }),
 
   // Admin
-  adminGetOrders: (token, includeArchived) =>
-    getJson(buildUrl("admin_orders", {
-      token,
-      include_archived: includeArchived ? "1" : ""
-    })),
+  adminGetOrders: (token) => getJson({ action: "admin_orders", token: token }),
+  adminSetOrderStatus: (token, orderId, status) => postForm({
+    action: "admin_order_status",
+    token: token,
+    order_id: orderId,
+    status: status
+  }),
 
-  adminSetOrderStatus: (token, order_id, status) =>
-    postJson(buildUrl("admin_order_status"), { token, order_id, status })
+  adminGetNotifications: (token) => getJson({ action: "admin_notifications", token: token })
 };
