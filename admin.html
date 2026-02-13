@@ -3,170 +3,396 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ProSell - Табло заказов</title>
+  <title>ProSell Admin</title>
   <style>
-    body { margin: 0; font-family: Arial, sans-serif; background: #0b0c10; color: #e8e8e8; }
-    .wrap { max-width: 980px; margin: 0 auto; padding: 20px; }
-    .card { background: #141621; border: 1px solid rgba(255,255,255,0.06); border-radius: 14px; padding: 16px; margin-bottom: 14px; }
-    .row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
-    input { width: 420px; max-width: 100%; padding: 10px 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.12); background: #0e1020; color: #fff; }
-    button { padding: 10px 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.12); background: #1b1f33; color: #fff; cursor: pointer; }
-    button:hover { background: #222747; }
-    .muted { color: rgba(255,255,255,0.65); font-size: 13px; }
-    .ok { color: #7CFF9B; font-weight: 700; }
-    .bad { color: #ff6b6b; font-weight: 700; }
-    .order { border-left: 4px solid #3b82f6; }
-    .h { font-size: 18px; font-weight: 800; margin: 0 0 6px 0; }
-    .grid { display: grid; gap: 10px; }
-    .kv { display: grid; grid-template-columns: 130px 1fr; gap: 6px 12px; font-size: 14px; }
-    .kv div:nth-child(odd) { color: rgba(255,255,255,0.6); }
-    pre { white-space: pre-wrap; background: #0e1020; padding: 10px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.08); }
-    .top { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
-    .pill { padding: 6px 10px; border-radius: 999px; background: rgba(255,255,255,0.07); font-size: 12px; }
+    :root {
+      --bg: #f3f4f6;
+      --card-bg: #ffffff;
+      --text-main: #111827;
+      --text-muted: #6b7280;
+      --primary: #2563eb;
+      --primary-hover: #1d4ed8;
+      --border: #e5e7eb;
+      --success: #10b981;
+      --danger: #ef4444;
+      --radius: 12px;
+      --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+    }
+
+    * { box-sizing: border-box; outline: none; }
+    body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: var(--bg); color: var(--text-main); font-size: 14px; line-height: 1.5; }
+
+    /* Layout */
+    .wrap { max-width: 1000px; margin: 0 auto; padding: 20px; }
+    
+    /* Header & Controls */
+    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 15px; }
+    .logo { font-size: 20px; font-weight: 800; color: var(--text-main); display: flex; align-items: center; gap: 8px; }
+    .logo span { color: var(--primary); }
+    
+    .auth-panel { display: flex; gap: 10px; flex-grow: 1; justify-content: flex-end; }
+    .input-token { padding: 8px 12px; border: 1px solid var(--border); border-radius: 8px; width: 200px; font-size: 13px; transition: 0.2s; }
+    .input-token:focus { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(37,99,235,0.1); }
+    
+    .btn { padding: 8px 16px; border-radius: 8px; border: none; font-weight: 500; cursor: pointer; transition: 0.2s; font-size: 13px; display: inline-flex; align-items: center; gap: 6px; }
+    .btn-primary { background: var(--primary); color: #fff; }
+    .btn-primary:hover { background: var(--primary-hover); }
+    .btn-white { background: #fff; border: 1px solid var(--border); color: var(--text-main); }
+    .btn-white:hover { background: #f9fafb; border-color: #d1d5db; }
+
+    /* Dashboard Stats */
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 24px; }
+    .stat-card { background: var(--card-bg); padding: 16px; border-radius: var(--radius); border: 1px solid var(--border); box-shadow: var(--shadow); }
+    .stat-label { color: var(--text-muted); font-size: 12px; font-weight: 500; margin-bottom: 4px; }
+    .stat-value { font-size: 24px; font-weight: 700; color: var(--text-main); }
+    .stat-sub { font-size: 12px; color: var(--success); font-weight: 500; }
+
+    /* Filter Bar */
+    .filter-bar { background: var(--card-bg); padding: 12px; border-radius: var(--radius); border: 1px solid var(--border); margin-bottom: 20px; display: flex; gap: 12px; align-items: center; flex-wrap: wrap; box-shadow: var(--shadow); }
+    .search-input { flex-grow: 1; padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 14px; min-width: 200px; }
+    .search-input:focus { border-color: var(--primary); }
+    
+    .toggle-wrap { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text-muted); cursor: pointer; user-select: none; margin-left: auto; }
+    .toggle-switch { width: 36px; height: 20px; background: #e5e7eb; border-radius: 99px; position: relative; transition: 0.3s; }
+    .toggle-switch::after { content: ''; position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; background: #fff; border-radius: 50%; transition: 0.3s; box-shadow: 0 1px 2px rgba(0,0,0,0.2); }
+    .toggle-active .toggle-switch { background: var(--success); }
+    .toggle-active .toggle-switch::after { transform: translateX(16px); }
+
+    /* Orders List */
+    .orders-container { display: grid; gap: 16px; }
+    .order-card { background: var(--card-bg); border-radius: var(--radius); border: 1px solid var(--border); box-shadow: var(--shadow); overflow: hidden; transition: transform 0.2s; }
+    .order-card:hover { border-color: #d1d5db; }
+    
+    .oc-header { padding: 16px; border-bottom: 1px solid var(--bg); display: flex; justify-content: space-between; align-items: center; background: #f9fafb; }
+    .oc-id { font-weight: 700; font-size: 16px; color: var(--text-main); display: flex; align-items: center; gap: 8px; }
+    .oc-badge { font-size: 11px; padding: 2px 8px; border-radius: 99px; text-transform: uppercase; font-weight: 600; letter-spacing: 0.5px; }
+    .badge-new { background: #dbeafe; color: #1e40af; } /* Blue for everything since backend has no status */
+    
+    .oc-time { font-size: 12px; color: var(--text-muted); text-align: right; }
+    .oc-time span { display: block; font-weight: 600; color: var(--text-main); }
+
+    .oc-body { padding: 16px; display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    @media (max-width: 600px) { .oc-body { grid-template-columns: 1fr; } }
+    
+    .info-group { margin-bottom: 8px; }
+    .info-label { font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px; }
+    .info-val { font-size: 14px; font-weight: 500; color: var(--text-main); word-break: break-word; }
+
+    .items-list { background: var(--bg); border-radius: 8px; padding: 10px; margin-top: 10px; }
+    .item-row { display: flex; justify-content: space-between; font-size: 13px; padding: 4px 0; border-bottom: 1px dashed #d1d5db; }
+    .item-row:last-child { border-bottom: none; }
+    .item-name { font-weight: 500; color: #374151; }
+    .item-calc { color: var(--text-muted); }
+
+    .oc-footer { padding: 12px 16px; background: #fff; border-top: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+    .total-price { font-size: 18px; font-weight: 800; color: var(--text-main); }
+    .actions { display: flex; gap: 8px; }
+
+    /* Utilities */
+    .hidden { display: none !important; }
+    .status-msg { text-align: center; padding: 40px; color: var(--text-muted); font-size: 15px; }
+    .spinner { border: 3px solid rgba(0,0,0,0.1); border-left-color: var(--primary); border-radius: 50%; width: 24px; height: 24px; animation: spin 1s linear infinite; display: inline-block; vertical-align: middle; }
+    @keyframes spin { 100% { transform: rotate(360deg); } }
   </style>
 </head>
 <body>
+
   <div class="wrap">
-    <div class="card">
-      <div class="top">
-        <div>
-          <div class="h">Табло заказов</div>
-          <div class="muted">Доступ только по секретному коду (token). Без кода будет "unauthorized".</div>
+    <div class="header">
+      <div class="logo">
+        <span>PRO</span>SELL Admin
+      </div>
+      <div class="auth-panel">
+        <div id="statusIndicator" style="margin-right: 10px; display: flex; align-items: center; font-size: 12px; font-weight: 600; color: var(--text-muted);">
+          Не подключено
         </div>
-        <div class="pill" id="statusPill">ok: 0</div>
-      </div>
-
-      <div style="height:12px"></div>
-
-      <div class="row">
-        <input id="tokenInput" placeholder="Вставь сюда свой token" />
-        <button id="saveBtn">Сохранить</button>
-        <button id="refreshBtn">Обновить</button>
-      </div>
-
-      <div style="height:10px"></div>
-      <div class="muted">
-        Подсказка: token - это то, что ты сам задаешь в Apps Script (ADMIN_TOKEN). Он не появляется сам.
+        <input id="tokenInput" class="input-token" type="password" placeholder="Admin Token" />
+        <button id="saveBtn" class="btn btn-primary">Войти</button>
       </div>
     </div>
 
-    <div class="card">
-      <div class="h">Заказы</div>
-      <div class="muted" id="hint">Пока пусто. Либо нет заказов, либо неверный token, либо Apps Script не обновлен (Deploy).</div>
-      <div style="height:12px"></div>
-      <div class="grid" id="ordersList"></div>
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-label">Всего заказов</div>
+        <div class="stat-value" id="statTotal">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Новых сегодня</div>
+        <div class="stat-value" id="statToday">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Сумма за сегодня</div>
+        <div class="stat-value" id="statSumToday">0 ₽</div>
+      </div>
+    </div>
+
+    <div class="filter-bar">
+      <input id="searchInput" class="search-input" placeholder="Поиск (ID, имя, телефон, город)..." />
+      <button id="refreshBtn" class="btn btn-white">
+        <span id="refreshIcon">↻</span> Обновить
+      </button>
+      <div class="toggle-wrap" id="autoRefreshToggle">
+        <div>Авто (30с)</div>
+        <div class="toggle-switch"></div>
+      </div>
+    </div>
+
+    <div id="ordersContainer" class="orders-container">
+      <div class="status-msg">Введите токен и нажмите "Войти", чтобы загрузить заказы.</div>
     </div>
   </div>
 
   <script src="api.js"></script>
+  
   <script>
+    /* --- CONFIG & STATE --- */
     const LS_KEY = "ps_admin_token";
+    const AUTO_REFRESH_INTERVAL = 30000;
+    
+    let state = {
+      orders: [],
+      filter: "",
+      autoRefresh: false,
+      timerId: null
+    };
 
-    const tokenInput = document.getElementById("tokenInput");
-    const saveBtn = document.getElementById("saveBtn");
-    const refreshBtn = document.getElementById("refreshBtn");
-    const ordersList = document.getElementById("ordersList");
-    const statusPill = document.getElementById("statusPill");
-    const hint = document.getElementById("hint");
-
-    function setStatus(ok, text) {
-      statusPill.textContent = text;
-      statusPill.className = "pill " + (ok ? "ok" : "bad");
-    }
-
-    function esc(s) {
-      return String(s || "")
-        .replaceAll("&", "&amp;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll('"', "&quot;");
-    }
-
-    function fmtIso(ts) {
-      try {
-        const d = new Date(ts);
-        return d.toLocaleString("ru-RU");
-      } catch (e) { return ts || ""; }
-    }
-
-    function renderOrders(list) {
-      ordersList.innerHTML = "";
-      if (!list.length) {
-        hint.textContent = "Пока пусто. Либо нет заказов, либо неверный token.";
-        return;
+    /* --- DOM ELEMENTS --- */
+    const els = {
+      tokenInput: document.getElementById("tokenInput"),
+      saveBtn: document.getElementById("saveBtn"),
+      refreshBtn: document.getElementById("refreshBtn"),
+      ordersContainer: document.getElementById("ordersContainer"),
+      searchInput: document.getElementById("searchInput"),
+      statusInd: document.getElementById("statusIndicator"),
+      toggleAuto: document.getElementById("autoRefreshToggle"),
+      stats: {
+        total: document.getElementById("statTotal"),
+        today: document.getElementById("statToday"),
+        sum: document.getElementById("statSumToday")
       }
-      hint.textContent = "Найдено заказов: " + list.length;
+    };
 
-      list.forEach(o => {
-        const div = document.createElement("div");
-        div.className = "card order";
+    /* --- UTILS --- */
+    const formatCurrency = (val) => new Intl.NumberFormat('ru-RU', { style: 'currency', currency: 'RUB', maximumFractionDigits: 0 }).format(val);
+    
+    function formatDate(ts) {
+      if (!ts) return "—";
+      const date = new Date(ts);
+      const now = new Date();
+      const diffMin = Math.round((now - date) / 60000);
+      
+      let rel = "";
+      if (diffMin < 1) rel = "Только что";
+      else if (diffMin < 60) rel = `${diffMin} мин. назад`;
+      else if (diffMin < 1440) rel = `${Math.round(diffMin/60)} ч. назад`;
+      else rel = `${Math.round(diffMin/1440)} дн. назад`;
 
-        const itemsText = Array.isArray(o.items) ? o.items.map(it => {
-          const name = it.name || it.sku || it.id || "item";
-          const qty = it.qty || 1;
-          const price = it.price || 0;
-          return name + " x" + qty + " = " + (price * qty);
-        }).join("\\n") : "";
-
-        div.innerHTML = `
-          <div class="h">${esc(o.order_id || "ORD")}</div>
-          <div class="kv">
-            <div>Время</div><div>${esc(fmtIso(o.ts))}</div>
-            <div>Имя</div><div>${esc(o.name || "")}</div>
-            <div>Телефон</div><div>${esc(o.phone || "")}</div>
-            <div>Город</div><div>${esc(o.city || "")}</div>
-            <div>Сумма</div><div>${esc(o.total || 0)}</div>
-          </div>
-          ${o.comment ? `<div style="height:8px"></div><div class="muted">Комментарий:</div><pre>${esc(o.comment)}</pre>` : ""}
-          <div style="height:8px"></div>
-          <div class="muted">Товары:</div>
-          <pre>${esc(itemsText || "(нет items)")}</pre>
-        `;
-
-        ordersList.appendChild(div);
-      });
+      const exact = date.toLocaleString("ru-RU", { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+      return { rel, exact, isToday: now.toDateString() === date.toDateString() };
     }
 
-    async function load() {
-      const token = tokenInput.value.trim();
+    function escapeHtml(str) {
+      if (!str) return "";
+      return String(str).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+    }
+
+    /* --- LOGIC --- */
+
+    async function loadOrders() {
+      const token = els.tokenInput.value.trim();
       if (!token) {
-        setStatus(false, "ok: 0");
-        renderOrders([]);
+        showStatus(false, "Нет токена");
         return;
       }
 
-      setStatus(true, "loading...");
+      showStatus(true, "Загрузка...");
+      els.refreshBtn.disabled = true;
+      els.refreshBtn.innerHTML = '<span class="spinner"></span>';
+
       try {
+        // CALL EXISTING API
         const res = await API.adminGetOrders(token);
 
-        if (!res || res.ok !== true) {
-          const err = (res && res.error) ? res.error : "unknown";
-          setStatus(false, "unauthorized");
-          hint.textContent = "Ошибка: " + err + ". Проверь token и что Apps Script обновлен через Deploy.";
-          renderOrders([]);
-          return;
+        if (!res || !res.ok) {
+          showStatus(false, "Ошибка доступа");
+          els.ordersContainer.innerHTML = `<div class="status-msg bad">Ошибка: ${res?.error || "Неверный токен или сбой"}</div>`;
+        } else {
+          showStatus(true, "OK");
+          // Sort by time desc (newest first)
+          state.orders = (res.orders || []).sort((a, b) => new Date(b.ts) - new Date(a.ts));
+          updateDashboard();
+          renderList();
         }
-
-        setStatus(true, "ok: 1");
-        renderOrders(res.orders || []);
       } catch (e) {
-        setStatus(false, "error");
-        hint.textContent = "Сеть/ошибка запроса. Открой DevTools -> Network и посмотри запрос к /exec.";
-        renderOrders([]);
+        console.error(e);
+        showStatus(false, "Ошибка сети");
+        els.ordersContainer.innerHTML = `<div class="status-msg bad">Сбой сети. Проверьте консоль.</div>`;
+      } finally {
+        els.refreshBtn.disabled = false;
+        els.refreshBtn.innerHTML = '<span id="refreshIcon">↻</span> Обновить';
       }
     }
 
-    saveBtn.addEventListener("click", () => {
-      localStorage.setItem(LS_KEY, tokenInput.value.trim());
-      load();
+    function renderList() {
+      const filter = state.filter.toLowerCase();
+      const list = state.orders.filter(o => {
+        const text = `${o.order_id} ${o.name} ${o.phone} ${o.city}`.toLowerCase();
+        return text.includes(filter);
+      });
+
+      if (list.length === 0) {
+        els.ordersContainer.innerHTML = `<div class="status-msg">Ничего не найдено</div>`;
+        return;
+      }
+
+      els.ordersContainer.innerHTML = list.map(o => {
+        const timeObj = formatDate(o.ts);
+        const total = parseFloat(o.total) || 0;
+        
+        // Parse items
+        let itemsHtml = `<div class="items-list">`;
+        let itemsTextForCopy = "";
+        
+        if (Array.isArray(o.items) && o.items.length > 0) {
+           o.items.forEach(it => {
+             const name = it.name || it.sku || "Товар";
+             const qty = it.qty || 1;
+             const price = it.price || 0;
+             const sum = price * qty;
+             
+             itemsHtml += `
+               <div class="item-row">
+                 <span class="item-name">${escapeHtml(name)}</span>
+                 <span class="item-calc">${qty} x ${price} = <b>${sum}</b></span>
+               </div>`;
+             itemsTextForCopy += `- ${name} (x${qty}) = ${sum}\n`;
+           });
+        } else {
+          itemsHtml += `<div class="item-row" style="color:#9ca3af">Нет товаров</div>`;
+          itemsTextForCopy = "Нет товаров";
+        }
+        itemsHtml += `</div>`;
+
+        // Copy text payload
+        const copyPayload = `Заказ: ${o.order_id || "N/A"}
+Имя: ${o.name || ""}
+Тел: ${o.phone || ""}
+Адрес: ${o.city || ""}
+Сумма: ${total}
+Коммент: ${o.comment || ""}
+Товары:
+${itemsTextForCopy}`;
+
+        return `
+          <div class="order-card">
+            <div class="oc-header">
+              <div class="oc-id">
+                #${escapeHtml(o.order_id || "???")}
+                <span class="oc-badge badge-new">Новый</span>
+              </div>
+              <div class="oc-time">
+                <span>${timeObj.rel}</span>
+                ${timeObj.exact}
+              </div>
+            </div>
+            <div class="oc-body">
+              <div>
+                <div class="info-group">
+                  <div class="info-label">Клиент</div>
+                  <div class="info-val">${escapeHtml(o.name || "Не указано")}</div>
+                </div>
+                <div class="info-group">
+                  <div class="info-label">Телефон</div>
+                  <div class="info-val" style="color:var(--primary)">${escapeHtml(o.phone || "—")}</div>
+                </div>
+                <div class="info-group">
+                  <div class="info-label">Город / Адрес</div>
+                  <div class="info-val">${escapeHtml(o.city || "—")}</div>
+                </div>
+                ${o.comment ? `
+                <div class="info-group">
+                  <div class="info-label">Комментарий</div>
+                  <div class="info-val" style="background:#fffbe6; padding:4px 8px; border-radius:4px;">${escapeHtml(o.comment)}</div>
+                </div>` : ''}
+              </div>
+              <div>
+                <div class="info-label">Состав заказа</div>
+                ${itemsHtml}
+              </div>
+            </div>
+            <div class="oc-footer">
+              <div class="total-price">${formatCurrency(total)}</div>
+              <div class="actions">
+                <button class="btn btn-white" onclick='copyToClipboard(this, ${JSON.stringify(copyPayload)})'>
+                  Копировать
+                </button>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    function updateDashboard() {
+      els.stats.total.textContent = state.orders.length;
+      
+      const todayOrders = state.orders.filter(o => formatDate(o.ts).isToday);
+      els.stats.today.textContent = todayOrders.length;
+      
+      const sumToday = todayOrders.reduce((acc, o) => acc + (parseFloat(o.total) || 0), 0);
+      els.stats.sum.textContent = formatCurrency(sumToday);
+    }
+
+    function showStatus(ok, text) {
+      els.statusInd.textContent = text;
+      els.statusInd.style.color = ok ? "var(--success)" : "var(--danger)";
+    }
+
+    window.copyToClipboard = function(btn, text) {
+      navigator.clipboard.writeText(text).then(() => {
+        const originalText = btn.textContent;
+        btn.textContent = "Скопировано!";
+        btn.classList.add("btn-primary");
+        btn.classList.remove("btn-white");
+        setTimeout(() => {
+          btn.textContent = originalText;
+          btn.classList.remove("btn-primary");
+          btn.classList.add("btn-white");
+        }, 1500);
+      });
+    };
+
+    /* --- EVENT LISTENERS --- */
+
+    els.saveBtn.addEventListener("click", () => {
+      localStorage.setItem(LS_KEY, els.tokenInput.value.trim());
+      loadOrders();
     });
 
-    refreshBtn.addEventListener("click", load);
+    els.refreshBtn.addEventListener("click", loadOrders);
 
-    // init
-    const saved = localStorage.getItem(LS_KEY) || "";
-    tokenInput.value = saved;
-    load();
+    els.searchInput.addEventListener("input", (e) => {
+      state.filter = e.target.value;
+      renderList();
+    });
+
+    els.toggleAuto.addEventListener("click", () => {
+      state.autoRefresh = !state.autoRefresh;
+      els.toggleAuto.classList.toggle("toggle-active", state.autoRefresh);
+      
+      if (state.autoRefresh) {
+        if (!state.timerId) state.timerId = setInterval(loadOrders, AUTO_REFRESH_INTERVAL);
+      } else {
+        if (state.timerId) { clearInterval(state.timerId); state.timerId = null; }
+      }
+    });
+
+    // INIT
+    const savedToken = localStorage.getItem(LS_KEY);
+    if (savedToken) {
+      els.tokenInput.value = savedToken;
+      loadOrders();
+    }
   </script>
 </body>
 </html>
