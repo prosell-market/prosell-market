@@ -1,6 +1,6 @@
 // api.js - Networking layer
 // ВАЖНО: тут должна быть ссылка именно вида https://script.google.com/macros/s/.../exec (без ?action=...)
-const DATA_URL = "https://script.google.com/macros/s/AKfycbwdLRpVupqLaeCcs9ytblLsjKtU2V5-7U_-ejtJqLPyVs5ZpyF-loCf9EdHn-Um3f_1/exec";
+const DATA_URL = "https://script.google.com/macros/s/AKfycbx8Qaz0tpIl2Ev5aT5MIVymZhhi46XBlS_bwdyhw90FwbRiUfZve749TKqrFqfeqHwq/exec";
 
 // Если позже включишь защиту API_KEY в Apps Script - впиши сюда такой же ключ.
 // Сейчас оставь пустым, чтобы магазин не сломался.
