@@ -278,7 +278,6 @@
 ${items.map(it => "- " + (it.name || it.sku || "Товар") + " x" + (it.qty || 1)).join("\n")}
 `;
 
-        // Buttons are disabled for archived to avoid mistakes (but you can still change if you want)
         const disabled = (o.status === "archived") ? "disabled" : "";
 
         return `
@@ -319,7 +318,7 @@ ${items.map(it => "- " + (it.name || it.sku || "Товар") + " x" + (it.qty ||
                 <div class="items">${itemsHtml}</div>
 
                 <div style="height:10px"></div>
-                <div class="lab">Действия со статусом</div>
+                <div class="lab">Действия со статусом (Уведомит клиента)</div>
                 <div class="act" style="margin-top:6px">
                   <button class="smallbtn" ${disabled} onclick="setOrderStatus('${esc(o.order_id)}','in_work')">В работу</button>
                   <button class="smallbtn" ${disabled} onclick="setOrderStatus('${esc(o.order_id)}','assembled')">Собран</button>
@@ -353,16 +352,23 @@ ${items.map(it => "- " + (it.name || it.sku || "Товар") + " x" + (it.qty ||
       const token = el.token.value.trim();
       if (!token) return;
 
+      // Визуальное уведомление
+      if(!confirm("Сменить статус на '" + (STATUS_LABEL[status] || status) + "'? Клиент получит уведомление.")) return;
+
+      setStatus(true, "Сохранение статуса...");
+
       try{
-        const res = await API.adminSetOrderStatus(token, orderId, status);
+        const res = await API.adminUpdateOrderStatus(token, orderId, status);
         if (!res || !res.ok){
           alert("Ошибка: " + (res && res.error ? res.error : "unknown"));
+          setStatus(false, "Ошибка сохранения");
           return;
         }
         await load();
       }catch(e){
         console.error(e);
-        alert("Ошибка сети");
+        alert("Ошибка сети или сервера");
+        setStatus(false, "Ошибка сети");
       }
     }
 
