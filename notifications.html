@@ -18,7 +18,8 @@
     .notif-card.unread { border-left: 4px solid var(--primary); }
     .notif-header { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 12px; color: var(--text-muted); }
     .notif-title { font-weight: 700; font-size: 15px; margin-bottom: 4px; }
-    .notif-body { font-size: 14px; line-height: 1.4; }
+    /* ВАЖНО: pre-wrap позволяет показывать переносы строк (\n) из базы данных */
+    .notif-body { font-size: 14px; line-height: 1.4; white-space: pre-wrap; }
     .notif-check { margin-top: 12px; display: flex; align-items: center; justify-content: flex-end; }
     .btn-check {
       border: 1px solid var(--border-color); background: transparent;
