@@ -1,5 +1,5 @@
 // api.js - Networking layer
-const DATA_URL = "https://script.google.com/macros/s/AKfycbw4QIxqVV0_yzB3DOZlsGjn1HjeWNk-kypXSkGktMdS3OmoYmupgBhXB8t9gmZBAOQ/exec";
+const DATA_URL = "https://script.google.com/macros/s/AKfycbwNEl-b5MGzzJZ6_9HO8VeJajQ4VVpHhWRt0uEL7A42o87pxrJc8zLHi8hywEG4DduE/exec";
 
 // If you enable API_KEY in Code.gs - set it here too
 const API_KEY = "";

@@ -8,23 +8,28 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
   <link rel="stylesheet" href="styles.css" />
   <style>
-    body { background: #f3f4f6; margin: 0; font-family: -apple-system, sans-serif; -webkit-font-smoothing: antialiased; }
+    /* Фикс прокрутки: фиксируем body, скроллим контейнер */
+    html, body { height: 100%; margin: 0; overflow: hidden; background: #f3f4f6; font-family: -apple-system, sans-serif; }
     
     .header { 
-      position: sticky; top: 0; z-index: 10;
-      padding: 16px; background: #fff; 
-      display: flex; align-items: center; justify-content: space-between; 
-      box-shadow: 0 1px 3px rgba(0,0,0,0.05); 
+      position: absolute; top: 0; left: 0; right: 0; height: 56px;
+      background: #fff; display: flex; align-items: center; justify-content: space-between; 
+      padding: 0 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); z-index: 10;
     }
     .btn-back { border: none; background: transparent; font-size: 18px; color: #2563eb; cursor: pointer; }
     .title { font-weight: 700; font-size: 17px; }
     
-    .list { padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+    /* Контейнер для скролла */
+    .list { 
+      position: absolute; top: 56px; bottom: 0; left: 0; right: 0;
+      overflow-y: auto; -webkit-overflow-scrolling: touch; 
+      padding: 16px; display: flex; flex-direction: column; gap: 12px; 
+    }
     
     .card {
       background: #fff; border-radius: 12px; padding: 16px;
       box-shadow: 0 2px 4px rgba(0,0,0,0.04); position: relative;
-      transition: all 0.3s ease;
+      transition: all 0.3s ease; flex-shrink: 0;
     }
     .card.unread { border-left: 4px solid #2563eb; }
     
@@ -33,11 +38,9 @@
     .msg-body { font-size: 14px; line-height: 1.5; white-space: pre-wrap; color: #374151; }
     
     .btn-hide {
-      margin-top: 12px; 
-      background: #f3f4f6; color: #4b5563; 
-      border: none; padding: 8px 12px; 
-      border-radius: 8px; font-size: 12px; font-weight: 600; 
-      width: 100%; cursor: pointer;
+      margin-top: 12px; background: #f3f4f6; color: #4b5563; 
+      border: none; padding: 10px; border-radius: 8px; 
+      font-size: 13px; font-weight: 600; width: 100%; cursor: pointer;
     }
     .btn-hide:active { background: #e5e7eb; }
 
@@ -61,12 +64,14 @@
     if (TG) { try { TG.expand(); TG.ready(); } catch (e) {} }
 
     const userId = TG?.initDataUnsafe?.user?.id || "anon";
+    
+    // Локальный черный список скрытых уведомлений (чтобы не мелькали при обновлении)
+    const hiddenIds = new Set();
 
     function fmtTime(ts) {
       if (!ts) return "";
       const d = new Date(ts);
       if (isNaN(d.getTime())) return ""; 
-      
       const now = new Date();
       if (d.toDateString() === now.toDateString()) {
         return d.toLocaleTimeString("ru-RU", {hour: '2-digit', minute:'2-digit'});
@@ -84,52 +89,56 @@
         const res = await API.getNotifications(userId);
         if (!res || !res.ok) throw new Error("API Error");
 
-        const items = res.notifications || [];
+        // Показываем только непрочитанные И те, которые мы еще не скрыли локально
+        const items = (res.notifications || []).filter(n => !hiddenIds.has(n.id) && n.status === 'unread');
         
         if (items.length === 0) {
           list.innerHTML = '<div class="center"><i class="fa-regular fa-bell-slash" style="font-size:32px;margin-bottom:10px"></i><br>Нет новых уведомлений</div>';
           return;
         }
 
-        list.innerHTML = items.map(n => {
-           const isUnread = (n.status === "unread");
-           return `
-            <div class="card ${isUnread ? 'unread' : ''}" id="card-${n.id}">
+        // Перерисовываем список
+        list.innerHTML = items.map(n => `
+            <div class="card unread" id="card-${n.id}">
               <div class="top-row">
                 <span>${fmtTime(n.ts)}</span>
-                ${isUnread ? '<span style="color:#2563eb;font-weight:bold">Новое</span>' : ""}
+                <span style="color:#2563eb;font-weight:bold">Новое</span>
               </div>
               <div class="msg-title">${escapeHtml(n.title)}</div>
               <div class="msg-body">${escapeHtml(n.text)}</div>
-              ${isUnread ? `<button class="btn-hide" onclick="hideMsg('${n.id}')">Скрыть</button>` : ""}
+              <button class="btn-hide" onclick="hideMsg('${n.id}')">Скрыть</button>
             </div>
-           `;
-        }).join("");
+        `).join("");
 
       } catch (e) {
-        list.innerHTML = `<div class="center">Ошибка загрузки</div>`;
+        // При автообновлении ошибки игнорируем, чтобы не спамить пользователю
+        console.error(e);
       }
     }
 
     window.hideMsg = async function(id) {
       const card = document.getElementById("card-" + id);
-      if(card) card.style.opacity = "0.5";
+      
+      // 1. Сразу прячем визуально (Optimistic UI)
+      if(card) {
+        card.style.transition = "all 0.3s ease";
+        card.style.opacity = "0";
+        card.style.height = "0";
+        card.style.margin = "0";
+        card.style.padding = "0";
+        setTimeout(() => card.remove(), 300);
+      }
+      
+      // 2. Добавляем в локальный игнор
+      hiddenIds.add(id);
+
+      // 3. Шлем запрос на сервер
       try {
         await API.markNotificationRead(userId, id);
-        if(card) {
-            card.style.height = card.offsetHeight + "px";
-            setTimeout(() => {
-                card.style.transition = "0.3s";
-                card.style.height = "0";
-                card.style.opacity = "0";
-                card.style.padding = "0";
-                card.style.margin = "0";
-                setTimeout(() => card.remove(), 300);
-            }, 10);
-        }
       } catch(e) {
-        alert("Ошибка сети");
-        if(card) card.style.opacity = "1";
+        console.error("Не удалось отметить прочитанным на сервере", e);
+        // Не возвращаем карточку назад, чтобы не бесить пользователя. 
+        // Если сеть появится, в следующий раз статус синхронизируется.
       }
     };
 
