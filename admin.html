@@ -3,410 +3,300 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ProSell Admin</title>
+  <title>ProSell Control</title>
   <style>
-    :root{
-      --bg:#f3f4f6;
-      --card:#ffffff;
-      --text:#111827;
-      --muted:#6b7280;
-      --primary:#2563eb;
-      --border:#e5e7eb;
-      --success:#10b981;
-      --danger:#ef4444;
-      --radius:12px;
-      --shadow:0 1px 3px rgba(0,0,0,.1),0 1px 2px rgba(0,0,0,.06);
+    :root {
+      --bg: #f8f9fa; --surface: #ffffff;
+      --primary: #2563eb; --primary-dark: #1e40af;
+      --text: #1f2937; --text-muted: #6b7280;
+      --border: #e5e7eb;
+      --success: #10b981; --warning: #f59e0b; --danger: #ef4444;
+      --radius: 12px;
     }
-    *{box-sizing:border-box}
-    body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--text);font-size:14px;line-height:1.5}
-    .wrap{max-width:1100px;margin:0 auto;padding:20px}
-    .header{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:16px}
-    .logo{font-size:18px;font-weight:900}
-    .logo b{color:var(--primary)}
-    .auth{display:flex;gap:10px;align-items:center;margin-left:auto}
-    .status{font-size:12px;font-weight:700;color:var(--muted)}
-    .token{padding:8px 12px;border:1px solid var(--border);border-radius:10px;width:220px}
-    .btn{padding:8px 14px;border-radius:10px;border:1px solid var(--border);background:#fff;cursor:pointer;font-weight:700}
-    .btn.primary{background:var(--primary);border-color:var(--primary);color:#fff}
-    .btn:disabled{opacity:.6;cursor:not-allowed}
-    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin:12px 0 16px}
-    .card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow)}
-    .stat{padding:14px}
-    .stat .l{font-size:12px;color:var(--muted);font-weight:700}
-    .stat .v{font-size:24px;font-weight:900;margin-top:2px}
-    .bar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:12px}
-    .search{flex:1;min-width:240px;padding:10px 12px;border:1px solid var(--border);border-radius:10px}
-    .toggle{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:800;color:var(--muted);cursor:pointer;user-select:none}
-    .sw{width:38px;height:22px;background:#e5e7eb;border-radius:999px;position:relative}
-    .sw:after{content:"";position:absolute;top:3px;left:3px;width:16px;height:16px;background:#fff;border-radius:50%;box-shadow:0 1px 2px rgba(0,0,0,.2);transition:.2s}
-    .toggle.on .sw{background:var(--success)}
-    .toggle.on .sw:after{transform:translateX(16px)}
-    .list{display:grid;gap:14px}
-    .order{overflow:hidden}
-    .oh{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;padding:14px;background:#f9fafb;border-bottom:1px solid var(--border)}
-    .oid{font-weight:900;font-size:16px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-    .badge{font-size:11px;font-weight:900;padding:3px 10px;border-radius:999px;border:1px solid var(--border);background:#fff}
-    .b-new{background:#dbeafe;border-color:#bfdbfe;color:#1e40af}
-    .b-work{background:#fff7ed;border-color:#fed7aa;color:#9a3412}
-    .b-asm{background:#ecfccb;border-color:#bef264;color:#3f6212}
-    .b-ship{background:#e0e7ff;border-color:#c7d2fe;color:#3730a3}
-    .b-done{background:#dcfce7;border-color:#bbf7d0;color:#166534}
-    .b-arch{background:#f3f4f6;border-color:#e5e7eb;color:#374151}
-    .time{font-size:12px;color:var(--muted);text-align:right}
-    .time b{display:block;color:var(--text)}
-    .ob{padding:14px;display:grid;grid-template-columns:1fr 1fr;gap:16px}
-    @media(max-width:720px){.ob{grid-template-columns:1fr}}
-    .lab{font-size:11px;color:var(--muted);font-weight:900;letter-spacing:.3px;text-transform:uppercase}
-    .val{font-size:14px;font-weight:800;word-break:break-word}
-    .items{margin-top:8px;background:var(--bg);border-radius:10px;padding:10px}
-    .it{display:flex;justify-content:space-between;gap:10px;padding:6px 0;border-bottom:1px dashed #d1d5db;font-size:13px}
-    .it:last-child{border-bottom:none}
-    .of{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 14px;border-top:1px solid var(--border);flex-wrap:wrap}
-    .total{font-size:18px;font-weight:900}
-    .act{display:flex;gap:8px;flex-wrap:wrap}
-    .msg{padding:40px;text-align:center;color:var(--muted);font-weight:800}
-    .smallbtn{padding:8px 10px;border-radius:10px;border:1px solid var(--border);background:#fff;cursor:pointer;font-weight:900;font-size:12px}
-    .smallbtn.primary{background:var(--primary);border-color:var(--primary);color:#fff}
-    .smallbtn.danger{background:#fff1f2;border-color:#fecdd3;color:#9f1239}
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--text); padding-bottom: 40px; }
+    
+    .wrap { max-width: 800px; margin: 0 auto; padding: 16px; }
+    
+    /* Header */
+    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+    .logo { font-size: 20px; font-weight: 800; color: var(--text); }
+    .logo span { color: var(--primary); }
+    .auth-box { display: flex; gap: 8px; }
+    .input-token { padding: 8px 12px; border: 1px solid var(--border); border-radius: 8px; width: 140px; font-size: 13px; }
+    .btn { border: none; padding: 8px 16px; border-radius: 8px; font-weight: 600; cursor: pointer; transition: 0.2s; font-size: 13px; }
+    .btn-primary { background: var(--primary); color: #fff; }
+    .btn-primary:hover { background: var(--primary-dark); }
+    
+    /* Stats */
+    .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 20px; }
+    .stat-card { background: var(--surface); padding: 12px; border-radius: var(--radius); border: 1px solid var(--border); text-align: center; }
+    .stat-val { font-size: 20px; font-weight: 800; display: block; }
+    .stat-lbl { font-size: 11px; color: var(--text-muted); text-transform: uppercase; font-weight: 600; }
+
+    /* Tabs */
+    .tabs { display: flex; gap: 4px; background: #e5e7eb; padding: 4px; border-radius: 10px; margin-bottom: 16px; }
+    .tab { flex: 1; text-align: center; padding: 10px; font-size: 14px; font-weight: 600; cursor: pointer; border-radius: 8px; color: var(--text-muted); transition: 0.2s; }
+    .tab.active { background: var(--surface); color: var(--text); box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
+
+    /* List */
+    .search-bar { width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 16px; font-size: 14px; }
+    .order-list { display: flex; flex-direction: column; gap: 12px; }
+
+    /* Order Card */
+    .card { background: var(--surface); border-radius: var(--radius); border: 1px solid var(--border); overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+    .card-head { padding: 12px 16px; background: #f9fafb; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+    .card-id { font-weight: 700; font-size: 15px; }
+    .card-time { font-size: 12px; color: var(--text-muted); }
+    
+    .card-body { padding: 16px; }
+    .info-row { margin-bottom: 8px; font-size: 14px; }
+    .info-row i { color: var(--text-muted); width: 20px; display: inline-block; text-align: center; margin-right: 6px; }
+    .info-hl { color: var(--primary); font-weight: 500; }
+    
+    .items-box { background: #f3f4f6; border-radius: 8px; padding: 10px; margin: 10px 0; font-size: 13px; }
+    .item-line { display: flex; justify-content: space-between; border-bottom: 1px dashed #d1d5db; padding-bottom: 4px; margin-bottom: 4px; }
+    .item-line:last-child { border: none; margin: 0; padding: 0; }
+
+    .card-foot { padding: 12px 16px; border-top: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; background: #fff; }
+    .total { font-size: 18px; font-weight: 800; }
+    
+    .actions { display: flex; gap: 8px; }
+    .btn-act { padding: 8px 12px; border-radius: 6px; border: 1px solid var(--border); background: #fff; cursor: pointer; font-size: 12px; font-weight: 600; }
+    .btn-act:hover { background: #f3f4f6; }
+    .btn-green { background: #dcfce7; color: #166534; border-color: #bbf7d0; }
+    .btn-green:hover { background: #bbf7d0; }
+    .btn-red { background: #fee2e2; color: #991b1b; border-color: #fecaca; }
+
+    .badge { padding: 2px 8px; border-radius: 99px; font-size: 11px; font-weight: 700; text-transform: uppercase; }
+    .bg-new { background: #dbeafe; color: #1e40af; }
+    .bg-work { background: #ffedd5; color: #9a3412; }
+    .bg-done { background: #d1fae5; color: #065f46; }
+
+    .empty-state { text-align: center; padding: 40px; color: var(--text-muted); }
   </style>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
 </head>
 <body>
-  <div class="wrap">
-    <div class="header">
-      <div class="logo"><b>PRO</b>SELL Admin</div>
-      <div class="auth">
-        <div id="status" class="status">Не подключено</div>
-        <input id="token" class="token" type="password" placeholder="Admin token" />
-        <button id="login" class="btn primary">Войти</button>
-      </div>
-    </div>
 
-    <div class="grid">
-      <div class="card stat">
-        <div class="l">Всего заказов</div>
-        <div class="v" id="stTotal">0</div>
-      </div>
-      <div class="card stat">
-        <div class="l">Новых (status=new)</div>
-        <div class="v" id="stNew">0</div>
-      </div>
-      <div class="card stat">
-        <div class="l">Сумма сегодня</div>
-        <div class="v" id="stSum">0</div>
-      </div>
-    </div>
-
-    <div class="card bar">
-      <input id="search" class="search" placeholder="Поиск (ID, имя, телефон, город)..." />
-      <button id="refresh" class="btn">Обновить</button>
-
-      <div id="tAuto" class="toggle">
-        <div>Авто (30с)</div><div class="sw"></div>
-      </div>
-
-      <div id="tArch" class="toggle">
-        <div>Показать архив</div><div class="sw"></div>
-      </div>
-    </div>
-
-    <div id="list" class="list">
-      <div class="msg">Введите токен и нажмите "Войти".</div>
+<div class="wrap">
+  <div class="header">
+    <div class="logo"><span>Pro</span>Sell Admin</div>
+    <div class="auth-box">
+      <input id="token" type="password" class="input-token" placeholder="Token" />
+      <button id="btn-login" class="btn btn-primary">Go</button>
+      <button id="btn-refresh" class="btn"><i class="fa-solid fa-rotate"></i></button>
     </div>
   </div>
 
-  <script src="api.js"></script>
-  <script>
-    const LS_TOKEN = "ps_admin_token";
-    const AUTO_MS = 30000;
+  <div class="stats">
+    <div class="stat-card">
+      <span class="stat-val" id="stat-new">0</span>
+      <span class="stat-lbl">Новых</span>
+    </div>
+    <div class="stat-card">
+      <span class="stat-val" id="stat-work">0</span>
+      <span class="stat-lbl">В работе</span>
+    </div>
+    <div class="stat-card">
+      <span class="stat-val" id="stat-sum">0 ₽</span>
+      <span class="stat-lbl">Сегодня</span>
+    </div>
+  </div>
 
-    const STATUS_LABEL = {
-      new: "Новый",
-      in_work: "В работе",
-      assembled: "Собран",
-      shipped: "Отправлен",
-      done: "Закрыт",
-      archived: "Архив"
-    };
+  <div class="tabs">
+    <div class="tab active" data-tab="new">Входящие</div>
+    <div class="tab" data-tab="work">В работе</div>
+    <div class="tab" data-tab="done">История</div>
+  </div>
 
-    const STATUS_BADGE = {
-      new: "b-new",
-      in_work: "b-work",
-      assembled: "b-asm",
-      shipped: "b-ship",
-      done: "b-done",
-      archived: "b-arch"
-    };
+  <input id="search" class="search-bar" placeholder="Поиск (Имя, телефон, ID)..." />
 
-    const el = {
-      token: document.getElementById("token"),
-      login: document.getElementById("login"),
-      refresh: document.getElementById("refresh"),
-      status: document.getElementById("status"),
-      search: document.getElementById("search"),
-      list: document.getElementById("list"),
-      stTotal: document.getElementById("stTotal"),
-      stNew: document.getElementById("stNew"),
-      stSum: document.getElementById("stSum"),
-      tAuto: document.getElementById("tAuto"),
-      tArch: document.getElementById("tArch"),
-    };
+  <div id="order-list" class="order-list">
+    </div>
+</div>
 
-    const state = {
-      orders: [],
-      q: "",
-      auto: false,
-      showArchived: false,
-      timer: null
-    };
+<script src="api.js"></script>
+<script>
+  // --- CONFIG ---
+  const LS_KEY = "ps_admin_tok_v4";
+  let ALL_ORDERS = [];
+  let CUR_TAB = "new";
 
-    function fmtMoney(n){
-      return new Intl.NumberFormat("ru-RU",{style:"currency",currency:"RUB",maximumFractionDigits:0}).format(n||0);
-    }
+  const el = {
+    token: document.getElementById("token"),
+    list: document.getElementById("order-list"),
+    stats: { new: document.getElementById("stat-new"), work: document.getElementById("stat-work"), sum: document.getElementById("stat-sum") },
+    tabs: document.querySelectorAll(".tab")
+  };
 
-    function fmtTime(ts){
+  // --- HELPERS ---
+  const fmtMoney = (n) => new Intl.NumberFormat("ru-RU", {style:"currency",currency:"RUB",maximumFractionDigits:0}).format(n||0);
+  const formatDate = (ts) => {
+    try {
       const d = new Date(ts);
-      const now = new Date();
-      const diffMin = Math.round((now - d) / 60000);
-      let rel = "";
-      if (diffMin < 1) rel = "Только что";
-      else if (diffMin < 60) rel = diffMin + " мин. назад";
-      else if (diffMin < 1440) rel = Math.round(diffMin/60) + " ч. назад";
-      else rel = Math.round(diffMin/1440) + " дн. назад";
+      return d.toLocaleString("ru-RU", {month:"short", day:"numeric", hour:"2-digit", minute:"2-digit"});
+    } catch(e) { return ts; }
+  };
+  const esc = (s) => String(s||"").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
-      const exact = d.toLocaleString("ru-RU",{day:"2-digit",month:"short",hour:"2-digit",minute:"2-digit"});
-      const isToday = now.toDateString() === d.toDateString();
-      return { rel, exact, isToday };
-    }
-
-    function esc(s){
-      return String(s||"")
-        .replace(/&/g,"&amp;")
-        .replace(/</g,"&lt;")
-        .replace(/>/g,"&gt;")
-        .replace(/"/g,"&quot;");
-    }
-
-    function setStatus(ok, text){
-      el.status.textContent = text;
-      el.status.style.color = ok ? "var(--success)" : "var(--danger)";
-    }
-
-    async function load(){
-      const token = el.token.value.trim();
-      if (!token) { setStatus(false,"Нет токена"); return; }
-
-      setStatus(true,"Загрузка...");
-      el.refresh.disabled = true;
-
-      try{
-        const res = await API.adminGetOrders(token, state.showArchived);
-        if (!res || !res.ok){
-          setStatus(false,"Ошибка");
-          el.list.innerHTML = '<div class="msg">Ошибка: ' + esc(res && res.error ? res.error : "unknown") + "</div>";
-          return;
-        }
-
-        state.orders = (res.orders || []).map(o => ({
-          ...o,
-          status: (o.status || "new").trim() || "new"
-        }));
-
+  // --- LOGIC ---
+  async function loadOrders() {
+    const token = el.token.value.trim();
+    if(!token) return alert("Введите токен");
+    
+    const btn = document.getElementById("btn-refresh");
+    btn.innerHTML = "...";
+    
+    try {
+      const res = await API.adminGetOrders(token);
+      if(res && res.ok) {
+        ALL_ORDERS = res.orders || [];
         updateStats();
         render();
-        setStatus(true,"OK");
-      }catch(e){
-        console.error(e);
-        setStatus(false,"Сеть");
-        el.list.innerHTML = '<div class="msg">Ошибка сети. Открой консоль.</div>';
-      }finally{
-        el.refresh.disabled = false;
-      }
-    }
-
-    function updateStats(){
-      const total = state.orders.length;
-      const cntNew = state.orders.filter(o => o.status === "new").length;
-
-      const todaySum = state.orders.reduce((acc,o)=>{
-        const t = fmtTime(o.ts);
-        if (!t.isToday) return acc;
-        return acc + (parseFloat(o.total)||0);
-      },0);
-
-      el.stTotal.textContent = total;
-      el.stNew.textContent = cntNew;
-      el.stSum.textContent = fmtMoney(todaySum);
-    }
-
-    function render(){
-      const q = state.q.toLowerCase();
-      const list = state.orders.filter(o=>{
-        const text = (o.order_id + " " + o.name + " " + o.phone + " " + o.city).toLowerCase();
-        return text.includes(q);
-      });
-
-      if (!list.length){
-        el.list.innerHTML = '<div class="msg">Ничего не найдено</div>';
-        return;
-      }
-
-      el.list.innerHTML = list.map(o=>{
-        const t = fmtTime(o.ts);
-        const total = parseFloat(o.total)||0;
-
-        const statusLabel = STATUS_LABEL[o.status] || o.status;
-        const badgeClass = STATUS_BADGE[o.status] || "b-new";
-
-        const items = Array.isArray(o.items) ? o.items : [];
-        const itemsHtml = items.length ? items.map(it=>{
-          const name = it.name || it.sku || "Товар";
-          const qty = it.qty || 1;
-          const price = it.price || 0;
-          const sum = qty * price;
-          return '<div class="it"><div><b>' + esc(name) + '</b></div><div>' + qty + " x " + price + " = <b>" + sum + "</b></div></div>";
-        }).join("") : '<div class="it" style="color:#9ca3af">Нет товаров</div>';
-
-        const copyText =
-`Заказ: ${o.order_id}
-Статус: ${statusLabel}
-Имя: ${o.name || ""}
-Тел: ${o.phone || ""}
-Город/адрес: ${o.city || ""}
-Сумма: ${total}
-Комментарий: ${o.comment || ""}
-Товары:
-${items.map(it => "- " + (it.name || it.sku || "Товар") + " x" + (it.qty || 1)).join("\n")}
-`;
-
-        const disabled = (o.status === "archived") ? "disabled" : "";
-
-        return `
-          <div class="card order">
-            <div class="oh">
-              <div class="oid">
-                #${esc(o.order_id)}
-                <span class="badge ${badgeClass}">${esc(statusLabel)}</span>
-              </div>
-              <div class="time">
-                <b>${esc(t.rel)}</b>
-                ${esc(t.exact)}
-              </div>
-            </div>
-
-            <div class="ob">
-              <div>
-                <div class="lab">Клиент</div>
-                <div class="val">${esc(o.name || "Не указано")}</div>
-
-                <div style="height:8px"></div>
-                <div class="lab">Телефон</div>
-                <div class="val" style="color:var(--primary)">${esc(o.phone || "-")}</div>
-
-                <div style="height:8px"></div>
-                <div class="lab">Город / адрес</div>
-                <div class="val">${esc(o.city || "-")}</div>
-
-                ${o.comment ? `
-                  <div style="height:8px"></div>
-                  <div class="lab">Комментарий</div>
-                  <div class="val" style="background:#fffbe6;padding:6px 10px;border-radius:10px;border:1px solid #fde68a">${esc(o.comment)}</div>
-                ` : ""}
-              </div>
-
-              <div>
-                <div class="lab">Состав заказа</div>
-                <div class="items">${itemsHtml}</div>
-
-                <div style="height:10px"></div>
-                <div class="lab">Действия со статусом (Уведомит клиента)</div>
-                <div class="act" style="margin-top:6px">
-                  <button class="smallbtn" ${disabled} onclick="setOrderStatus('${esc(o.order_id)}','in_work')">В работу</button>
-                  <button class="smallbtn" ${disabled} onclick="setOrderStatus('${esc(o.order_id)}','assembled')">Собран</button>
-                  <button class="smallbtn" ${disabled} onclick="setOrderStatus('${esc(o.order_id)}','shipped')">Отправлен</button>
-                  <button class="smallbtn" ${disabled} onclick="setOrderStatus('${esc(o.order_id)}','done')">Закрыть</button>
-                  <button class="smallbtn danger" onclick="setOrderStatus('${esc(o.order_id)}','archived')">Архив</button>
-                </div>
-              </div>
-            </div>
-
-            <div class="of">
-              <div class="total">${fmtMoney(total)}</div>
-              <div class="act">
-                <button class="btn" onclick='copyText(${JSON.stringify(copyText)})'>Копировать</button>
-              </div>
-            </div>
-          </div>
-        `;
-      }).join("");
-    }
-
-    window.copyText = async function(text){
-      try{
-        await navigator.clipboard.writeText(text);
-      }catch(e){
-        alert("Не смог скопировать. Разреши доступ к буферу обмена.");
-      }
-    }
-
-    window.setOrderStatus = async function(orderId, status){
-      const token = el.token.value.trim();
-      if (!token) return;
-
-      // Визуальное уведомление
-      if(!confirm("Сменить статус на '" + (STATUS_LABEL[status] || status) + "'? Клиент получит уведомление.")) return;
-
-      setStatus(true, "Сохранение статуса...");
-
-      try{
-        const res = await API.adminUpdateOrderStatus(token, orderId, status);
-        if (!res || !res.ok){
-          alert("Ошибка: " + (res && res.error ? res.error : "unknown"));
-          setStatus(false, "Ошибка сохранения");
-          return;
-        }
-        await load();
-      }catch(e){
-        console.error(e);
-        alert("Ошибка сети или сервера");
-        setStatus(false, "Ошибка сети");
-      }
-    }
-
-    el.login.addEventListener("click", ()=>{
-      localStorage.setItem(LS_TOKEN, el.token.value.trim());
-      load();
-    });
-
-    el.refresh.addEventListener("click", load);
-
-    el.search.addEventListener("input", (e)=>{
-      state.q = e.target.value;
-      render();
-    });
-
-    el.tAuto.addEventListener("click", ()=>{
-      state.auto = !state.auto;
-      el.tAuto.classList.toggle("on", state.auto);
-
-      if (state.auto){
-        if (!state.timer) state.timer = setInterval(load, AUTO_MS);
       } else {
-        if (state.timer){ clearInterval(state.timer); state.timer = null; }
+        el.list.innerHTML = `<div class="empty-state">Ошибка: ${res?.error || "Unknown"}</div>`;
       }
-    });
-
-    el.tArch.addEventListener("click", ()=>{
-      state.showArchived = !state.showArchived;
-      el.tArch.classList.toggle("on", state.showArchived);
-      load();
-    });
-
-    // init
-    const saved = localStorage.getItem(LS_TOKEN);
-    if (saved){
-      el.token.value = saved;
-      load();
+    } catch(e) {
+      el.list.innerHTML = `<div class="empty-state">Ошибка сети</div>`;
+    } finally {
+      btn.innerHTML = `<i class="fa-solid fa-rotate"></i>`;
     }
-  </script>
+  }
+
+  function updateStats() {
+    const newCnt = ALL_ORDERS.filter(o => o.status === "new").length;
+    const workCnt = ALL_ORDERS.filter(o => ["in_work","assembled","shipped"].includes(o.status)).length;
+    
+    const today = new Date().toDateString();
+    const sum = ALL_ORDERS.reduce((acc, o) => {
+      if(new Date(o.ts).toDateString() === today) return acc + (Number(o.total)||0);
+      return acc;
+    }, 0);
+
+    el.stats.new.textContent = newCnt;
+    el.stats.work.textContent = workCnt;
+    el.stats.sum.textContent = fmtMoney(sum);
+  }
+
+  function render() {
+    const q = document.getElementById("search").value.toLowerCase();
+    
+    // Фильтрация по табам
+    let visibleOrders = ALL_ORDERS.filter(o => {
+      const s = o.status;
+      if (CUR_TAB === "new") return s === "new";
+      if (CUR_TAB === "work") return ["in_work", "assembled", "shipped"].includes(s);
+      if (CUR_TAB === "done") return ["done", "archived", "canceled"].includes(s);
+      return false;
+    });
+
+    // Поиск
+    if(q) {
+      visibleOrders = visibleOrders.filter(o => 
+        (o.order_id + o.name + o.phone + o.city).toLowerCase().includes(q)
+      );
+    }
+
+    if(visibleOrders.length === 0) {
+      el.list.innerHTML = `<div class="empty-state">В этом разделе пусто 😴</div>`;
+      return;
+    }
+
+    el.list.innerHTML = visibleOrders.map(o => {
+      const items = o.items || [];
+      const itemsHtml = items.map(i => `
+        <div class="item-line">
+          <span>${esc(i.name || i.sku)} x${i.qty}</span>
+          <b>${(i.price * i.qty)}</b>
+        </div>
+      `).join("");
+
+      // Генерируем кнопки действий в зависимости от вкладки
+      let actionsHtml = "";
+      
+      if(CUR_TAB === "new") {
+        actionsHtml = `<button class="btn-act btn-green" onclick="setStatus('${o.order_id}', 'in_work')">Принять в работу</button>`;
+      } 
+      else if (CUR_TAB === "work") {
+        actionsHtml = `
+          <button class="btn-act" onclick="setStatus('${o.order_id}', 'assembled')">Собран</button>
+          <button class="btn-act" onclick="setStatus('${o.order_id}', 'shipped')">Отправлен</button>
+          <button class="btn-act btn-green" onclick="setStatus('${o.order_id}', 'done')">Выполнен</button>
+          <button class="btn-act btn-red" onclick="setStatus('${o.order_id}', 'canceled')">Отмена</button>
+        `;
+      }
+      else {
+        actionsHtml = `<button class="btn-act" onclick="setStatus('${o.order_id}', 'in_work')">Вернуть в работу</button>`;
+      }
+
+      // Если вкладка "В работе" или "История", добавляем кнопку Архива (тихое скрытие)
+      if ((CUR_TAB === "work" || CUR_TAB === "done") && o.status !== 'archived') {
+         actionsHtml += `<button class="btn-act" style="margin-left:auto" title="Скрыть в архив (без уведомления)" onclick="setStatus('${o.order_id}', 'archived')"><i class="fa-solid fa-box-archive"></i></button>`;
+      }
+      
+      const badgeMap = {
+        'new': '<span class="badge bg-new">Новый</span>',
+        'in_work': '<span class="badge bg-work">В работе</span>',
+        'assembled': '<span class="badge bg-work">Собран</span>',
+        'shipped': '<span class="badge bg-work">Отправлен</span>',
+        'done': '<span class="badge bg-done">Готов</span>',
+        'archived': '<span class="badge">Архив</span>',
+        'canceled': '<span class="badge btn-red">Отмена</span>'
+      };
+
+      return `
+        <div class="card">
+          <div class="card-head">
+            <span class="card-id">#${esc(o.order_id)} ${badgeMap[o.status]||""}</span>
+            <span class="card-time">${formatDate(o.ts)}</span>
+          </div>
+          <div class="card-body">
+            <div class="info-row"><i class="fa-regular fa-user"></i> <b>${esc(o.name)}</b></div>
+            <div class="info-row"><i class="fa-solid fa-phone"></i> <a href="tel:${esc(o.phone)}" class="info-hl">${esc(o.phone)}</a></div>
+            <div class="info-row"><i class="fa-solid fa-location-dot"></i> ${esc(o.city)}</div>
+            ${o.comment ? `<div class="info-row" style="background:#fffbe6;padding:5px;border-radius:4px;font-size:12px">💬 ${esc(o.comment)}</div>` : ""}
+            
+            <div class="items-box">${itemsHtml}</div>
+          </div>
+          <div class="card-foot">
+            <div class="total">${fmtMoney(o.total)}</div>
+            <div class="actions">${actionsHtml}</div>
+          </div>
+        </div>
+      `;
+    }).join("");
+  }
+
+  window.setStatus = async (id, st) => {
+    // В архив убираем тихо, остальные - спрашиваем
+    if(st !== 'archived' && !confirm(`Сменить статус заказа? Клиент получит уведомление.`)) return;
+    try {
+      await API.adminUpdateOrderStatus(el.token.value, id, st);
+      loadOrders(); 
+    } catch(e) { alert("Ошибка сети"); }
+  }
+
+  // --- EVENTS ---
+  document.getElementById("btn-login").addEventListener("click", () => {
+    localStorage.setItem(LS_KEY, el.token.value);
+    loadOrders();
+  });
+
+  document.getElementById("btn-refresh").addEventListener("click", loadOrders);
+  document.getElementById("search").addEventListener("input", render);
+
+  el.tabs.forEach(t => t.addEventListener("click", () => {
+    el.tabs.forEach(x => x.classList.remove("active"));
+    t.classList.add("active");
+    CUR_TAB = t.dataset.tab;
+    render();
+  }));
+
+  // Init
+  const saved = localStorage.getItem(LS_KEY);
+  if(saved) { el.token.value = saved; loadOrders(); }
+  setInterval(loadOrders, 30000); 
+</script>
 </body>
 </html>

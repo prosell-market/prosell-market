@@ -8,52 +8,51 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
   <link rel="stylesheet" href="styles.css" />
   <style>
-    body { background: var(--secondary, #f3f4f6); overflow-y: auto; padding-bottom: 40px; }
+    body { background: #f3f4f6; margin: 0; font-family: -apple-system, sans-serif; -webkit-font-smoothing: antialiased; }
     
-    .header-nav { 
+    .header { 
       position: sticky; top: 0; z-index: 10;
-      padding: 16px; background: var(--bg-color, #ffffff); 
+      padding: 16px; background: #fff; 
       display: flex; align-items: center; justify-content: space-between; 
-      gap: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); 
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05); 
     }
-    .btn-back { border: none; background: transparent; font-size: 18px; color: var(--primary, #2563eb); cursor: pointer; }
-    .pill { font-size: 12px; font-weight: 600; color: #6b7280; background: #f3f4f6; padding: 6px 12px; border-radius: 99px; }
+    .btn-back { border: none; background: transparent; font-size: 18px; color: #2563eb; cursor: pointer; }
+    .title { font-weight: 700; font-size: 17px; }
     
-    .notif-list { padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+    .list { padding: 16px; display: flex; flex-direction: column; gap: 12px; }
     
-    .notif-card {
-      background: var(--card-bg, #ffffff); 
-      border-radius: 12px; 
-      padding: 16px;
-      box-shadow: 0 1px 2px rgba(0,0,0,0.08); 
-      position: relative; 
-      border: 1px solid rgba(0,0,0,0.05);
+    .card {
+      background: #fff; border-radius: 12px; padding: 16px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.04); position: relative;
+      transition: all 0.3s ease;
     }
-    .notif-card.unread { border-left: 4px solid var(--primary, #2563eb); }
+    .card.unread { border-left: 4px solid #2563eb; }
     
-    .notif-header { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 12px; color: #9ca3af; }
-    .notif-title { font-weight: 800; font-size: 15px; margin-bottom: 6px; color: var(--text-color, #000); }
-    .notif-body { font-size: 14px; line-height: 1.5; white-space: pre-wrap; color: var(--text-color, #333); }
+    .top-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 12px; color: #9ca3af; }
+    .msg-title { font-weight: 800; font-size: 15px; margin-bottom: 6px; color: #111; }
+    .msg-body { font-size: 14px; line-height: 1.5; white-space: pre-wrap; color: #374151; }
     
-    .notif-check { margin-top: 12px; display: flex; align-items: center; justify-content: flex-end; }
-    .btn-check {
-      border: 1px solid #e5e7eb; background: #fff;
-      padding: 8px 14px; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer;
+    .btn-hide {
+      margin-top: 12px; 
+      background: #f3f4f6; color: #4b5563; 
+      border: none; padding: 8px 12px; 
+      border-radius: 8px; font-size: 12px; font-weight: 600; 
+      width: 100%; cursor: pointer;
     }
-    .btn-check.active { background: #10b981; color: white; border-color: #10b981; }
-    
-    .center { text-align: center; margin-top: 50px; color: #999; font-size: 14px; }
+    .btn-hide:active { background: #e5e7eb; }
+
+    .center { text-align: center; margin-top: 60px; color: #9ca3af; font-size: 14px; }
   </style>
 </head>
 <body>
-  <div class="header-nav">
+  <div class="header">
     <button class="btn-back" onclick="history.back()"><i class="fa-solid fa-chevron-left"></i></button>
-    <div style="font-weight: 700; font-size: 18px;">Уведомления</div>
-    <div class="pill" id="unread-pill">0 unread</div>
+    <div class="title">Уведомления</div>
+    <div style="width:24px"></div>
   </div>
 
-  <div class="notif-list" id="notif-list">
-    <div class="center" id="loading">Загрузка...</div>
+  <div class="list" id="list">
+    <div class="center">Загрузка...</div>
   </div>
 
   <script src="api.js"></script>
@@ -61,20 +60,18 @@
     const TG = (window.Telegram && window.Telegram.WebApp) ? window.Telegram.WebApp : null;
     if (TG) { try { TG.expand(); TG.ready(); } catch (e) {} }
 
-    // Берем ID или anon для тестов
     const userId = TG?.initDataUnsafe?.user?.id || "anon";
 
-    // Функция форматирования времени (ИСПРАВЛЕНА)
     function fmtTime(ts) {
       if (!ts) return "";
-      try {
-        // Убрали Number(), так как ts приходит в ISO формате (строка)
-        const d = new Date(ts);
-        if (isNaN(d.getTime())) return "Дата??";
-        return d.toLocaleString("ru-RU", { hour: "2-digit", minute: "2-digit", day: "2-digit", month: "2-digit" });
-      } catch (e) {
-        return "err";
+      const d = new Date(ts);
+      if (isNaN(d.getTime())) return ""; 
+      
+      const now = new Date();
+      if (d.toDateString() === now.toDateString()) {
+        return d.toLocaleTimeString("ru-RU", {hour: '2-digit', minute:'2-digit'});
       }
+      return d.toLocaleDateString("ru-RU", {day:'numeric', month:'short'});
     }
 
     function escapeHtml(s) {
@@ -82,86 +79,62 @@
     }
 
     async function load() {
-      const list = document.getElementById("notif-list");
-      
+      const list = document.getElementById("list");
       try {
         const res = await API.getNotifications(userId);
-        
-        // Проверка ответа
-        if (!res || !res.ok) {
-          throw new Error(res ? res.error : "No response");
-        }
+        if (!res || !res.ok) throw new Error("API Error");
 
         const items = res.notifications || [];
         
-        // Обновляем счетчик
-        const unreadCount = items.filter(x => x.status === "unread").length;
-        document.getElementById("unread-pill").textContent = unreadCount + " unread";
-
         if (items.length === 0) {
-          list.innerHTML = '<div class="center">Нет уведомлений</div>';
+          list.innerHTML = '<div class="center"><i class="fa-regular fa-bell-slash" style="font-size:32px;margin-bottom:10px"></i><br>Нет новых уведомлений</div>';
           return;
         }
 
-        // Рендерим список (ПОЛНАЯ ПЕРЕРИСОВКА, чтобы избежать глюков)
         list.innerHTML = items.map(n => {
            const isUnread = (n.status === "unread");
            return `
-            <div class="notif-card ${isUnread ? 'unread' : ''}" id="card-${n.id}">
-              <div class="notif-header">
-                <span>${escapeHtml(fmtTime(n.ts))}</span>
-                ${isUnread ? '<span style="color:#2563eb;font-weight:bold">• New</span>' : ""}
+            <div class="card ${isUnread ? 'unread' : ''}" id="card-${n.id}">
+              <div class="top-row">
+                <span>${fmtTime(n.ts)}</span>
+                ${isUnread ? '<span style="color:#2563eb;font-weight:bold">Новое</span>' : ""}
               </div>
-              <div class="notif-title">${escapeHtml(n.title || "Уведомление")}</div>
-              <div class="notif-body">${escapeHtml(n.text || "")}</div>
-              ${isUnread ? `
-                <div class="notif-check">
-                  <button class="btn-check" onclick="readMsg('${n.id}')">Прочитано</button>
-                </div>
-              ` : ""}
+              <div class="msg-title">${escapeHtml(n.title)}</div>
+              <div class="msg-body">${escapeHtml(n.text)}</div>
+              ${isUnread ? `<button class="btn-hide" onclick="hideMsg('${n.id}')">Скрыть</button>` : ""}
             </div>
            `;
         }).join("");
 
       } catch (e) {
-        console.error(e);
-        list.innerHTML = `<div class="center" style="color:red">Ошибка: ${e.message}</div>`;
+        list.innerHTML = `<div class="center">Ошибка загрузки</div>`;
       }
     }
 
-    // Функция чтения вынесена глобально
-    window.readMsg = async function(id) {
+    window.hideMsg = async function(id) {
       const card = document.getElementById("card-" + id);
-      const btn = card.querySelector(".btn-check");
-      
-      if(btn) {
-        btn.textContent = "..."; 
-        btn.classList.add("active");
-      }
-
+      if(card) card.style.opacity = "0.5";
       try {
         await API.markNotificationRead(userId, id);
-        // Визуально обновляем сразу
         if(card) {
-          card.classList.remove("unread");
-          if(card.querySelector(".notif-check")) card.querySelector(".notif-check").remove();
-          if(card.querySelector(".notif-header span:last-child")) card.querySelector(".notif-header span:last-child").remove();
+            card.style.height = card.offsetHeight + "px";
+            setTimeout(() => {
+                card.style.transition = "0.3s";
+                card.style.height = "0";
+                card.style.opacity = "0";
+                card.style.padding = "0";
+                card.style.margin = "0";
+                setTimeout(() => card.remove(), 300);
+            }, 10);
         }
-        // Уменьшаем счетчик на 1 визуально
-        const pill = document.getElementById("unread-pill");
-        let count = parseInt(pill.textContent) || 0;
-        if(count > 0) pill.textContent = (count - 1) + " unread";
-        
       } catch(e) {
         alert("Ошибка сети");
-        if(btn) btn.textContent = "Ошибка";
+        if(card) card.style.opacity = "1";
       }
     };
 
-    // Запуск
     load();
-    // Автообновление раз в 10 сек
-    setInterval(load, 10000);
+    setInterval(load, 15000); 
   </script>
 </body>
 </html>
