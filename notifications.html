@@ -8,28 +8,41 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
   <link rel="stylesheet" href="styles.css" />
   <style>
-    body { background: var(--secondary); overflow: auto; }
-    .notif-list { padding: 16px; display: flex; flex-direction: column; gap: 12px; padding-bottom: 40px; }
-    .notif-card {
-      background: var(--card-bg); border-radius: var(--radius-md); padding: 16px;
-      box-shadow: var(--shadow); position: relative; overflow: hidden;
-      transition: opacity 0.3s;
+    body { background: var(--secondary, #f3f4f6); overflow-y: auto; padding-bottom: 40px; }
+    
+    .header-nav { 
+      position: sticky; top: 0; z-index: 10;
+      padding: 16px; background: var(--bg-color, #ffffff); 
+      display: flex; align-items: center; justify-content: space-between; 
+      gap: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); 
     }
-    .notif-card.unread { border-left: 4px solid var(--primary); }
-    .notif-header { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 12px; color: var(--text-muted); }
-    .notif-title { font-weight: 700; font-size: 15px; margin-bottom: 4px; }
-    /* ВАЖНО: pre-wrap позволяет показывать переносы строк (\n) из базы данных */
-    .notif-body { font-size: 14px; line-height: 1.4; white-space: pre-wrap; }
+    .btn-back { border: none; background: transparent; font-size: 18px; color: var(--primary, #2563eb); cursor: pointer; }
+    .pill { font-size: 12px; font-weight: 600; color: #6b7280; background: #f3f4f6; padding: 6px 12px; border-radius: 99px; }
+    
+    .notif-list { padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+    
+    .notif-card {
+      background: var(--card-bg, #ffffff); 
+      border-radius: 12px; 
+      padding: 16px;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.08); 
+      position: relative; 
+      border: 1px solid rgba(0,0,0,0.05);
+    }
+    .notif-card.unread { border-left: 4px solid var(--primary, #2563eb); }
+    
+    .notif-header { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 12px; color: #9ca3af; }
+    .notif-title { font-weight: 800; font-size: 15px; margin-bottom: 6px; color: var(--text-color, #000); }
+    .notif-body { font-size: 14px; line-height: 1.5; white-space: pre-wrap; color: var(--text-color, #333); }
+    
     .notif-check { margin-top: 12px; display: flex; align-items: center; justify-content: flex-end; }
     .btn-check {
-      border: 1px solid var(--border-color); background: transparent;
-      padding: 8px 12px; border-radius: 12px; font-size: 12px; cursor: pointer;
+      border: 1px solid #e5e7eb; background: #fff;
+      padding: 8px 14px; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer;
     }
-    .btn-check.active { background: var(--success); color: white; border-color: var(--success); }
-    .header-nav { padding: 16px; background: var(--bg-color); display: flex; align-items: center; justify-content: space-between; gap: 12px; box-shadow: 0 1px 0 rgba(0,0,0,0.05); }
-    .btn-back { border: none; background: transparent; font-size: 18px; color: var(--primary); cursor: pointer; }
-    .pill { font-size: 12px; color: var(--text-muted); background: rgba(0,0,0,0.04); padding: 6px 10px; border-radius: 999px; }
-    .center { text-align: center; margin-top: 50px; color: #999; }
+    .btn-check.active { background: #10b981; color: white; border-color: #10b981; }
+    
+    .center { text-align: center; margin-top: 50px; color: #999; font-size: 14px; }
   </style>
 </head>
 <body>
@@ -48,98 +61,107 @@
     const TG = (window.Telegram && window.Telegram.WebApp) ? window.Telegram.WebApp : null;
     if (TG) { try { TG.expand(); TG.ready(); } catch (e) {} }
 
+    // Берем ID или anon для тестов
     const userId = TG?.initDataUnsafe?.user?.id || "anon";
-    const processedIds = new Set();
 
+    // Функция форматирования времени (ИСПРАВЛЕНА)
     function fmtTime(ts) {
+      if (!ts) return "";
       try {
-        const d = new Date(Number(ts));
+        // Убрали Number(), так как ts приходит в ISO формате (строка)
+        const d = new Date(ts);
+        if (isNaN(d.getTime())) return "Дата??";
         return d.toLocaleString("ru-RU", { hour: "2-digit", minute: "2-digit", day: "2-digit", month: "2-digit" });
       } catch (e) {
-        return "";
+        return "err";
       }
     }
 
     function escapeHtml(s) {
-      return String(s || "")
-        .replaceAll("&", "&amp;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll('"', "&quot;");
-    }
-
-    function setUnreadCount(n) {
-      const pill = document.getElementById("unread-pill");
-      pill.textContent = String(n) + " unread";
+      return String(s || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
     }
 
     async function load() {
       const list = document.getElementById("notif-list");
-
+      
       try {
         const res = await API.getNotifications(userId);
+        
+        // Проверка ответа
+        if (!res || !res.ok) {
+          throw new Error(res ? res.error : "No response");
+        }
 
-        const items = (res && res.notifications) ? res.notifications : [];
-        const unread = items.filter(x => x && x.status === "unread").length;
-        setUnreadCount(unread);
+        const items = res.notifications || [];
+        
+        // Обновляем счетчик
+        const unreadCount = items.filter(x => x.status === "unread").length;
+        document.getElementById("unread-pill").textContent = unreadCount + " unread";
 
-        if (!items.length) {
+        if (items.length === 0) {
           list.innerHTML = '<div class="center">Нет уведомлений</div>';
           return;
         }
 
-        const loading = document.getElementById("loading");
-        if (loading) loading.remove();
-
-        items.forEach((n) => {
-          if (!n || !n.id) return;
-          if (processedIds.has(n.id)) return;
-          processedIds.add(n.id);
-
-          const el = document.createElement("div");
-          el.className = "notif-card " + (n.status === "unread" ? "unread" : "");
-
-          el.innerHTML = `
-            <div class="notif-header">
-              <span>${escapeHtml(fmtTime(n.ts))}</span>
-              ${n.status === "unread" ? '<span style="color:var(--primary)">• New</span>' : ""}
-            </div>
-            <div class="notif-title">${escapeHtml(n.title || "")}</div>
-            <div class="notif-body">${escapeHtml(n.text || "")}</div>
-            ${n.status === "unread" ? `
-              <div class="notif-check">
-                <button class="btn-check" data-read="${escapeHtml(n.id)}">Прочитано</button>
+        // Рендерим список (ПОЛНАЯ ПЕРЕРИСОВКА, чтобы избежать глюков)
+        list.innerHTML = items.map(n => {
+           const isUnread = (n.status === "unread");
+           return `
+            <div class="notif-card ${isUnread ? 'unread' : ''}" id="card-${n.id}">
+              <div class="notif-header">
+                <span>${escapeHtml(fmtTime(n.ts))}</span>
+                ${isUnread ? '<span style="color:#2563eb;font-weight:bold">• New</span>' : ""}
               </div>
-            ` : ""}
-          `;
+              <div class="notif-title">${escapeHtml(n.title || "Уведомление")}</div>
+              <div class="notif-body">${escapeHtml(n.text || "")}</div>
+              ${isUnread ? `
+                <div class="notif-check">
+                  <button class="btn-check" onclick="readMsg('${n.id}')">Прочитано</button>
+                </div>
+              ` : ""}
+            </div>
+           `;
+        }).join("");
 
-          const btn = el.querySelector("[data-read]");
-          if (btn) {
-            btn.addEventListener("click", async () => {
-              btn.classList.add("active");
-              btn.textContent = "...";
-              try {
-                await API.markNotificationRead(userId, n.id);
-                el.classList.remove("unread");
-                btn.remove();
-              } catch (e) {
-                btn.classList.remove("active");
-                btn.textContent = "Ошибка";
-              }
-            });
-          }
-
-          list.prepend(el);
-        });
       } catch (e) {
         console.error(e);
-        setUnreadCount(0);
-        list.innerHTML = '<div class="center">Ошибка загрузки уведомлений</div>';
+        list.innerHTML = `<div class="center" style="color:red">Ошибка: ${e.message}</div>`;
       }
     }
 
+    // Функция чтения вынесена глобально
+    window.readMsg = async function(id) {
+      const card = document.getElementById("card-" + id);
+      const btn = card.querySelector(".btn-check");
+      
+      if(btn) {
+        btn.textContent = "..."; 
+        btn.classList.add("active");
+      }
+
+      try {
+        await API.markNotificationRead(userId, id);
+        // Визуально обновляем сразу
+        if(card) {
+          card.classList.remove("unread");
+          if(card.querySelector(".notif-check")) card.querySelector(".notif-check").remove();
+          if(card.querySelector(".notif-header span:last-child")) card.querySelector(".notif-header span:last-child").remove();
+        }
+        // Уменьшаем счетчик на 1 визуально
+        const pill = document.getElementById("unread-pill");
+        let count = parseInt(pill.textContent) || 0;
+        if(count > 0) pill.textContent = (count - 1) + " unread";
+        
+      } catch(e) {
+        alert("Ошибка сети");
+        if(btn) btn.textContent = "Ошибка";
+      }
+    };
+
+    // Запуск
     load();
-    setInterval(load, 15000);
+    // Автообновление раз в 10 сек
+    setInterval(load, 10000);
   </script>
 </body>
 </html>
