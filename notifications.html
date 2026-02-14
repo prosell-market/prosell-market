@@ -3,46 +3,52 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>Уведомления</title>
+  <title>Мои заказы</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
   <link rel="stylesheet" href="styles.css" />
   <style>
-    /* Фикс прокрутки: фиксируем body, скроллим контейнер */
-    html, body { height: 100%; margin: 0; overflow: hidden; background: #f3f4f6; font-family: -apple-system, sans-serif; }
+    /* Стиль списка заказов */
+    body { background: #f3f4f6; margin: 0; font-family: -apple-system, sans-serif; -webkit-font-smoothing: antialiased; }
     
     .header { 
-      position: absolute; top: 0; left: 0; right: 0; height: 56px;
-      background: #fff; display: flex; align-items: center; justify-content: space-between; 
-      padding: 0 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); z-index: 10;
+      position: sticky; top: 0; z-index: 10;
+      padding: 16px; background: #fff; 
+      display: flex; align-items: center; justify-content: space-between; 
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05); 
     }
     .btn-back { border: none; background: transparent; font-size: 18px; color: #2563eb; cursor: pointer; }
     .title { font-weight: 700; font-size: 17px; }
     
-    /* Контейнер для скролла */
-    .list { 
-      position: absolute; top: 56px; bottom: 0; left: 0; right: 0;
-      overflow-y: auto; -webkit-overflow-scrolling: touch; 
-      padding: 16px; display: flex; flex-direction: column; gap: 12px; 
-    }
+    .list { padding: 16px; display: flex; flex-direction: column; gap: 12px; padding-bottom: 40px; }
     
     .card {
       background: #fff; border-radius: 12px; padding: 16px;
       box-shadow: 0 2px 4px rgba(0,0,0,0.04); position: relative;
-      transition: all 0.3s ease; flex-shrink: 0;
+      display: flex; flex-direction: column; gap: 8px;
     }
-    .card.unread { border-left: 4px solid #2563eb; }
     
-    .top-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 12px; color: #9ca3af; }
-    .msg-title { font-weight: 800; font-size: 15px; margin-bottom: 6px; color: #111; }
-    .msg-body { font-size: 14px; line-height: 1.5; white-space: pre-wrap; color: #374151; }
-    
-    .btn-hide {
-      margin-top: 12px; background: #f3f4f6; color: #4b5563; 
-      border: none; padding: 10px; border-radius: 8px; 
-      font-size: 13px; font-weight: 600; width: 100%; cursor: pointer;
+    /* Статусы */
+    .status-badge {
+      display: inline-block; padding: 4px 10px; border-radius: 6px;
+      font-size: 12px; font-weight: 700; text-transform: uppercase;
+      align-self: flex-start;
     }
-    .btn-hide:active { background: #e5e7eb; }
+    .st-new { background: #dbeafe; color: #1e40af; }        /* Синий */
+    .st-in_work { background: #ffedd5; color: #9a3412; }    /* Оранжевый */
+    .st-assembled { background: #fef9c3; color: #854d0e; }  /* Желтый */
+    .st-shipped { background: #e0e7ff; color: #3730a3; }    /* Фиолетовый */
+    .st-done { background: #d1fae5; color: #065f46; }       /* Зеленый */
+    .st-archived { background: #f3f4f6; color: #4b5563; }   /* Серый */
+    .st-canceled { background: #fee2e2; color: #991b1b; }   /* Красный */
+
+    .row-top { display: flex; justify-content: space-between; align-items: center; }
+    .order-id { font-size: 12px; color: #9ca3af; font-family: monospace; }
+    .order-date { font-size: 12px; color: #9ca3af; }
+    
+    .prod-title { font-weight: 700; font-size: 15px; color: #111; line-height: 1.3; }
+    .order-meta { font-size: 13px; color: #6b7280; display: flex; justify-content: space-between; margin-top: 4px; }
+    .total-price { font-weight: 700; color: #111; }
 
     .center { text-align: center; margin-top: 60px; color: #9ca3af; font-size: 14px; }
   </style>
@@ -50,7 +56,7 @@
 <body>
   <div class="header">
     <button class="btn-back" onclick="history.back()"><i class="fa-solid fa-chevron-left"></i></button>
-    <div class="title">Уведомления</div>
+    <div class="title">Мои заказы</div>
     <div style="width:24px"></div>
   </div>
 
@@ -64,19 +70,27 @@
     if (TG) { try { TG.expand(); TG.ready(); } catch (e) {} }
 
     const userId = TG?.initDataUnsafe?.user?.id || "anon";
-    
-    // Локальный черный список скрытых уведомлений (чтобы не мелькали при обновлении)
-    const hiddenIds = new Set();
+
+    const STATUS_MAP = {
+      'new': { text: 'Оформлен', class: 'st-new' },
+      'in_work': { text: 'В работе', class: 'st-in_work' },
+      'assembled': { text: 'Собран', class: 'st-assembled' },
+      'shipped': { text: 'В доставке', class: 'st-shipped' },
+      'done': { text: 'Получен', class: 'st-done' },
+      'archived': { text: 'Архив', class: 'st-archived' },
+      'canceled': { text: 'Отмена', class: 'st-canceled' }
+    };
+
+    function fmtMoney(val) {
+      return new Intl.NumberFormat("ru-RU", {style:"currency", currency:"RUB", maximumFractionDigits:0}).format(val || 0);
+    }
 
     function fmtTime(ts) {
       if (!ts) return "";
-      const d = new Date(ts);
-      if (isNaN(d.getTime())) return ""; 
-      const now = new Date();
-      if (d.toDateString() === now.toDateString()) {
-        return d.toLocaleTimeString("ru-RU", {hour: '2-digit', minute:'2-digit'});
-      }
-      return d.toLocaleDateString("ru-RU", {day:'numeric', month:'short'});
+      try {
+        const d = new Date(ts);
+        return d.toLocaleDateString("ru-RU", {day:'numeric', month:'short', hour:'2-digit', minute:'2-digit'});
+      } catch (e) { return ""; }
     }
 
     function escapeHtml(s) {
@@ -86,64 +100,51 @@
     async function load() {
       const list = document.getElementById("list");
       try {
+        // Мы используем тот же метод API, но теперь бэкенд возвращает список заказов, а не уведомлений
         const res = await API.getNotifications(userId);
-        if (!res || !res.ok) throw new Error("API Error");
-
-        // Показываем только непрочитанные И те, которые мы еще не скрыли локально
-        const items = (res.notifications || []).filter(n => !hiddenIds.has(n.id) && n.status === 'unread');
         
-        if (items.length === 0) {
-          list.innerHTML = '<div class="center"><i class="fa-regular fa-bell-slash" style="font-size:32px;margin-bottom:10px"></i><br>Нет новых уведомлений</div>';
+        if (!res || !res.ok) throw new Error("Ошибка API");
+
+        const orders = res.notifications || []; // В поле notifications теперь лежат заказы
+        
+        if (orders.length === 0) {
+          list.innerHTML = '<div class="center"><i class="fa-solid fa-basket-shopping" style="font-size:32px;margin-bottom:10px"></i><br>У вас пока нет заказов</div>';
           return;
         }
 
-        // Перерисовываем список
-        list.innerHTML = items.map(n => `
-            <div class="card unread" id="card-${n.id}">
-              <div class="top-row">
-                <span>${fmtTime(n.ts)}</span>
-                <span style="color:#2563eb;font-weight:bold">Новое</span>
+        list.innerHTML = orders.map(o => {
+           // Определяем статус
+           const stKey = o.status || 'new';
+           const stInfo = STATUS_MAP[stKey] || { text: stKey, class: 'st-archived' };
+           
+           return `
+            <div class="card">
+              <div class="row-top">
+                <span class="status-badge ${stInfo.class}">${stInfo.text}</span>
+                <span class="order-date">${fmtTime(o.ts)}</span>
               </div>
-              <div class="msg-title">${escapeHtml(n.title)}</div>
-              <div class="msg-body">${escapeHtml(n.text)}</div>
-              <button class="btn-hide" onclick="hideMsg('${n.id}')">Скрыть</button>
+              
+              <div class="prod-title">${escapeHtml(o.title)}</div>
+              
+              <div class="order-meta">
+                <span class="order-id">#${escapeHtml(o.id)}</span>
+                <span class="total-price">${fmtMoney(o.total)}</span>
+              </div>
             </div>
-        `).join("");
+           `;
+        }).join("");
 
       } catch (e) {
-        // При автообновлении ошибки игнорируем, чтобы не спамить пользователю
         console.error(e);
+        // Не показываем ошибку пользователю явно при автообновлении, чтобы не мелькало
+        if (list.innerHTML.includes("Загрузка")) {
+           list.innerHTML = `<div class="center">Ошибка сети :(</div>`;
+        }
       }
     }
 
-    window.hideMsg = async function(id) {
-      const card = document.getElementById("card-" + id);
-      
-      // 1. Сразу прячем визуально (Optimistic UI)
-      if(card) {
-        card.style.transition = "all 0.3s ease";
-        card.style.opacity = "0";
-        card.style.height = "0";
-        card.style.margin = "0";
-        card.style.padding = "0";
-        setTimeout(() => card.remove(), 300);
-      }
-      
-      // 2. Добавляем в локальный игнор
-      hiddenIds.add(id);
-
-      // 3. Шлем запрос на сервер
-      try {
-        await API.markNotificationRead(userId, id);
-      } catch(e) {
-        console.error("Не удалось отметить прочитанным на сервере", e);
-        // Не возвращаем карточку назад, чтобы не бесить пользователя. 
-        // Если сеть появится, в следующий раз статус синхронизируется.
-      }
-    };
-
     load();
-    setInterval(load, 15000); 
+    setInterval(load, 5000); // Проверяем статус каждые 5 сек
   </script>
 </body>
 </html>
