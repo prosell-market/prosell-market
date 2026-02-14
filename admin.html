@@ -2,330 +2,469 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ProSell Admin</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>ProSell Admin Pro</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
   <style>
-    :root { --bg:#f8f9fa; --surf:#fff; --primary:#2563eb; --text:#1f2937; --border:#e5e7eb; --rad:12px; }
-    * { box-sizing: border-box; }
-    body { margin:0; font-family:-apple-system, sans-serif; background:var(--bg); color:var(--text); padding-bottom:60px; }
-    .wrap { max-width:900px; margin:0 auto; padding:16px; }
+    :root {
+      --bg: #f3f4f6; --card: #ffffff;
+      --primary: #2563eb; --text: #111827; --muted: #6b7280;
+      --border: #e5e7eb; --danger: #ef4444; --success: #10b981;
+      --shadow: 0 1px 3px rgba(0,0,0,0.08);
+    }
+    * { box-sizing: border-box; outline: none; -webkit-tap-highlight-color: transparent; }
+    body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: var(--bg); color: var(--text); padding-bottom: 80px; }
     
-    /* Header */
-    .header { display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; }
-    .logo { font-weight:800; font-size:20px; } .logo span { color:var(--primary); }
-    .auth { display:flex; gap:8px; }
-    input, select, textarea { padding:10px; border:1px solid var(--border); border-radius:8px; width:100%; font-size:14px; background:#fff; }
-    .btn { padding:8px 14px; border:none; border-radius:8px; font-weight:600; cursor:pointer; background:#fff; border:1px solid var(--border); }
-    .btn-p { background:var(--primary); color:#fff; border:none; }
-    .btn-d { background:#fee2e2; color:#991b1b; border:none; }
+    .wrap { max-width: 1000px; margin: 0 auto; padding: 16px; }
 
-    /* Nav */
-    .nav { display:flex; gap:10px; margin-bottom:20px; background:#e5e7eb; padding:4px; border-radius:10px; }
-    .nav-item { flex:1; text-align:center; padding:10px; cursor:pointer; border-radius:8px; font-weight:600; color:#6b7280; }
-    .nav-item.active { background:#fff; color:#000; box-shadow:0 1px 2px rgba(0,0,0,0.1); }
+    /* --- HEADER & STATS --- */
+    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+    .logo { font-weight: 800; font-size: 20px; letter-spacing: -0.5px; } .logo span { color: var(--primary); }
+    .auth { display: flex; gap: 8px; }
+    .inp-token { padding: 8px 12px; border: 1px solid var(--border); border-radius: 8px; width: 100px; font-size: 13px; transition: 0.2s; }
+    .inp-token:focus { width: 180px; border-color: var(--primary); }
 
-    /* Content Views */
-    .view { display:none; }
-    .view.active { display:block; }
+    .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 20px; }
+    .stat-card { background: var(--card); padding: 12px; border-radius: 12px; border: 1px solid var(--border); box-shadow: var(--shadow); text-align: center; }
+    .stat-val { font-size: 20px; font-weight: 800; display: block; line-height: 1.2; }
+    .stat-lbl { font-size: 11px; color: var(--muted); text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px; }
 
-    /* Orders Styles */
-    .ord-card { background:var(--surf); padding:16px; border-radius:var(--rad); margin-bottom:10px; border:1px solid var(--border); }
-    .ord-head { display:flex; justify-content:space-between; font-weight:700; margin-bottom:10px; font-size:15px; }
-    .st-badge { padding:2px 8px; border-radius:4px; font-size:11px; background:#e0f2fe; color:#0369a1; }
-    .ord-actions { display:flex; gap:8px; margin-top:10px; overflow-x:auto; }
+    /* --- NAVIGATION --- */
+    .main-nav { display: flex; background: #e5e7eb; padding: 4px; border-radius: 10px; margin-bottom: 20px; }
+    .nav-btn { flex: 1; border: none; background: transparent; padding: 8px; border-radius: 8px; font-weight: 600; font-size: 14px; color: var(--muted); cursor: pointer; transition: 0.2s; }
+    .nav-btn.active { background: #fff; color: var(--text); box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
+
+    /* --- VIEWS --- */
+    .view { display: none; animation: fadeIn 0.2s; }
+    .view.active { display: block; }
+    @keyframes fadeIn { from { opacity: 0.9; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* --- ORDERS VIEW --- */
+    .sub-tabs { display: flex; gap: 8px; margin-bottom: 12px; overflow-x: auto; padding-bottom: 4px; }
+    .st-tab { padding: 6px 14px; border-radius: 20px; border: 1px solid var(--border); background: #fff; font-size: 13px; font-weight: 600; color: var(--muted); white-space: nowrap; cursor: pointer; }
+    .st-tab.active { background: var(--text); color: #fff; border-color: var(--text); }
+
+    .search-bar { width: 100%; padding: 10px 14px; border: 1px solid var(--border); border-radius: 10px; margin-bottom: 16px; font-size: 14px; box-shadow: var(--shadow); }
+
+    .ord-card { background: var(--card); border-radius: 12px; border: 1px solid var(--border); margin-bottom: 12px; overflow: hidden; box-shadow: var(--shadow); }
+    .ord-head { background: #f9fafb; padding: 10px 14px; border-bottom: 1px solid #f3f4f6; display: flex; justify-content: space-between; align-items: center; }
+    .ord-id { font-weight: 700; font-size: 14px; font-family: monospace; }
+    .ord-time { font-size: 12px; color: var(--muted); }
+    .ord-body { padding: 14px; }
+    .ord-row { display: flex; margin-bottom: 6px; font-size: 14px; }
+    .ord-icon { width: 24px; color: var(--muted); text-align: center; margin-right: 8px; }
+    .ord-items { background: #f3f4f6; padding: 10px; border-radius: 8px; margin-top: 10px; font-size: 13px; }
+    .ord-foot { padding: 10px 14px; border-top: 1px solid #f3f4f6; display: flex; justify-content: space-between; align-items: center; }
+    .ord-total { font-weight: 800; font-size: 16px; }
     
-    /* Products Grid */
-    .prod-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(160px, 1fr)); gap:12px; }
-    .prod-card { background:var(--surf); border-radius:var(--rad); overflow:hidden; border:1px solid var(--border); position:relative; }
-    .prod-img { height:140px; background:#f3f4f6; position:relative; }
-    .prod-img img { width:100%; height:100%; object-fit:cover; }
-    .prod-body { padding:10px; }
-    .prod-title { font-weight:700; font-size:14px; margin-bottom:4px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-    .prod-price { color:var(--primary); font-weight:700; }
-    .prod-edit-btn { position:absolute; top:8px; right:8px; background:#fff; border-radius:50%; width:32px; height:32px; display:flex; align-items:center; justify-content:center; box-shadow:0 2px 4px rgba(0,0,0,0.1); cursor:pointer; }
+    .btn-act { padding: 6px 12px; border-radius: 6px; border: 1px solid var(--border); background: #fff; font-size: 12px; font-weight: 600; cursor: pointer; margin-left: 6px; }
+    .btn-green { background: #dcfce7; color: #166534; border-color: #bbf7d0; }
+    .btn-blue { background: #dbeafe; color: #1e40af; border-color: #bfdbfe; }
 
-    /* Modal */
-    .modal { position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.5); z-index:100; display:none; align-items:center; justify-content:center; padding:16px; }
-    .modal.active { display:flex; }
-    .modal-box { background:#fff; width:100%; max-width:500px; border-radius:16px; max-height:90vh; overflow-y:auto; padding:20px; }
-    .form-group { margin-bottom:14px; }
-    .form-label { display:block; font-size:12px; font-weight:600; margin-bottom:4px; color:#4b5563; }
+    /* --- PRODUCTS VIEW --- */
+    .prod-tools { display: flex; gap: 10px; margin-bottom: 16px; }
+    .prod-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; }
+    
+    .prod-card { background: #fff; border-radius: 12px; border: 1px solid var(--border); overflow: hidden; position: relative; display: flex; flex-direction: column; }
+    .prod-img { height: 140px; background: #f3f4f6; position: relative; overflow: hidden; }
+    .prod-img img { width: 100%; height: 100%; object-fit: cover; }
+    .prod-no-img { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: #cbd5e1; font-size: 32px; }
+    
+    .prod-info { padding: 10px; flex-grow: 1; display: flex; flex-direction: column; }
+    .prod-cat { font-size: 10px; text-transform: uppercase; color: var(--muted); font-weight: 700; margin-bottom: 4px; }
+    .prod-title { font-weight: 600; font-size: 13px; line-height: 1.3; margin-bottom: 6px; flex-grow: 1; }
+    .prod-price-row { display: flex; align-items: baseline; gap: 6px; }
+    .prod-price { font-weight: 800; font-size: 15px; color: var(--text); }
+    .prod-old-price { text-decoration: line-through; color: var(--muted); font-size: 12px; }
+    
+    .prod-edit-overlay { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.05); opacity: 0; transition: 0.2s; cursor: pointer; }
+    .prod-card:hover .prod-edit-overlay { opacity: 1; }
+    .btn-edit-abs { position: absolute; top: 8px; right: 8px; background: #fff; width: 32px; height: 32px; border-radius: 50%; box-shadow: 0 2px 5px rgba(0,0,0,0.15); display: flex; align-items: center; justify-content: center; font-size: 14px; color: var(--text); z-index: 2; pointer-events: none; }
+
+    /* --- MODAL --- */
+    .modal { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); z-index: 1000; display: none; align-items: center; justify-content: center; padding: 16px; backdrop-filter: blur(2px); }
+    .modal.active { display: flex; }
+    .modal-box { background: #fff; width: 100%; max-width: 480px; border-radius: 16px; max-height: 90vh; overflow-y: auto; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
+    .modal-head { padding: 16px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; background: #f9fafb; position: sticky; top: 0; z-index: 10; }
+    .modal-title { font-weight: 700; font-size: 16px; }
+    .modal-body { padding: 20px; }
+    
+    .form-group { margin-bottom: 16px; }
+    .form-label { display: block; font-size: 12px; font-weight: 700; margin-bottom: 6px; color: #374151; }
+    .form-input { width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 8px; font-size: 14px; transition: 0.2s; }
+    .form-input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37,99,235,0.1); }
     
     /* Image Uploader */
-    .img-upload { height:180px; background:#f9fafb; border:2px dashed var(--border); border-radius:12px; display:flex; align-items:center; justify-content:center; cursor:pointer; overflow:hidden; position:relative; }
-    .img-upload img { width:100%; height:100%; object-fit:contain; }
-    .img-upload.loading::after { content:"Загрузка..."; position:absolute; background:rgba(255,255,255,0.8); padding:4px 10px; border-radius:4px; }
+    .img-picker { height: 160px; border: 2px dashed var(--border); border-radius: 10px; background: #f9fafb; display: flex; align-items: center; justify-content: center; cursor: pointer; position: relative; overflow: hidden; transition: 0.2s; }
+    .img-picker:hover { border-color: var(--primary); background: #f0f9ff; }
+    .img-picker img { width: 100%; height: 100%; object-fit: contain; z-index: 2; position: relative; }
+    .img-picker-placeholder { text-align: center; color: var(--muted); font-size: 13px; z-index: 1; }
+    .img-picker.loading::after { content: "Загрузка..."; position: absolute; top:0; left:0; right:0; bottom:0; background: rgba(255,255,255,0.8); display:flex; align-items:center; justify-content:center; font-weight:600; z-index: 10; }
 
-    /* Add FAB */
-    .fab { position:fixed; bottom:20px; right:20px; width:56px; height:56px; background:var(--primary); color:#fff; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:24px; box-shadow:0 4px 10px rgba(37,99,235,0.3); cursor:pointer; }
-    
-    /* Order specific */
-    .tabs-sub { display:flex; gap:10px; margin-bottom:10px; }
-    .tab-sub { padding:6px 12px; border-radius:20px; border:1px solid var(--border); font-size:13px; cursor:pointer; background:#fff; }
-    .tab-sub.active { background:var(--text); color:#fff; border-color:var(--text); }
+    .modal-foot { padding: 16px; border-top: 1px solid var(--border); display: flex; gap: 10px; background: #fff; position: sticky; bottom: 0; }
+    .btn-full { flex: 1; padding: 10px; border-radius: 8px; font-weight: 600; border: none; cursor: pointer; }
+    .btn-save { background: var(--primary); color: #fff; }
+    .btn-cancel { background: #f3f4f6; color: var(--text); }
+
+    /* FAB */
+    .fab { position: fixed; bottom: 24px; right: 24px; width: 56px; height: 56px; background: var(--primary); color: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; box-shadow: 0 4px 12px rgba(37,99,235,0.4); cursor: pointer; transition: 0.2s; z-index: 90; }
+    .fab:active { transform: scale(0.95); }
   </style>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
 </head>
 <body>
 
 <div class="wrap">
   <div class="header">
-    <div class="logo"><span>Pro</span>Sell Admin</div>
+    <div class="logo"><span>PRO</span>SELL Admin</div>
     <div class="auth">
-      <input id="token" type="password" placeholder="Token" style="width:120px" />
-      <button onclick="Auth.login()" class="btn btn-p">Go</button>
+      <input id="token" type="password" class="inp-token" placeholder="Token" />
+      <button class="btn-act" onclick="App.login()"><i class="fa-solid fa-arrow-right"></i></button>
     </div>
   </div>
 
-  <div class="nav">
-    <div class="nav-item active" onclick="Nav.go('orders')">Заказы</div>
-    <div class="nav-item" onclick="Nav.go('products')">Товары</div>
+  <div class="stats-grid">
+    <div class="stat-card">
+      <span class="stat-val" id="st-total">0</span>
+      <span class="stat-lbl">Всего</span>
+    </div>
+    <div class="stat-card">
+      <span class="stat-val" id="st-new" style="color:var(--primary)">0</span>
+      <span class="stat-lbl">Новых</span>
+    </div>
+    <div class="stat-card">
+      <span class="stat-val" id="st-sum" style="color:var(--success)">0 ₽</span>
+      <span class="stat-lbl">Сегодня</span>
+    </div>
+  </div>
+
+  <div class="main-nav">
+    <button class="nav-btn active" onclick="Nav.to('orders')">Заказы</button>
+    <button class="nav-btn" onclick="Nav.to('products')">Товары</button>
   </div>
 
   <div id="view-orders" class="view active">
-    <div class="tabs-sub">
-        <div class="tab-sub active" onclick="Orders.setFilter('new', this)">Входящие</div>
-        <div class="tab-sub" onclick="Orders.setFilter('work', this)">В работе</div>
-        <div class="tab-sub" onclick="Orders.setFilter('done', this)">История</div>
+    <div class="sub-tabs">
+      <div class="st-tab active" onclick="Orders.filter('new', this)">Входящие</div>
+      <div class="st-tab" onclick="Orders.filter('work', this)">В работе</div>
+      <div class="st-tab" onclick="Orders.filter('done', this)">История</div>
     </div>
-    <div style="margin-bottom:10px; display:flex; justify-content:space-between">
-       <button class="btn" onclick="Orders.load()">Обновить</button>
+    
+    <div style="display:flex; gap:10px;">
+        <input id="ord-search" class="search-bar" placeholder="Поиск (ID, клиент, телефон)..." />
+        <button class="btn-act" style="height:38px;" onclick="Orders.load()"><i class="fa-solid fa-rotate"></i></button>
     </div>
+
     <div id="orders-list"></div>
   </div>
 
   <div id="view-products" class="view">
-    <div class="prod-grid" id="products-list"></div>
-    <div class="fab" onclick="Products.edit({})">+</div>
+    <div class="prod-tools">
+      <input id="prod-search" class="search-bar" style="margin:0" placeholder="Поиск товара..." />
+      <button class="btn-act" onclick="Products.load()"><i class="fa-solid fa-rotate"></i></button>
+    </div>
+    
+    <div id="products-list" class="prod-grid"></div>
+    
+    <div class="fab" onclick="Products.edit({})"><i class="fa-solid fa-plus"></i></div>
   </div>
 </div>
 
-<div id="prod-modal" class="modal">
+<div id="modal-prod" class="modal">
   <div class="modal-box">
-    <h3 style="margin-top:0">Редактор товара</h3>
-    
-    <div class="form-group">
-      <div class="img-upload" id="p-img-box" onclick="document.getElementById('p-file').click()">
-        <span id="p-img-placeholder" style="color:#9ca3af">Нажми для фото</span>
-        <img id="p-img-preview" class="hidden" />
-      </div>
-      <input type="file" id="p-file" style="display:none" accept="image/*" onchange="Products.uploadImage(this)" />
-      <input type="hidden" id="p-img-url" />
+    <div class="modal-head">
+      <div class="modal-title">Товар</div>
+      <button class="btn-act" onclick="UI.modal('prod', false)"><i class="fa-solid fa-xmark"></i></button>
     </div>
-
-    <input type="hidden" id="p-id" />
-    
-    <div class="form-group">
-      <label class="form-label">Название</label>
-      <input id="p-title" placeholder="Кроссовки Nike..." />
-    </div>
-
-    <div style="display:flex; gap:10px">
-      <div class="form-group" style="flex:1">
-        <label class="form-label">Цена</label>
-        <input type="number" id="p-price" placeholder="5000" />
+    <div class="modal-body">
+      
+      <div class="form-group">
+        <label class="form-label">Фотография</label>
+        <div class="img-picker" id="p-img-box" onclick="document.getElementById('p-file').click()">
+          <div class="img-picker-placeholder" id="p-img-ph">
+            <i class="fa-solid fa-camera" style="font-size:24px;margin-bottom:8px"></i><br>
+            Нажми, чтобы загрузить
+          </div>
+          <img id="p-img-prev" class="hidden" />
+        </div>
+        <input type="file" id="p-file" style="display:none" accept="image/*" onchange="Products.upload(this)" />
+        <input type="hidden" id="p-img-url" />
       </div>
-      <div class="form-group" style="flex:1">
+
+      <input type="hidden" id="p-id" />
+
+      <div class="form-group">
+        <label class="form-label">Название товара</label>
+        <input id="p-title" class="form-input" placeholder="Например: IPhone 15 Pro" />
+      </div>
+
+      <div style="display:flex; gap:12px;">
+        <div class="form-group" style="flex:1">
+          <label class="form-label">Цена (₽)</label>
+          <input type="number" id="p-price" class="form-input" placeholder="10000" />
+        </div>
+        <div class="form-group" style="flex:1">
+          <label class="form-label">Старая цена</label>
+          <input type="number" id="p-old" class="form-input" placeholder="12000" />
+        </div>
+      </div>
+
+      <div class="form-group">
         <label class="form-label">Категория</label>
-        <select id="p-cat"></select>
+        <select id="p-cat" class="form-input">
+           <option value="all">Без категории</option>
+        </select>
       </div>
-    </div>
 
-    <div class="form-group">
-      <label class="form-label">Описание</label>
-      <textarea id="p-desc" rows="3"></textarea>
-    </div>
+      <div class="form-group">
+        <label class="form-label">Описание</label>
+        <textarea id="p-desc" class="form-input" rows="3"></textarea>
+      </div>
 
-    <div style="display:flex; gap:10px; margin-top:20px">
-      <button class="btn" style="flex:1" onclick="document.getElementById('prod-modal').classList.remove('active')">Отмена</button>
-      <button class="btn btn-d" id="btn-del-prod" onclick="Products.del()" style="display:none">Удалить</button>
-      <button class="btn btn-p" style="flex:2" onclick="Products.save()">Сохранить</button>
+    </div>
+    <div class="modal-foot">
+      <button class="btn-full btn-save" onclick="Products.save()">Сохранить</button>
+      <button class="btn-full btn-cancel" style="color:#ef4444" onclick="Products.del()">Удалить</button>
     </div>
   </div>
 </div>
 
 <script src="api.js"></script>
 <script>
-const LS_KEY = "ps_token";
-let STATE = { orders: [], products: [], categories: [], orderTab: "new" };
+const LS_KEY = "ps_adm_tok_v3";
+let DATA = { orders: [], products: [], categories: [] };
+let CFG = { orderTab: 'new' };
 
-const Nav = {
-  go: (view) => {
-    document.querySelectorAll('.view').forEach(el => el.classList.remove('active'));
-    document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-    document.getElementById('view-' + view).classList.add('active');
-    
-    const idx = view === 'orders' ? 0 : 1;
-    document.querySelectorAll('.nav-item')[idx].classList.add('active');
-
-    if(view === 'orders') Orders.load();
-    if(view === 'products') Products.load();
-  }
+const UI = {
+  get: (id) => document.getElementById(id),
+  modal: (name, show) => UI.get('modal-'+name).classList.toggle('active', show),
+  toast: (msg) => alert(msg) // Placeholder for better toast
 };
 
 const Auth = {
-  getToken: () => document.getElementById('token').value.trim(),
+  token: () => UI.get('token').value.trim(),
   login: () => {
-    localStorage.setItem(LS_KEY, Auth.getToken());
+    localStorage.setItem(LS_KEY, Auth.token());
     Orders.load();
+    Products.load(); // Грузим товары сразу
   },
   init: () => {
     const t = localStorage.getItem(LS_KEY);
-    if(t) { document.getElementById('token').value = t; Orders.load(); }
+    if(t) { UI.get('token').value = t; Auth.login(); }
+  }
+};
+
+const Nav = {
+  to: (tab) => {
+    document.querySelectorAll('.view').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('active'));
+    UI.get('view-'+tab).classList.add('active');
+    
+    // Highlight btn
+    const btns = document.querySelectorAll('.nav-btn');
+    if(tab==='orders') btns[0].classList.add('active');
+    if(tab==='products') btns[1].classList.add('active');
   }
 };
 
 const Orders = {
-  setFilter: (tab, el) => {
-    STATE.orderTab = tab;
-    document.querySelectorAll('.tab-sub').forEach(e => e.classList.remove('active'));
+  filter: (tab, el) => {
+    CFG.orderTab = tab;
+    document.querySelectorAll('.st-tab').forEach(e => e.classList.remove('active'));
     el.classList.add('active');
     Orders.render();
   },
   load: async () => {
-    const res = await API.adminGetOrders(Auth.getToken());
-    if(res && res.ok) {
-      STATE.orders = res.orders;
-      Orders.render();
-    } else alert("Ошибка доступа");
+    try {
+      const res = await API.adminGetOrders(Auth.token());
+      if(res && res.ok) {
+        DATA.orders = res.orders || [];
+        Stats.update();
+        Orders.render();
+      }
+    } catch(e) { console.error(e); }
   },
   render: () => {
-    const list = document.getElementById('orders-list');
-    const tab = STATE.orderTab;
+    const q = UI.get('ord-search').value.toLowerCase();
+    const list = UI.get('orders-list');
     
-    const filtered = STATE.orders.filter(o => {
-        if (tab === 'new') return o.status === 'new';
-        if (tab === 'work') return ['in_work', 'assembled', 'shipped'].includes(o.status);
-        if (tab === 'done') return ['done', 'archived', 'canceled'].includes(o.status);
-        return false;
+    const filtered = DATA.orders.filter(o => {
+      // Filter by tab
+      const s = o.status;
+      let matchTab = false;
+      if(CFG.orderTab === 'new' && s === 'new') matchTab = true;
+      if(CFG.orderTab === 'work' && ['in_work','assembled','shipped'].includes(s)) matchTab = true;
+      if(CFG.orderTab === 'done' && ['done','archived','canceled'].includes(s)) matchTab = true;
+      
+      // Filter by search
+      const text = (o.order_id + o.name + o.phone).toLowerCase();
+      const matchSearch = !q || text.includes(q);
+      
+      return matchTab && matchSearch;
     });
 
-    if (filtered.length === 0) {
-        list.innerHTML = '<div style="text-align:center;padding:20px;color:#999">Пусто</div>';
-        return;
+    if(filtered.length === 0) {
+      list.innerHTML = `<div style="text-align:center;padding:40px;color:#9ca3af">Список пуст</div>`;
+      return;
     }
 
     list.innerHTML = filtered.map(o => {
+      const date = new Date(o.ts).toLocaleString('ru-RU', {month:'short', day:'numeric', hour:'2-digit', minute:'2-digit'});
+      const items = (o.items||[]).map(i => `<div>${i.name} <b>x${i.qty}</b></div>`).join('');
+      
       let actions = '';
-      if (tab === 'new') {
-          actions = `<button class="btn btn-p" onclick="Orders.setStatus('${o.order_id}', 'in_work')">Принять</button>`;
-      } else if (tab === 'work') {
-          actions = `
-            <button class="btn" onclick="Orders.setStatus('${o.order_id}', 'assembled')">Собран</button>
-            <button class="btn" onclick="Orders.setStatus('${o.order_id}', 'shipped')">Отправлен</button>
-            <button class="btn btn-p" onclick="Orders.setStatus('${o.order_id}', 'done')">Готов</button>
-            <button class="btn btn-d" onclick="Orders.setStatus('${o.order_id}', 'archived')">Архив</button>
-          `;
+      if(CFG.orderTab === 'new') {
+        actions = `<button class="btn-act btn-green" onclick="Orders.set('${o.order_id}','in_work')">Принять</button>`;
+      } else if(CFG.orderTab === 'work') {
+        actions = `
+          <button class="btn-act" onclick="Orders.set('${o.order_id}','assembled')">Собран</button>
+          <button class="btn-act" onclick="Orders.set('${o.order_id}','shipped')">Отправлен</button>
+          <button class="btn-act btn-green" onclick="Orders.set('${o.order_id}','done')">Готов</button>
+          <button class="btn-act" style="color:#ef4444;border-color:#fca5a5" onclick="Orders.set('${o.order_id}','canceled')">Отмена</button>
+        `;
       } else {
-          actions = `<button class="btn" onclick="Orders.setStatus('${o.order_id}', 'in_work')">Вернуть</button>`;
+        actions = `<button class="btn-act" onclick="Orders.set('${o.order_id}','in_work')">Вернуть</button>`;
+      }
+      
+      // Archive btn
+      if(CFG.orderTab !== 'new' && o.status !== 'archived') {
+        actions += `<button class="btn-act" title="В архив" onclick="Orders.set('${o.order_id}','archived')"><i class="fa-solid fa-box-archive"></i></button>`;
       }
 
       return `
-      <div class="ord-card">
-        <div class="ord-head">
-          <span>#${o.order_id} <span class="st-badge">${o.status}</span></span>
-          <span style="font-weight:400;color:#6b7280">${new Date(o.ts).toLocaleTimeString().slice(0,5)}</span>
+        <div class="ord-card">
+          <div class="ord-head">
+            <span class="ord-id">#${o.order_id}</span>
+            <span class="ord-time">${date}</span>
+          </div>
+          <div class="ord-body">
+            <div class="ord-row"><div class="ord-icon"><i class="fa-solid fa-user"></i></div> <b>${o.name}</b></div>
+            <div class="ord-row"><div class="ord-icon"><i class="fa-solid fa-phone"></i></div> <a href="tel:${o.phone}">${o.phone}</a></div>
+            <div class="ord-row"><div class="ord-icon"><i class="fa-solid fa-location-dot"></i></div> ${o.city}</div>
+            <div class="ord-items">${items || 'Нет товаров'}</div>
+          </div>
+          <div class="ord-foot">
+            <div class="ord-total">${new Intl.NumberFormat('ru-RU').format(o.total)} ₽</div>
+            <div style="display:flex">${actions}</div>
+          </div>
         </div>
-        <div><b>${o.name}</b> (${o.phone})</div>
-        <div style="font-size:13px;color:#4b5563;margin-top:4px">${o.city}</div>
-        <div style="margin-top:8px;font-weight:700">${o.total} ₽</div>
-        <div class="ord-actions">${actions}</div>
-      </div>
-    `}).join('');
+      `;
+    }).join('');
   },
-  setStatus: async (id, st) => {
+  set: async (id, st) => {
     if(st !== 'archived' && !confirm('Сменить статус?')) return;
-    await API.adminUpdateOrderStatus(Auth.getToken(), id, st);
+    await API.adminUpdateOrderStatus(Auth.token(), id, st);
     Orders.load();
+  }
+};
+
+const Stats = {
+  update: () => {
+    const total = DATA.orders.length;
+    const isNew = DATA.orders.filter(o => o.status === 'new').length;
+    const today = new Date().toDateString();
+    const sum = DATA.orders.reduce((acc, o) => {
+      return (new Date(o.ts).toDateString() === today) ? acc + Number(o.total) : acc;
+    }, 0);
+    
+    UI.get('st-total').textContent = total;
+    UI.get('st-new').textContent = isNew;
+    UI.get('st-sum').textContent = new Intl.NumberFormat('ru-RU').format(sum) + " ₽";
   }
 };
 
 const Products = {
   load: async () => {
-    const res = await API.fetchJson('admin_products', { params: { token: Auth.getToken() }});
+    const res = await API.fetchJson('admin_products', { params: { token: Auth.token() }});
     if(res && res.ok) {
-      STATE.products = res.products;
-      STATE.categories = res.categories;
+      DATA.products = res.products || [];
+      DATA.categories = res.categories || [];
       Products.render();
     }
   },
   render: () => {
-    const list = document.getElementById('products-list');
-    list.innerHTML = STATE.products.map(p => `
-      <div class="prod-card">
+    const q = UI.get('prod-search').value.toLowerCase();
+    const list = UI.get('products-list');
+    
+    const filtered = DATA.products.filter(p => (p.title || "").toLowerCase().includes(q));
+    
+    list.innerHTML = filtered.map(p => `
+      <div class="prod-card" onclick='Products.edit(${JSON.stringify(p)})'>
         <div class="prod-img">
-          ${p.image_url ? `<img src="${p.image_url}">` : ''}
-          <div class="prod-edit-btn" onclick='Products.edit(${JSON.stringify(p)})'><i class="fa-solid fa-pen"></i></div>
+          ${p.image_url ? `<img src="${p.image_url}">` : `<div class="prod-no-img"><i class="fa-solid fa-image"></i></div>`}
+          <div class="btn-edit-abs"><i class="fa-solid fa-pen"></i></div>
         </div>
-        <div class="prod-body">
+        <div class="prod-info">
+          <div class="prod-cat">${p.category_id || '---'}</div>
           <div class="prod-title">${p.title}</div>
-          <div class="prod-price">${p.price} ₽</div>
+          <div class="prod-price-row">
+             <div class="prod-price">${p.price} ₽</div>
+             ${p.old_price ? `<div class="prod-old-price">${p.old_price}</div>` : ''}
+          </div>
         </div>
       </div>
     `).join('');
   },
   edit: (p) => {
-    document.getElementById('p-id').value = p.id || "";
-    document.getElementById('p-title').value = p.title || "";
-    document.getElementById('p-price').value = p.price || "";
-    document.getElementById('p-desc').value = p.desc || "";
-    document.getElementById('p-img-url').value = p.image_url || "";
+    UI.get('p-id').value = p.id || "";
+    UI.get('p-title').value = p.title || "";
+    UI.get('p-price').value = p.price || "";
+    UI.get('p-old').value = p.old_price || "";
+    UI.get('p-desc').value = p.desc || "";
+    UI.get('p-img-url').value = p.image_url || "";
     
-    const catSel = document.getElementById('p-cat');
-    catSel.innerHTML = STATE.categories.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
-    if(p.category_id) catSel.value = p.category_id;
+    // Categories
+    const sel = UI.get('p-cat');
+    sel.innerHTML = '<option value="all">Без категории</option>' + 
+      DATA.categories.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+    if(p.category_id) sel.value = p.category_id;
 
-    const preview = document.getElementById('p-img-preview');
-    const ph = document.getElementById('p-img-placeholder');
+    // Image
+    const prev = UI.get('p-img-prev');
+    const ph = UI.get('p-img-ph');
     if(p.image_url) {
-      preview.src = p.image_url;
-      preview.style.display = 'block';
+      prev.src = p.image_url;
+      prev.style.display = 'block';
       ph.style.display = 'none';
     } else {
-      preview.style.display = 'none';
+      prev.style.display = 'none';
       ph.style.display = 'block';
     }
 
-    document.getElementById('btn-del-prod').style.display = p.id ? 'block' : 'none';
-    document.getElementById('prod-modal').classList.add('active');
+    UI.modal('prod', true);
   },
-  uploadImage: async (input) => {
-    const file = input.files[0];
+  upload: async (inp) => {
+    const file = inp.files[0];
     if(!file) return;
     
-    const box = document.getElementById('p-img-box');
+    const box = UI.get('p-img-box');
     box.classList.add('loading');
-
+    
     const reader = new FileReader();
     reader.onload = function(e) {
       const img = new Image();
       img.onload = async function() {
-        const canvas = document.createElement('canvas');
-        const ctx = canvas.getContext('2d');
-        const MAX = 800;
+        const cvs = document.createElement('canvas');
+        const ctx = cvs.getContext('2d');
+        const MAX = 1000; 
         let w = img.width, h = img.height;
-        if(w > h && w > MAX) { h *= MAX/w; w = MAX; }
-        else if(h > MAX) { w *= MAX/h; h = MAX; }
-        canvas.width = w; canvas.height = h;
-        ctx.drawImage(img, 0, 0, w, h);
+        if(w>h && w>MAX) { h*=MAX/w; w=MAX; } else if(h>MAX) { w*=MAX/h; h=MAX; }
+        cvs.width=w; cvs.height=h;
+        ctx.drawImage(img,0,0,w,h);
         
-        const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
-        const base64 = dataUrl.split(',')[1];
-
+        const b64 = cvs.toDataURL('image/jpeg', 0.8).split(',')[1];
+        
         const res = await API.fetchJson('admin_upload_image', {
-          method: 'POST',
-          body: { token: Auth.getToken(), data: base64, mime: 'image/jpeg' }
+          method: 'POST', 
+          body: { token: Auth.token(), data: b64 }
         });
-
+        
         box.classList.remove('loading');
         if(res && res.ok) {
-          document.getElementById('p-img-url').value = res.url;
-          document.getElementById('p-img-preview').src = res.url;
-          document.getElementById('p-img-preview').style.display = 'block';
-          document.getElementById('p-img-placeholder').style.display = 'none';
-        } else {
-          alert('Ошибка загрузки фото');
-        }
+          UI.get('p-img-url').value = res.url;
+          UI.get('p-img-prev').src = res.url;
+          UI.get('p-img-prev').style.display = 'block';
+          UI.get('p-img-ph').style.display = 'none';
+        } else alert('Ошибка фото');
       };
       img.src = e.target.result;
     };
@@ -333,36 +472,44 @@ const Products = {
   },
   save: async () => {
     const item = {
-      id: document.getElementById('p-id').value,
-      title: document.getElementById('p-title').value,
-      price: document.getElementById('p-price').value,
-      category: document.getElementById('p-cat').value,
-      desc: document.getElementById('p-desc').value,
-      image_url: document.getElementById('p-img-url').value,
+      id: UI.get('p-id').value,
+      title: UI.get('p-title').value,
+      price: UI.get('p-price').value,
+      old_price: UI.get('p-old').value,
+      category: UI.get('p-cat').value,
+      desc: UI.get('p-desc').value,
+      image_url: UI.get('p-img-url').value,
       in_stock: 1
     };
-
+    
     if(!item.title || !item.price) return alert("Заполни название и цену");
-
+    
+    const btn = document.querySelector('.btn-save');
+    const oldText = btn.textContent;
+    btn.textContent = "Сохранение...";
+    
     await API.fetchJson('admin_save_product', {
-      method: 'POST',
-      body: { token: Auth.getToken(), item: item }
+      method: 'POST', 
+      body: { token: Auth.token(), item }
     });
-
-    document.getElementById('prod-modal').classList.remove('active');
+    
+    btn.textContent = oldText;
+    UI.modal('prod', false);
     Products.load();
   },
   del: async () => {
-    if(!confirm("Удалить товар?")) return;
-    const id = document.getElementById('p-id').value;
+    if(!confirm("Удалить?")) return;
     await API.fetchJson('admin_delete_product', {
       method: 'POST',
-      body: { token: Auth.getToken(), id: id }
+      body: { token: Auth.token(), id: UI.get('p-id').value }
     });
-    document.getElementById('prod-modal').classList.remove('active');
+    UI.modal('prod', false);
     Products.load();
   }
 };
+
+UI.get('ord-search').addEventListener('input', Orders.render);
+UI.get('prod-search').addEventListener('input', Products.render);
 
 Auth.init();
 </script>
