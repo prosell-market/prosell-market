@@ -1,6 +1,6 @@
 // api.js - Networking layer
 // Убедись, что этот URL соответствует твоему актуальному Apps Script (Deploy -> Web App URL)
-const DATA_URL = "https://script.google.com/macros/s/AKfycbxDMVo0B_0bPgqNx36OowSjk93hzU5NiCEPFNo1GdXdlomaOp3aUO_xs2Si2PqheLOk/exec";
+const DATA_URL = "https://script.google.com/macros/s/AKfycbzD2YbXgZBoR3BA7y6XQbST7_1aSxsUb2M7tu-ruK4qxqPBj31gaLhn9OyGJOKF9hf-/exec";
 
 // Если используешь API_KEY в Code.gs, впиши его сюда
 const API_KEY = "";
