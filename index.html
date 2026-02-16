@@ -3,231 +3,612 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>ProSell Shop</title>
+  <title>ProSell Market</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
-  <link rel="stylesheet" href="styles.css" />
+  <style>
+    :root {
+      /* Палитра Cyber Dark */
+      --bg: #0F1115;
+      --card: #1E222B;
+      --card-highlight: #252A33;
+      --text: #FFFFFF;
+      --text-muted: #8E96A3;
+      --brand-grad: linear-gradient(135deg, #667EEA 0%, #764BA2 100%);
+      --accent-green: #00E096;
+      --accent-hot: linear-gradient(135deg, #FF6B6B 0%, #FF8E53 100%);
+      --input-bg: #16181D;
+      --shadow: 0 8px 24px rgba(0,0,0,0.25);
+      --glow: 0 4px 15px rgba(118, 75, 162, 0.4);
+      --r1: 24px;
+      --r2: 18px;
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      overflow-x: hidden;
+      padding-bottom: calc(90px + var(--safe-bottom));
+    }
+
+    /* --- Loader --- */
+    .app-loader {
+      position: fixed; inset: 0; background: var(--bg); z-index: 9999;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      transition: opacity 0.3s;
+    }
+    .app-loader.hidden { opacity: 0; pointer-events: none; }
+    .spinner {
+      width: 40px; height: 40px; border: 4px solid var(--card-highlight);
+      border-top-color: #667EEA; border-radius: 50%;
+      animation: spin 1s linear infinite; margin-bottom: 15px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* --- Layout --- */
+    .page { display: none; padding-bottom: 20px; animation: fadeIn 0.3s ease; }
+    .page.active { display: block; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* --- Topbar --- */
+    .topbar {
+      position: sticky; top: 0; z-index: 20;
+      background: rgba(15, 17, 21, 0.95);
+      backdrop-filter: blur(10px);
+      padding: 12px 16px;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .brand { font-size: 20px; font-weight: 800; letter-spacing: 0.5px; }
+    .brand span { background: var(--brand-grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    
+    .search-btn {
+      width: 40px; height: 40px; border-radius: 12px; background: var(--card-highlight);
+      display: flex; align-items: center; justify-content: center; color: var(--text);
+      border: 1px solid rgba(255,255,255,0.05); cursor: pointer;
+    }
+
+    /* --- Banners --- */
+    .banners {
+      display: flex; gap: 12px; padding: 16px; overflow-x: auto; scrollbar-width: none;
+    }
+    .banners::-webkit-scrollbar { display: none; }
+    .banner {
+      min-width: 260px; height: 120px; border-radius: 20px; padding: 16px;
+      background: var(--brand-grad); color: #fff; position: relative; overflow: hidden;
+      box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3); display: flex; flex-direction: column; justify-content: center;
+    }
+    .banner h3 { font-size: 20px; font-weight: 800; z-index: 2; margin-bottom: 4px; }
+    .banner p { font-size: 13px; font-weight: 600; opacity: 0.9; z-index: 2; }
+    .banner i { position: absolute; right: 10px; bottom: -10px; font-size: 70px; opacity: 0.2; transform: rotate(-15deg); }
+
+    /* --- Categories --- */
+    .cats { display: flex; gap: 8px; padding: 0 16px 16px; overflow-x: auto; scrollbar-width: none; }
+    .cats::-webkit-scrollbar { display: none; }
+    .cat-chip {
+      padding: 8px 16px; border-radius: 20px; background: var(--card);
+      border: 1px solid rgba(255,255,255,0.05); color: var(--text-muted);
+      font-size: 13px; font-weight: 600; white-space: nowrap; cursor: pointer; transition: 0.2s;
+    }
+    .cat-chip.active { background: #fff; color: #000; border-color: #fff; }
+
+    /* --- Grid --- */
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 0 16px; }
+    .card {
+      background: var(--card); border-radius: 20px; padding: 10px;
+      border: 1px solid rgba(255,255,255,0.03); box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+      display: flex; flex-direction: column; position: relative;
+    }
+    .card-img {
+      height: 120px; background: var(--card-highlight); border-radius: 16px;
+      display: flex; align-items: center; justify-content: center; margin-bottom: 10px; overflow: hidden;
+    }
+    .card-img img { width: 100%; height: 100%; object-fit: cover; }
+    .card-img i { font-size: 40px; color: rgba(255,255,255,0.1); }
+    
+    .card-title {
+      font-size: 13px; font-weight: 600; line-height: 1.3; color: #fff;
+      margin-bottom: auto; min-height: 34px;
+      display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+    }
+    .card-foot { display: flex; justify-content: space-between; align-items: flex-end; margin-top: 8px; }
+    .price-box { display: flex; flex-direction: column; }
+    .price { font-size: 16px; font-weight: 800; color: #fff; }
+    .old-price { font-size: 11px; text-decoration: line-through; color: var(--text-muted); }
+    
+    .btn-add {
+      width: 32px; height: 32px; border-radius: 50%; background: var(--brand-grad);
+      display: flex; align-items: center; justify-content: center; color: #fff;
+      box-shadow: var(--glow); cursor: pointer; transition: 0.2s;
+    }
+    .btn-add:active { transform: scale(0.9); }
+
+    /* --- Cart Page --- */
+    .page-title { padding: 20px 16px; font-size: 24px; font-weight: 800; }
+    .cart-list { padding: 0 16px; }
+    .c-item {
+      background: var(--card); border-radius: 18px; padding: 12px; margin-bottom: 10px;
+      display: flex; align-items: center; gap: 12px;
+    }
+    .c-info { flex: 1; }
+    .c-name { font-size: 14px; font-weight: 700; margin-bottom: 4px; }
+    .c-price { color: var(--accent-green); font-weight: 700; font-size: 13px; }
+    .c-ctrl {
+      background: var(--card-highlight); border-radius: 10px; display: flex; align-items: center;
+      padding: 4px; gap: 8px;
+    }
+    .c-btn { width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; font-weight: 700; cursor: pointer; }
+    
+    .checkout-bar {
+      position: fixed; left: 16px; right: 16px; bottom: calc(80px + var(--safe-bottom));
+      background: rgba(30, 34, 43, 0.95); backdrop-filter: blur(15px);
+      border-radius: 20px; padding: 16px; z-index: 50; border: 1px solid rgba(255,255,255,0.05);
+      display: none;
+    }
+    .checkout-row { display: flex; justify-content: space-between; margin-bottom: 12px; font-weight: 700; font-size: 16px; }
+    .btn-main {
+      width: 100%; padding: 14px; border-radius: 14px; border: none;
+      background: var(--brand-grad); color: #fff; font-weight: 700; font-size: 16px;
+      box-shadow: var(--glow); cursor: pointer;
+    }
+
+    /* --- Profile / Form --- */
+    .form-box { padding: 0 16px; }
+    .inp-group { margin-bottom: 16px; }
+    .label { font-size: 12px; color: var(--text-muted); font-weight: 700; margin-bottom: 6px; display: block; }
+    .sub-label { font-size: 10px; color: #667EEA; margin-left: 4px; }
+    .input {
+      width: 100%; background: var(--input-bg); border: 1px solid rgba(255,255,255,0.05);
+      border-radius: 14px; padding: 14px; color: #fff; font-size: 15px; outline: none;
+    }
+    .input:focus { border-color: #667EEA; background: var(--card); }
+
+    /* --- Info Page --- */
+    .menu-btn {
+      background: var(--card); padding: 16px; border-radius: 16px; margin: 0 16px 10px;
+      display: flex; align-items: center; justify-content: space-between; font-weight: 600;
+      border: 1px solid rgba(255,255,255,0.03); cursor: pointer;
+    }
+    .info-block {
+      margin: 0 16px 20px; padding: 16px; border-radius: 16px;
+      background: rgba(102, 126, 234, 0.1); border: 1px solid rgba(102, 126, 234, 0.2);
+    }
+    .info-title { color: #667EEA; font-weight: 800; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
+    .info-text { font-size: 13px; line-height: 1.5; color: #d1d5db; }
+
+    /* --- Tabbar --- */
+    .tabbar {
+      position: fixed; bottom: 0; left: 0; right: 0;
+      background: rgba(15, 17, 21, 0.85); backdrop-filter: blur(20px);
+      border-top: 1px solid rgba(255,255,255,0.05);
+      display: grid; grid-template-columns: repeat(4, 1fr);
+      padding: 10px 0 calc(20px + var(--safe-bottom)); z-index: 100;
+    }
+    .tab-btn {
+      background: none; border: none; color: var(--text-muted);
+      display: flex; flex-direction: column; align-items: center; gap: 4px;
+      font-size: 10px; font-weight: 700; cursor: pointer; position: relative;
+    }
+    .tab-btn i { font-size: 20px; transition: 0.2s; }
+    .tab-btn.active { color: #fff; }
+    .tab-btn.active i { color: #667EEA; text-shadow: 0 0 10px rgba(102, 126, 234, 0.5); }
+    .badge {
+      position: absolute; top: -2px; right: 20px; background: var(--accent-hot);
+      color: #fff; font-size: 9px; padding: 2px 5px; border-radius: 6px;
+      display: none;
+    }
+
+    /* --- Modals --- */
+    .sheet {
+      position: fixed; left: 0; right: 0; bottom: -100%;
+      background: #1E222B; border-radius: 24px 24px 0 0;
+      padding: 20px 16px 40px; z-index: 200; transition: 0.3s ease;
+      box-shadow: 0 -10px 40px rgba(0,0,0,0.5);
+    }
+    .sheet.open { bottom: 0; }
+    .overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 150;
+      opacity: 0; pointer-events: none; transition: 0.3s; backdrop-filter: blur(2px);
+    }
+    .overlay.open { opacity: 1; pointer-events: auto; }
+    
+    .sheet-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+    .sheet-title { font-size: 18px; font-weight: 800; }
+    
+    /* Success Screen */
+    .full-screen {
+      position: fixed; inset: 0; background: var(--bg); z-index: 300;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      text-align: center; padding: 40px; display: none;
+    }
+    .full-screen.show { display: flex; animation: fadeIn 0.3s; }
+    .success-icon {
+      width: 80px; height: 80px; border-radius: 50%; background: var(--accent-green);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 40px; color: #000; margin-bottom: 20px;
+      box-shadow: 0 0 20px rgba(0, 224, 150, 0.4);
+    }
+
+    .toast {
+      position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-50px);
+      background: #fff; color: #000; padding: 10px 20px; border-radius: 20px;
+      font-weight: 600; font-size: 14px; opacity: 0; transition: 0.3s; z-index: 500;
+    }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  </style>
 </head>
 <body>
 
-  <div id="app-loader" class="app-loader">
+  <div id="loader" class="app-loader">
     <div class="spinner"></div>
-    <div class="loader-text">Загрузка...</div>
-    <button id="retry-init-btn" class="btn btn-secondary hidden">Повторить</button>
+    <div style="font-weight:600; color:#667EEA">Загрузка...</div>
   </div>
 
-  <div id="app" class="hidden">
+  <div id="success-screen" class="full-screen">
+    <div class="success-icon"><i class="fa-solid fa-check"></i></div>
+    <h2 style="margin-bottom:10px;">Заказ оформлен!</h2>
+    <p style="color:var(--text-muted); margin-bottom:30px; line-height:1.5;">
+      Ожидайте появления заказа в вашем личном кабинете <b>Ozon</b>.<br>
+      Статус можно отследить в разделе "Мои заказы".
+    </p>
+    <button class="btn-main" onclick="location.reload()">Отлично</button>
+  </div>
 
-    <div id="pages">
-
-      <section id="page-shop" class="page active">
-        <header class="topbar sticky">
-          <div class="header-row">
-            <div class="brand-col">
-              <div class="app-title" id="lbl-app-title">Shop</div>
-              <div class="app-subtitle" id="lbl-app-subtitle">Welcome</div>
-            </div>
-            <button class="btn-icon" id="btn-open-search" aria-label="Поиск">
-              <i class="fa-solid fa-magnifying-glass"></i>
-            </button>
-          </div>
-
-          <div class="categories-scroll" id="categories-container"></div>
-        </header>
-
-        <div class="content-scroll">
-          <div class="product-grid" id="product-grid"></div>
-          <div class="spacer-bottom"></div>
-        </div>
-      </section>
-
-      <section id="page-cart" class="page">
-        <header class="topbar">
-          <div class="header-title" id="lbl-tab-cart">Корзина</div>
-        </header>
-
-        <div class="content-scroll">
-          <div id="cart-list" class="cart-list"></div>
-
-          <div id="cart-empty-state" class="empty-state hidden">
-            <div class="empty-icon"><i class="fa-solid fa-basket-shopping"></i></div>
-            <h3 id="lbl-empty-title">Пусто</h3>
-            <p id="lbl-empty-subtitle">Добавьте товары</p>
-            <button class="btn btn-primary" id="btn-go-shop">В магазин</button>
-          </div>
-
-          <div id="cart-summary" class="cart-summary hidden">
-            <div class="summary-row">
-              <span>Итого:</span>
-              <span id="cart-total-price" class="total-price">0 ₽</span>
-            </div>
-            <button class="btn btn-primary btn-block" id="btn-checkout">Оформить</button>
-          </div>
-
-          <div class="spacer-bottom"></div>
-        </div>
-      </section>
-
-      <section id="page-profile" class="page">
-        <header class="topbar">
-          <div class="header-title" id="lbl-tab-profile">Профиль</div>
-        </header>
-
-        <div class="content-scroll padded">
-          <div class="hint-box">
-            <i class="fa-solid fa-circle-info"></i>
-            <span id="lbl-profile-hint">Заполните данные</span>
-          </div>
-
-          <form id="profile-form" class="profile-form" onsubmit="return false;">
-            <div class="form-group">
-              <label for="inp-name">Имя *</label>
-              <input type="text" id="inp-name" class="input" placeholder="Иван Иванов" autocomplete="name" />
-            </div>
-
-            <div class="form-group">
-              <label for="inp-phone">Телефон *</label>
-              <input type="tel" id="inp-phone" class="input" placeholder="+7 999 000-00-00" autocomplete="tel" inputmode="tel" />
-            </div>
-
-            <div class="form-group">
-              <label for="inp-city">Город *</label>
-              <input type="text" id="inp-city" class="input" placeholder="Москва" autocomplete="address-level2" />
-            </div>
-
-            <div class="form-group">
-              <label for="inp-comment">Комментарий</label>
-              <textarea id="inp-comment" class="input textarea" rows="3" placeholder="Код домофона, этаж..."></textarea>
-            </div>
-          </form>
-
-          <div class="support-section">
-            <button class="btn btn-ghost btn-block" id="btn-support">
-              <i class="fa-brands fa-telegram"></i> <span id="lbl-support">Поддержка</span>
-            </button>
-          </div>
-
-          <div class="spacer-bottom"></div>
-        </div>
-      </section>
-
-      <section id="page-info" class="page">
-        <header class="topbar">
-          <div class="header-title" id="lbl-tab-info">Инфо</div>
-        </header>
-
-        <div class="content-scroll padded">
-          <div class="info-card">
-            <h3>ProSell Shop</h3>
-            <p>Версия 1.0.0</p>
-
-            <button class="btn btn-secondary btn-block" id="btn-open-notifications">
-              <i class="fa-solid fa-bell"></i> <span id="lbl-open-notif">Уведомления</span>
-            </button>
-          </div>
-        </div>
-      </section>
-
-    </div>
-
-    <nav class="tabbar">
-      <button class="tab-btn active" data-tab="shop">
-        <i class="fa-solid fa-store"></i>
-        <span id="lbl-menu-shop">Магазин</span>
-      </button>
-
-      <button class="tab-btn" data-tab="cart">
-        <div class="icon-wrap">
-          <i class="fa-solid fa-cart-shopping"></i>
-          <span id="badge-cart" class="badge hidden">0</span>
-        </div>
-        <span id="lbl-menu-cart">Корзина</span>
-      </button>
-
-      <button class="tab-btn" data-tab="profile">
-        <i class="fa-solid fa-user"></i>
-        <span id="lbl-menu-profile">Профиль</span>
-      </button>
-
-      <button class="tab-btn" data-tab="info">
-        <i class="fa-solid fa-circle-info"></i>
-        <span id="lbl-menu-info">Инфо</span>
-      </button>
-    </nav>
-
-    <div id="sheet-search" class="sheet">
-      <div class="sheet-overlay" data-close="search"></div>
-      <div class="sheet-content">
-        <div class="sheet-header">
-          <div class="sheet-handle"></div>
-          <input type="text" id="inp-search" class="input search-input" placeholder="Поиск..." />
-        </div>
-        <div class="sheet-body" id="search-results"></div>
+  <div id="app" style="display:none">
+    
+    <section id="page-shop" class="page active">
+      <div class="topbar">
+        <div class="brand">PRO<span>SELL</span></div>
+        <div class="search-btn" onclick="openSearch()"><i class="fa-solid fa-magnifying-glass"></i></div>
       </div>
-    </div>
 
-    <div id="sheet-product" class="sheet">
-      <div class="sheet-overlay" data-close="product"></div>
-      <div class="sheet-content">
-        <div class="sheet-header">
-          <div class="sheet-handle"></div>
-          <button class="btn-close" data-close="product" aria-label="Закрыть"><i class="fa-solid fa-xmark"></i></button>
+      <div class="banners">
+        <div class="banner">
+          <h3>Сборки Xeon</h3><p>Топ за свои деньги</p>
+          <i class="fa-solid fa-microchip"></i>
         </div>
-
-        <div class="sheet-body padded" id="product-detail-body"></div>
-
-        <div class="sheet-footer">
-          <div class="price-block">
-            <span id="pd-price" class="price-lg">0 ₽</span>
-            <span id="pd-old-price" class="price-old hidden"></span>
-          </div>
-
-          <div class="qty-control" id="pd-qty-control">
-            <button class="btn-qty" id="btn-pd-minus" aria-label="Минус"><i class="fa-solid fa-minus"></i></button>
-            <span id="pd-qty-val">1</span>
-            <button class="btn-qty" id="btn-pd-plus" aria-label="Плюс"><i class="fa-solid fa-plus"></i></button>
-          </div>
-
-          <button class="btn btn-primary flex-grow" id="btn-pd-add">
-            <span id="lbl-btn-add">Добавить</span>
-          </button>
+        <div class="banner" style="background:var(--accent-hot)">
+          <h3>Скидки</h3><p>Успей купить</p>
+          <i class="fa-solid fa-fire"></i>
         </div>
       </div>
-    </div>
 
-    <div id="modal-confirm" class="modal">
-      <div class="modal-overlay"></div>
-      <div class="modal-content">
-        <h3 id="lbl-confirm-title">Подтверждение</h3>
-        <div class="modal-body">
-          <div id="confirm-summary" class="confirm-summary"></div>
-          <p class="confirm-text">Вы подтверждаете оформление заказа?</p>
+      <div class="cats" id="cats-container"></div>
+      <div class="grid" id="prod-grid"></div>
+    </section>
+
+    <section id="page-cart" class="page">
+      <div class="page-title">Корзина</div>
+      <div id="cart-list" class="cart-list"></div>
+      <div id="cart-empty" style="text-align:center; padding:40px; color:var(--text-muted)">
+        <i class="fa-solid fa-basket-shopping" style="font-size:40px; margin-bottom:10px"></i><br>Пусто
+      </div>
+      
+      <div class="checkout-bar" id="checkout-bar">
+        <div class="checkout-row">
+          <span>Итого:</span><span id="cart-total" style="color:#667EEA">0 ₽</span>
         </div>
-        <div class="modal-footer">
-          <button class="btn btn-secondary" id="btn-confirm-cancel">Отмена</button>
-          <button class="btn btn-primary" id="btn-confirm-ok">Подтверждаю</button>
+        <button class="btn-main" onclick="startCheckout()">Оформить</button>
+      </div>
+    </section>
+
+    <section id="page-profile" class="page">
+      <div class="page-title">Профиль</div>
+      <div class="form-box">
+        <div class="inp-group">
+          <label class="label">Имя</label>
+          <input id="inp-name" class="input" placeholder="Иван Иванов" />
+        </div>
+        <div class="inp-group">
+          <label class="label">Телефон <span class="sub-label">(Привязанный к Ozon)</span></label>
+          <input id="inp-phone" class="input" type="tel" placeholder="+7 999 000-00-00" />
+        </div>
+        <div class="inp-group">
+          <label class="label">Город</label>
+          <input id="inp-city" class="input" placeholder="Москва" />
+        </div>
+        <div class="inp-group">
+          <label class="label">Адрес ПВЗ (Ozon / CDEK)</label>
+          <input id="inp-addr" class="input" placeholder="Улица, дом, ПВЗ..." />
+        </div>
+        <button class="btn-main" onclick="saveProfile()">Сохранить</button>
+      </div>
+    </section>
+
+    <section id="page-info" class="page">
+      <div class="page-title">Инфо</div>
+      
+      <div class="info-block">
+        <div class="info-title"><i class="fa-solid fa-truck-fast"></i> Доставка и оплата</div>
+        <div class="info-text">
+          Мы оформляем заказ через Ozon. Вам придет уведомление в приложение Ozon, где вы сможете безопасно оплатить товар и отслеживать доставку до выбранного ПВЗ.
+          <br><br>
+          <b>Важно:</b> Указывайте номер телефона, к которому привязан ваш аккаунт Ozon!
         </div>
       </div>
-    </div>
 
-    <div id="screen-success" class="full-screen-overlay hidden">
-      <div class="success-content">
-        <div class="success-icon"><i class="fa-solid fa-check"></i></div>
-        <h2 id="lbl-success-title">Заказ принят</h2>
-        <p id="lbl-success-subtitle">Спасибо за покупку</p>
-
-        <div class="success-actions">
-          <button class="btn btn-primary btn-block" id="btn-success-back">Вернуться</button>
-          <button class="btn btn-secondary btn-block" id="btn-success-notif">Уведомления</button>
-        </div>
+      <div class="menu-btn" onclick="openMyOrders()">
+        <span><i class="fa-solid fa-list-check" style="color:#667EEA; width:24px"></i> Мои заказы</span>
+        <i class="fa-solid fa-chevron-right" style="color:var(--text-muted)"></i>
       </div>
-    </div>
-
-    <div id="toast" class="toast">Сообщение</div>
+      
+      <div class="menu-btn">
+        <span><i class="fa-brands fa-telegram" style="color:#667EEA; width:24px"></i> Поддержка</span>
+        <i class="fa-solid fa-chevron-right" style="color:var(--text-muted)"></i>
+      </div>
+    </section>
 
   </div>
+
+  <div class="tabbar">
+    <button class="tab-btn active" onclick="Nav.go('shop')"><i class="fa-solid fa-store"></i>Главная</button>
+    <button class="tab-btn" onclick="Nav.go('cart')">
+      <i class="fa-solid fa-cart-shopping"></i>Корзина<div class="badge" id="cart-badge">0</div>
+    </button>
+    <button class="tab-btn" onclick="Nav.go('profile')"><i class="fa-solid fa-user"></i>Профиль</button>
+    <button class="tab-btn" onclick="Nav.go('info')"><i class="fa-solid fa-circle-info"></i>Инфо</button>
+  </div>
+
+  <div class="overlay" id="overlay" onclick="closeSheets()"></div>
+  <div class="sheet" id="sheet-search">
+    <div class="sheet-head">
+      <div class="sheet-title">Поиск</div>
+      <i class="fa-solid fa-xmark" style="font-size:24px" onclick="closeSheets()"></i>
+    </div>
+    <input id="search-inp" class="input" placeholder="Название товара..." oninput="Search.run()" />
+    <div id="search-res" style="margin-top:15px; display:flex; flex-direction:column; gap:10px;"></div>
+  </div>
+
+  <div id="toast" class="toast">Сохранено</div>
 
   <script src="api.js"></script>
-  <script src="app.js"></script>
+  <script>
+    /* --- LOGIC --- */
+    const TG = window.Telegram?.WebApp;
+    if(TG) { TG.expand(); TG.setHeaderColor('#0F1115'); TG.setBackgroundColor('#0F1115'); }
+
+    const LS_CART = "ps_cart_v5";
+    const LS_PROF = "ps_profile_v5";
+    
+    let STATE = {
+      cats: [],
+      products: [],
+      cart: JSON.parse(localStorage.getItem(LS_CART) || "[]"),
+      profile: JSON.parse(localStorage.getItem(LS_PROF) || "{}"),
+      activeCat: "all"
+    };
+
+    // --- INITIALIZATION ---
+    async function init() {
+      try {
+        const res = await API.getData();
+        if(res && res.categories) {
+          STATE.cats = res.categories;
+          STATE.products = res.products;
+          renderApp();
+          document.getElementById('loader').style.display = 'none';
+          document.getElementById('app').style.display = 'block';
+        }
+      } catch(e) {
+        alert("Ошибка загрузки. Проверьте интернет.");
+      }
+    }
+
+    function renderApp() {
+      renderCats();
+      renderProducts();
+      renderCart();
+      fillProfile();
+    }
+
+    // --- NAVIGATION ---
+    const Nav = {
+      go: (page) => {
+        document.querySelectorAll('.page').forEach(el => el.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+        document.getElementById('page-'+page).classList.add('active');
+        
+        // Highlight tab
+        const map = {shop:0, cart:1, profile:2, info:3};
+        document.querySelectorAll('.tab-btn')[map[page]].classList.add('active');
+        
+        if(page === 'cart') renderCart();
+      }
+    };
+
+    // --- SHOP ---
+    function renderCats() {
+      const c = document.getElementById('cats-container');
+      let html = `<div class="cat-chip active" onclick="setCat('all', this)">Все</div>`;
+      STATE.cats.forEach(cat => {
+        html += `<div class="cat-chip" onclick="setCat('${cat.id}', this)">${cat.name}</div>`;
+      });
+      c.innerHTML = html;
+    }
+
+    window.setCat = (id, el) => {
+      STATE.activeCat = id;
+      document.querySelectorAll('.cat-chip').forEach(e => e.classList.remove('active'));
+      el.classList.add('active');
+      renderProducts();
+    };
+
+    function renderProducts() {
+      const grid = document.getElementById('prod-grid');
+      const items = STATE.activeCat === 'all' ? STATE.products : STATE.products.filter(p => p.category_id === STATE.activeCat);
+      
+      grid.innerHTML = items.map(p => `
+        <div class="card">
+          <div class="card-img">
+            ${p.image_url ? `<img src="${p.image_url}">` : `<i class="fa-solid fa-microchip"></i>`}
+          </div>
+          <div class="card-title">${p.name}</div>
+          <div class="card-foot">
+            <div class="price-box">
+              <div class="price">${fmt(p.price)}</div>
+              ${p.old_price ? `<div class="old-price">${fmt(p.old_price)}</div>` : ''}
+            </div>
+            <div class="btn-add" onclick="Cart.add('${p.id}')"><i class="fa-solid fa-plus"></i></div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // --- CART ---
+    const Cart = {
+      add: (id) => {
+        const p = STATE.products.find(x => x.id === id);
+        const ex = STATE.cart.find(x => x.id === id);
+        if(ex) ex.qty++; else STATE.cart.push({ id: p.id, name: p.name, price: p.price, qty: 1 });
+        Cart.save();
+        toast("Добавлено");
+        TG?.HapticFeedback.impactOccurred('light');
+      },
+      change: (id, d) => {
+        const item = STATE.cart.find(x => x.id === id);
+        if(item) {
+          item.qty += d;
+          if(item.qty <= 0) STATE.cart = STATE.cart.filter(x => x.id !== id);
+          Cart.save();
+          renderCart();
+        }
+      },
+      save: () => {
+        localStorage.setItem(LS_CART, JSON.stringify(STATE.cart));
+        const cnt = STATE.cart.reduce((a,b) => a+b.qty, 0);
+        const badge = document.getElementById('cart-badge');
+        badge.innerText = cnt;
+        badge.style.display = cnt > 0 ? 'block' : 'none';
+      }
+    };
+
+    function renderCart() {
+      const list = document.getElementById('cart-list');
+      const empty = document.getElementById('cart-empty');
+      const bar = document.getElementById('checkout-bar');
+      
+      if(!STATE.cart.length) {
+        list.innerHTML = ''; empty.style.display = 'block'; bar.style.display = 'none';
+        return;
+      }
+      
+      empty.style.display = 'none';
+      bar.style.display = 'block';
+      
+      list.innerHTML = STATE.cart.map(i => `
+        <div class="c-item">
+          <div class="c-info">
+            <div class="c-name">${i.name}</div>
+            <div class="c-price">${fmt(i.price * i.qty)}</div>
+          </div>
+          <div class="c-ctrl">
+            <div class="c-btn" onclick="Cart.change('${i.id}', -1)">-</div>
+            <div style="font-weight:600; font-size:14px">${i.qty}</div>
+            <div class="c-btn" onclick="Cart.change('${i.id}', 1)">+</div>
+          </div>
+        </div>
+      `).join('');
+      
+      const total = STATE.cart.reduce((a,b) => a + b.price*b.qty, 0);
+      document.getElementById('cart-total').innerText = fmt(total);
+    }
+
+    // --- CHECKOUT ---
+    async function startCheckout() {
+      if(!STATE.profile.name || !STATE.profile.phone) {
+        toast("Заполните профиль!");
+        Nav.go('profile');
+        return;
+      }
+      
+      const btn = document.querySelector('#checkout-bar button');
+      btn.innerText = "Оформление...";
+      
+      const payload = {
+        tg: { id: TG?.initDataUnsafe?.user?.id, username: TG?.initDataUnsafe?.user?.username },
+        profile: STATE.profile,
+        items: STATE.cart,
+        total: STATE.cart.reduce((a,b) => a + b.price*b.qty, 0)
+      };
+
+      try {
+        const res = await API.createOrder(payload);
+        if(res.ok) {
+          STATE.cart = []; Cart.save(); renderCart();
+          document.getElementById('success-screen').classList.add('show');
+        } else alert("Ошибка заказа");
+      } catch(e) {
+        alert("Ошибка сети");
+      }
+      btn.innerText = "Оформить";
+    }
+
+    // --- PROFILE ---
+    function fillProfile() {
+      document.getElementById('inp-name').value = STATE.profile.name || "";
+      document.getElementById('inp-phone').value = STATE.profile.phone || "";
+      document.getElementById('inp-city').value = STATE.profile.city || "";
+      document.getElementById('inp-addr').value = STATE.profile.address || ""; // Используем address для ПВЗ
+    }
+
+    window.saveProfile = () => {
+      STATE.profile = {
+        name: document.getElementById('inp-name').value,
+        phone: document.getElementById('inp-phone').value,
+        city: document.getElementById('inp-city').value,
+        address: document.getElementById('inp-addr').value
+      };
+      localStorage.setItem(LS_PROF, JSON.stringify(STATE.profile));
+      toast("Сохранено");
+    };
+
+    // --- SEARCH ---
+    window.openSearch = () => {
+      document.getElementById('sheet-search').classList.add('open');
+      document.getElementById('overlay').classList.add('open');
+      setTimeout(() => document.getElementById('search-inp').focus(), 100);
+    };
+    
+    window.closeSheets = () => {
+      document.getElementById('sheet-search').classList.remove('open');
+      document.getElementById('overlay').classList.remove('open');
+    };
+
+    const Search = {
+      run: () => {
+        const q = document.getElementById('search-inp').value.toLowerCase();
+        const res = STATE.products.filter(p => p.name.toLowerCase().includes(q));
+        document.getElementById('search-res').innerHTML = res.map(p => `
+          <div class="c-item" onclick="Cart.add('${p.id}'); closeSheets()">
+            <div class="c-info">
+              <div class="c-name">${p.name}</div>
+              <div class="c-price">${fmt(p.price)}</div>
+            </div>
+            <div class="btn-add"><i class="fa-solid fa-plus"></i></div>
+          </div>
+        `).join('');
+      }
+    };
+
+    // --- MISC ---
+    window.openMyOrders = () => {
+      window.location.href = "notifications.html"; // Переход на страницу "Мои заказы"
+    };
+
+    function toast(msg) {
+      const t = document.getElementById('toast');
+      t.innerText = msg; t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), 2000);
+    }
+    
+    function fmt(n) { return new Intl.NumberFormat('ru-RU', {style:'currency', currency:'RUB', maximumFractionDigits:0}).format(n); }
+
+    // Start
+    init();
+  </script>
 </body>
 </html>
