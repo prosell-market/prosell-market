@@ -25,10 +25,24 @@
     
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-      background: var(--bg);
+      background-color: var(--bg);
       color: var(--text);
       overflow-x: hidden;
       padding-bottom: calc(90px + var(--safe-bottom));
+      min-height: 100vh;
+      position: relative;
+    }
+
+    /* ЭСТЕТИЧНЫЙ ГРАДИЕНТ (Подсветка) */
+    body::before {
+      content: "";
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: 
+        radial-gradient(circle at 50% 0%, rgba(102, 126, 234, 0.08) 0%, transparent 60%),
+        radial-gradient(circle at 85% 90%, rgba(118, 75, 162, 0.08) 0%, transparent 50%);
+      pointer-events: none;
+      z-index: -1;
     }
 
     /* --- Loader --- */
@@ -53,8 +67,8 @@
     /* --- Topbar --- */
     .topbar {
       position: sticky; top: 0; z-index: 20;
-      background: rgba(15, 17, 21, 0.95);
-      backdrop-filter: blur(10px);
+      background: rgba(15, 17, 21, 0.85); /* Более прозрачный для эстетики */
+      backdrop-filter: blur(20px);
       padding: 12px 16px;
       border-bottom: 1px solid rgba(255,255,255,0.05);
       display: flex; justify-content: space-between; align-items: center;
@@ -63,10 +77,11 @@
     .brand span { background: var(--brand-grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
     
     .search-btn {
-      width: 40px; height: 40px; border-radius: 12px; background: var(--card-highlight);
+      width: 40px; height: 40px; border-radius: 12px; background: rgba(255,255,255,0.05);
       display: flex; align-items: center; justify-content: center; color: var(--text);
-      border: 1px solid rgba(255,255,255,0.05); cursor: pointer;
+      border: 1px solid rgba(255,255,255,0.05); cursor: pointer; transition: 0.2s;
     }
+    .search-btn:active { transform: scale(0.95); background: rgba(255,255,255,0.1); }
 
     /* --- Banners --- */
     .banners {
@@ -76,7 +91,7 @@
     .banner {
       min-width: 260px; height: 120px; border-radius: 20px; padding: 16px;
       background: var(--brand-grad); color: #fff; position: relative; overflow: hidden;
-      box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3); display: flex; flex-direction: column; justify-content: center;
+      box-shadow: 0 5px 15px rgba(102, 126, 234, 0.2); display: flex; flex-direction: column; justify-content: center;
     }
     .banner h3 { font-size: 20px; font-weight: 800; z-index: 2; margin-bottom: 4px; }
     .banner p { font-size: 13px; font-weight: 600; opacity: 0.9; z-index: 2; }
@@ -86,11 +101,11 @@
     .cats { display: flex; gap: 8px; padding: 0 16px 16px; overflow-x: auto; scrollbar-width: none; }
     .cats::-webkit-scrollbar { display: none; }
     .cat-chip {
-      padding: 8px 16px; border-radius: 20px; background: var(--card);
+      padding: 8px 16px; border-radius: 20px; background: rgba(255,255,255,0.05);
       border: 1px solid rgba(255,255,255,0.05); color: var(--text-muted);
       font-size: 13px; font-weight: 600; white-space: nowrap; cursor: pointer; transition: 0.2s;
     }
-    .cat-chip.active { background: #fff; color: #000; border-color: #fff; }
+    .cat-chip.active { background: #fff; color: #000; border-color: #fff; box-shadow: 0 0 15px rgba(255,255,255,0.3); }
 
     /* --- Grid & Cards --- */
     .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 0 16px; }
@@ -99,13 +114,12 @@
       background: var(--card); border-radius: 20px; padding: 10px;
       border: 1px solid rgba(255,255,255,0.03); box-shadow: 0 4px 10px rgba(0,0,0,0.2);
       display: flex; flex-direction: column; position: relative;
-      cursor: pointer; /* Указываем что карта кликабельна */
+      cursor: pointer; transition: transform 0.1s;
     }
-    .card:active { transform: scale(0.98); transition: 0.1s; }
+    .card:active { transform: scale(0.98); }
 
     .card-img {
-      /* ИСПРАВЛЕНИЕ: Формат 3:4 */
-      aspect-ratio: 3 / 4; 
+      aspect-ratio: 3 / 4; /* ФОРМАТ 3:4 */
       width: 100%;
       background: var(--card-highlight); border-radius: 16px;
       display: flex; align-items: center; justify-content: center; margin-bottom: 10px; overflow: hidden;
@@ -136,6 +150,7 @@
     .c-item {
       background: var(--card); border-radius: 18px; padding: 12px; margin-bottom: 10px;
       display: flex; align-items: center; gap: 12px;
+      border: 1px solid rgba(255,255,255,0.03);
     }
     .c-info { flex: 1; }
     .c-name { font-size: 14px; font-weight: 700; margin-bottom: 4px; }
@@ -146,18 +161,24 @@
     }
     .c-btn { width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; font-weight: 700; cursor: pointer; }
     
+    /* GLOBAL CHECKOUT BAR (Fixes jumping animation) */
     .checkout-bar {
-      position: fixed; left: 16px; right: 16px; bottom: calc(80px + var(--safe-bottom));
-      background: rgba(30, 34, 43, 0.95); backdrop-filter: blur(15px);
-      border-radius: 20px; padding: 16px; z-index: 50; border: 1px solid rgba(255,255,255,0.05);
-      display: none;
+      position: fixed; left: 16px; right: 16px; bottom: calc(85px + var(--safe-bottom));
+      background: rgba(30, 34, 43, 0.95); backdrop-filter: blur(20px);
+      border-radius: 20px; padding: 16px; z-index: 90; border: 1px solid rgba(255,255,255,0.1);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+      display: none; /* Controlled by JS */
+      animation: slideUpCheck 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
     }
+    @keyframes slideUpCheck { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
     .checkout-row { display: flex; justify-content: space-between; margin-bottom: 12px; font-weight: 700; font-size: 16px; }
     .btn-main {
       width: 100%; padding: 14px; border-radius: 14px; border: none;
       background: var(--brand-grad); color: #fff; font-weight: 700; font-size: 16px;
       box-shadow: var(--glow); cursor: pointer;
     }
+    .btn-main:active { transform: scale(0.98); opacity: 0.9; }
 
     /* --- Profile / Form --- */
     .form-box { padding: 0 16px; }
@@ -166,7 +187,7 @@
     .sub-label { font-size: 10px; color: #667EEA; margin-left: 4px; }
     .input {
       width: 100%; background: var(--input-bg); border: 1px solid rgba(255,255,255,0.05);
-      border-radius: 14px; padding: 14px; color: #fff; font-size: 15px; outline: none;
+      border-radius: 14px; padding: 14px; color: #fff; font-size: 15px; outline: none; transition: 0.2s;
     }
     .input:focus { border-color: #667EEA; background: var(--card); }
 
@@ -177,23 +198,31 @@
       border: 1px solid rgba(255,255,255,0.03); cursor: pointer;
     }
     
-    /* FAQ Accordion */
+    /* FAQ Accordion (DIV based for smoothness) */
     .faq-container { padding: 0 16px; display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
     .faq-item {
       background: var(--card); border-radius: 16px; overflow: hidden;
-      border: 1px solid rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.03); transition: background 0.2s;
     }
-    .faq-summary {
+    .faq-head {
       padding: 16px; font-weight: 700; font-size: 14px; cursor: pointer;
-      display: flex; justify-content: space-between; align-items: center; list-style: none;
+      display: flex; justify-content: space-between; align-items: center;
     }
-    .faq-summary::-webkit-details-marker { display: none; }
-    .faq-summary i { transition: transform 0.2s; color: var(--text-muted); }
-    details[open] .faq-summary i { transform: rotate(180deg); color: #667EEA; }
+    .faq-head i { transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); color: var(--text-muted); }
+    
+    .faq-body-wrap {
+      display: grid; grid-template-rows: 0fr; transition: grid-template-rows 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .faq-body { overflow: hidden; }
     .faq-content {
-      padding: 0 16px 16px; font-size: 13px; line-height: 1.5; color: var(--text-muted);
-      border-top: 1px solid rgba(255,255,255,0.03);
+      padding: 0 16px 16px; font-size: 13px; line-height: 1.6; color: var(--text-muted);
+      padding-top: 4px; /* Отступ сверху для текста */
     }
+
+    /* Active State for FAQ */
+    .faq-item.open { background: var(--card-highlight); }
+    .faq-item.open .faq-head i { transform: rotate(180deg); color: #667EEA; }
+    .faq-item.open .faq-body-wrap { grid-template-rows: 1fr; }
 
     /* --- Tabbar --- */
     .tabbar {
@@ -210,7 +239,7 @@
     }
     .tab-btn i { font-size: 20px; transition: 0.2s; }
     .tab-btn.active { color: #fff; }
-    .tab-btn.active i { color: #667EEA; text-shadow: 0 0 10px rgba(102, 126, 234, 0.5); }
+    .tab-btn.active i { color: #667EEA; text-shadow: 0 0 15px rgba(102, 126, 234, 0.6); }
     .badge {
       position: absolute; top: -2px; right: 20px; background: var(--accent-hot);
       color: #fff; font-size: 9px; padding: 2px 5px; border-radius: 6px;
@@ -221,8 +250,10 @@
     .sheet {
       position: fixed; left: 0; right: 0; bottom: -100%;
       background: #1E222B; border-radius: 24px 24px 0 0;
-      padding: 20px 16px 40px; z-index: 200; transition: 0.3s cubic-bezier(0.1, 0.8, 0.2, 1);
-      box-shadow: 0 -10px 40px rgba(0,0,0,0.5); max-height: 85vh; overflow-y: auto;
+      z-index: 200; transition: 0.3s cubic-bezier(0.1, 0.8, 0.2, 1);
+      box-shadow: 0 -10px 40px rgba(0,0,0,0.5); 
+      height: 85vh; /* Фикс высота */
+      display: flex; flex-direction: column;
     }
     .sheet.open { bottom: 0; }
     .overlay {
@@ -231,15 +262,24 @@
     }
     .overlay.open { opacity: 1; pointer-events: auto; }
     
-    .sheet-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; position: sticky; top:0; background:#1E222B; padding-bottom:10px; z-index:10; }
+    .sheet-head { 
+      display: flex; justify-content: space-between; align-items: center; 
+      padding: 16px; border-bottom: 1px solid rgba(255,255,255,0.05);
+      flex-shrink: 0; /* Чтобы шапка не сжималась */
+    }
     .sheet-title { font-size: 18px; font-weight: 800; }
     
+    .sheet-scroll {
+      flex: 1; overflow-y: auto; padding: 16px;
+      padding-bottom: 80px; /* Место под кнопку */
+    }
+
     .pd-img-box {
-      width: 100%; height: 200px; background: var(--card-highlight);
+      width: 100%; aspect-ratio: 3/4; background: var(--card-highlight);
       border-radius: 16px; margin-bottom: 16px; display: flex;
       align-items: center; justify-content: center; overflow: hidden;
     }
-    .pd-img-box img { height: 100%; width: 100%; object-fit: contain; }
+    .pd-img-box img { height: 100%; width: 100%; object-fit: cover; }
     
     .spec-row {
       display: flex; justify-content: space-between; padding: 10px 0;
@@ -247,6 +287,11 @@
     }
     .spec-key { color: var(--text-muted); }
     .spec-val { font-weight: 600; color: #fff; }
+
+    .sheet-foot {
+      padding: 16px; border-top: 1px solid rgba(255,255,255,0.05);
+      background: #1E222B; position: absolute; bottom: 0; left: 0; right: 0;
+    }
 
     /* Success Screen */
     .full-screen {
@@ -316,13 +361,6 @@
       <div id="cart-empty" style="text-align:center; padding:40px; color:var(--text-muted)">
         <i class="fa-solid fa-basket-shopping" style="font-size:40px; margin-bottom:10px"></i><br>Пусто
       </div>
-      
-      <div class="checkout-bar" id="checkout-bar">
-        <div class="checkout-row">
-          <span>Итого:</span><span id="cart-total" style="color:#667EEA">0 ₽</span>
-        </div>
-        <button class="btn-main" onclick="startCheckout()">Оформить</button>
-      </div>
     </section>
 
     <section id="page-profile" class="page">
@@ -357,35 +395,35 @@
       </div>
 
       <h3 style="padding:10px 16px; font-size:16px;">Вопросы и ответы</h3>
-      <div class="faq-container">
-        
-        <details class="faq-item">
-          <summary class="faq-summary">Как происходит покупка?<i class="fa-solid fa-chevron-down"></i></summary>
-          <div class="faq-content">
+      
+      <div class="faq-container" id="faq-container">
+        <div class="faq-item" onclick="toggleFaq(this)">
+          <div class="faq-head">Как происходит покупка?<i class="fa-solid fa-chevron-down"></i></div>
+          <div class="faq-body-wrap"><div class="faq-body"><div class="faq-content">
             Мы работаем через безопасную сделку Ozon. После оформления заказа здесь, вам придет уведомление в приложение Ozon. Там вы оплачиваете товар, и деньги замораживаются до момента получения.
-          </div>
-        </details>
+          </div></div></div>
+        </div>
 
-        <details class="faq-item">
-          <summary class="faq-summary">Гарантия есть?<i class="fa-solid fa-chevron-down"></i></summary>
-          <div class="faq-content">
+        <div class="faq-item" onclick="toggleFaq(this)">
+          <div class="faq-head">Гарантия есть?<i class="fa-solid fa-chevron-down"></i></div>
+          <div class="faq-body-wrap"><div class="faq-body"><div class="faq-content">
             Да, мы даем 1 месяц гарантии на все комплектующие. Перед отправкой каждый процессор и память проходят стресс-тесты. Если что-то не так — возврат средств без проблем.
-          </div>
-        </details>
+          </div></div></div>
+        </div>
 
-        <details class="faq-item">
-          <summary class="faq-summary">Почему нужен номер Ozon?<i class="fa-solid fa-chevron-down"></i></summary>
-          <div class="faq-content">
+        <div class="faq-item" onclick="toggleFaq(this)">
+          <div class="faq-head">Почему нужен номер Ozon?<i class="fa-solid fa-chevron-down"></i></div>
+          <div class="faq-body-wrap"><div class="faq-body"><div class="faq-content">
             Мы создаем заказ напрямую на ваш аккаунт Ozon по номеру телефона. Это гарантирует, что товар придет именно вам и вы сможете отслеживать его в официальном приложении.
-          </div>
-        </details>
+          </div></div></div>
+        </div>
 
-        <details class="faq-item">
-          <summary class="faq-summary">Срок доставки?<i class="fa-solid fa-chevron-down"></i></summary>
-          <div class="faq-content">
+        <div class="faq-item" onclick="toggleFaq(this)">
+          <div class="faq-head">Срок доставки?<i class="fa-solid fa-chevron-down"></i></div>
+          <div class="faq-body-wrap"><div class="faq-body"><div class="faq-content">
             Зависит от вашего региона. Обычно от 3 до 7 дней. Точные сроки покажет приложение Ozon после оформления.
-          </div>
-        </details>
+          </div></div></div>
+        </div>
 
       </div>
 
@@ -395,6 +433,13 @@
       </div>
     </section>
 
+  </div>
+
+  <div class="checkout-bar" id="checkout-bar">
+    <div class="checkout-row">
+      <span>Итого:</span><span id="cart-total" style="color:#667EEA">0 ₽</span>
+    </div>
+    <button class="btn-main" onclick="startCheckout()">Оформить</button>
   </div>
 
   <div class="tabbar">
@@ -413,8 +458,10 @@
       <div class="sheet-title">Поиск</div>
       <i class="fa-solid fa-xmark" style="font-size:24px" onclick="closeSheets()"></i>
     </div>
-    <input id="search-inp" class="input" placeholder="Название товара..." oninput="Search.run()" />
-    <div id="search-res" style="margin-top:15px; display:flex; flex-direction:column; gap:10px;"></div>
+    <div class="sheet-scroll">
+       <input id="search-inp" class="input" placeholder="Название товара..." oninput="Search.run()" />
+       <div id="search-res" style="margin-top:15px; display:flex; flex-direction:column; gap:10px;"></div>
+    </div>
   </div>
 
   <div class="sheet" id="sheet-product">
@@ -422,7 +469,10 @@
       <div class="sheet-title">Товар</div>
       <i class="fa-solid fa-xmark" style="font-size:24px" onclick="closeSheets()"></i>
     </div>
-    <div id="pd-content"></div>
+    <div class="sheet-scroll" id="pd-content"></div>
+    <div class="sheet-foot">
+       <button class="btn-main" id="btn-pd-add">Добавить в корзину</button>
+    </div>
   </div>
 
   <div id="toast" class="toast">Сохранено</div>
@@ -433,15 +483,16 @@
     const TG = window.Telegram?.WebApp;
     if(TG) { TG.expand(); TG.setHeaderColor('#0F1115'); TG.setBackgroundColor('#0F1115'); }
 
-    const LS_CART = "ps_cart_v6";
-    const LS_PROF = "ps_profile_v6";
+    const LS_CART = "ps_cart_v7";
+    const LS_PROF = "ps_profile_v7";
     
     let STATE = {
       cats: [],
       products: [],
       cart: JSON.parse(localStorage.getItem(LS_CART) || "[]"),
       profile: JSON.parse(localStorage.getItem(LS_PROF) || "{}"),
-      activeCat: "all"
+      activeCat: "all",
+      currentProduct: null
     };
 
     // --- INITIALIZATION ---
@@ -477,7 +528,14 @@
         const map = {shop:0, cart:1, profile:2, info:3};
         document.querySelectorAll('.tab-btn')[map[page]].classList.add('active');
         
-        if(page === 'cart') renderCart();
+        // CHECKOUT BAR VISIBILITY LOGIC
+        const bar = document.getElementById('checkout-bar');
+        if(page === 'cart' && STATE.cart.length > 0) {
+           bar.style.display = 'block';
+           renderCart(); // Refresh cart view
+        } else {
+           bar.style.display = 'none';
+        }
       }
     };
 
@@ -502,7 +560,6 @@
       const grid = document.getElementById('prod-grid');
       const items = STATE.activeCat === 'all' ? STATE.products : STATE.products.filter(p => p.category_id === STATE.activeCat);
       
-      // ИСПРАВЛЕНИЕ 1: onclick на всю карточку для открытия описания
       grid.innerHTML = items.map(p => `
         <div class="card" onclick="openProduct('${p.id}')">
           <div class="card-img">
@@ -525,10 +582,10 @@
     window.openProduct = (id) => {
       const p = STATE.products.find(x => x.id === id);
       if(!p) return;
+      STATE.currentProduct = p;
       
       const content = document.getElementById('pd-content');
       
-      // Генерируем описание (парсим specs если есть)
       let specsHtml = '';
       if(p.specs && typeof p.specs === 'object') {
         specsHtml = Object.entries(p.specs).map(([k,v]) => 
@@ -547,9 +604,13 @@
            <div style="color:#aaa; font-size:14px; line-height:1.5; margin-bottom:10px">${p.desc || "Описание отсутствует"}</div>
            ${specsHtml}
         </div>
-
-        <button class="btn-main" onclick="Cart.add('${p.id}'); closeSheets()">Добавить в корзину</button>
       `;
+      
+      // Настраиваем кнопку в футере модалки
+      document.getElementById('btn-pd-add').onclick = () => {
+         Cart.add(p.id);
+         closeSheets();
+      };
       
       document.getElementById('sheet-product').classList.add('open');
       document.getElementById('overlay').classList.add('open');
@@ -580,21 +641,26 @@
         const badge = document.getElementById('cart-badge');
         badge.innerText = cnt;
         badge.style.display = cnt > 0 ? 'block' : 'none';
+        
+        // Обновляем видимость бара если мы в корзине
+        if(document.getElementById('page-cart').classList.contains('active')) {
+           const bar = document.getElementById('checkout-bar');
+           bar.style.display = cnt > 0 ? 'block' : 'none';
+        }
       }
     };
 
     function renderCart() {
       const list = document.getElementById('cart-list');
       const empty = document.getElementById('cart-empty');
-      const bar = document.getElementById('checkout-bar');
       
       if(!STATE.cart.length) {
-        list.innerHTML = ''; empty.style.display = 'block'; bar.style.display = 'none';
+        list.innerHTML = ''; empty.style.display = 'block';
+        document.getElementById('checkout-bar').style.display = 'none';
         return;
       }
       
       empty.style.display = 'none';
-      bar.style.display = 'block';
       
       list.innerHTML = STATE.cart.map(i => `
         <div class="c-item">
@@ -625,14 +691,12 @@
       const btn = document.querySelector('#checkout-bar button');
       btn.innerText = "Оформление...";
       
-      // ИСПРАВЛЕНИЕ 3: Передача адреса в поле comment для админки
-      // Бэкенд читает 'comment', а мы сохраняем в 'address'. 
-      // При отправке мапим address -> comment
+      // FIX 3: Address -> Comment Mapping
       const profileToSend = {
          name: STATE.profile.name,
          phone: STATE.profile.phone,
          city: STATE.profile.city,
-         comment: STATE.profile.address // <-- Вот тут магия для админ панели
+         comment: STATE.profile.address 
       };
 
       const payload = {
@@ -673,6 +737,15 @@
       toast("Сохранено");
     };
 
+    // --- FAQ Logic ---
+    window.toggleFaq = (el) => {
+      // Close others
+      document.querySelectorAll('.faq-item').forEach(item => {
+        if(item !== el) item.classList.remove('open');
+      });
+      el.classList.toggle('open');
+    }
+
     // --- SEARCH ---
     window.openSearch = () => {
       document.getElementById('sheet-search').classList.add('open');
@@ -703,9 +776,7 @@
     };
 
     // --- MISC ---
-    window.openMyOrders = () => {
-      window.location.href = "notifications.html";
-    };
+    window.openMyOrders = () => { window.location.href = "notifications.html"; };
 
     function toast(msg) {
       const t = document.getElementById('toast');
