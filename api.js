@@ -1,12 +1,10 @@
 // api.js - Networking layer
-// Убедись, что этот URL соответствует твоему актуальному Apps Script (Deploy -> Web App URL)
 const DATA_URL = "https://script.google.com/macros/s/AKfycbzD2YbXgZBoR3BA7y6XQbST7_1aSxsUb2M7tu-ruK4qxqPBj31gaLhn9OyGJOKF9hf-/exec";
 
-// Если используешь API_KEY в Code.gs, впиши его сюда
+// If you enable API_KEY in Code.gs - set it here too
 const API_KEY = "";
 
-// --- Внутренние помощники ---
-
+// helper
 function buildUrl(action, extraParams = {}) {
   const url = new URL(DATA_URL);
   url.searchParams.set("action", action);
@@ -14,10 +12,9 @@ function buildUrl(action, extraParams = {}) {
 
   Object.keys(extraParams || {}).forEach(k => {
     const v = extraParams[k];
-    if (v !== undefined && v !== null && String(v) !== "") {
-      url.searchParams.set(k, String(v));
-    }
+    if (v !== undefined && v !== null && String(v) !== "") url.searchParams.set(k, String(v));
   });
+
   return url.toString();
 }
 
