@@ -23,14 +23,28 @@
 
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
     
+    /* СКРЫВАЕМ ВСЕ СКРОЛЛБАРЫ (App feel) */
+    ::-webkit-scrollbar { display: none; }
+    * { scrollbar-width: none; -ms-overflow-style: none; }
+
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       background-color: var(--bg);
       color: var(--text);
       overflow-x: hidden;
+      /* Важно для плавности */
+      -webkit-overflow-scrolling: touch;
       padding-bottom: calc(90px + var(--safe-bottom));
       min-height: 100vh;
       position: relative;
+    }
+
+    /* БЛОКИРОВКА СКРОЛЛА ФОНА */
+    body.no-scroll {
+      overflow: hidden !important;
+      position: fixed;
+      width: 100%;
+      height: 100%;
     }
 
     /* ЯВНЫЙ ЭСТЕТИЧНЫЙ ГРАДИЕНТ */
@@ -62,7 +76,7 @@
     .search-btn { width: 40px; height: 40px; border-radius: 12px; background: rgba(255,255,255,0.05); display: flex; align-items: center; justify-content: center; color: var(--text); border: 1px solid rgba(255,255,255,0.05); cursor: pointer; transition: 0.2s; }
     
     /* Categories */
-    .cats { display: flex; gap: 8px; padding: 16px; overflow-x: auto; scrollbar-width: none; }
+    .cats { display: flex; gap: 8px; padding: 16px; overflow-x: auto; }
     .cat-chip { padding: 10px 20px; border-radius: 20px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.05); color: var(--text-muted); font-size: 13px; font-weight: 600; white-space: nowrap; cursor: pointer; transition: 0.2s; }
     .cat-chip.active { background: #fff; color: #000; border-color: #fff; box-shadow: 0 0 15px rgba(255,255,255,0.3); }
 
@@ -123,7 +137,7 @@
     .tab-btn.active i { color: #667EEA; text-shadow: 0 0 15px rgba(102, 126, 234, 0.6); }
     .badge { position: absolute; top: -2px; right: 20px; background: var(--accent-hot); color: #fff; font-size: 9px; padding: 2px 5px; border-radius: 6px; display: none; }
 
-    /* Product Sheet (MAX HEIGHT) */
+    /* Product Sheet (MAX HEIGHT + SCROLL LOCK) */
     .sheet {
       position: fixed; left: 0; right: 0; bottom: -100%;
       background: #1E222B; border-radius: 24px 24px 0 0;
@@ -138,7 +152,15 @@
     
     .sheet-head { display: flex; justify-content: space-between; align-items: center; padding: 16px; border-bottom: 1px solid rgba(255,255,255,0.05); flex-shrink: 0; }
     .sheet-title { font-size: 18px; font-weight: 800; }
-    .sheet-scroll { flex: 1; overflow-y: auto; padding: 16px; padding-bottom: 80px; }
+    /* Изолированный скролл шторки */
+    .sheet-scroll { 
+      flex: 1; 
+      overflow-y: auto; 
+      padding: 16px; 
+      padding-bottom: 80px; 
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior: contain; /* Блокирует передачу скролла фону */
+    }
     
     .pd-img-box { width: 100%; aspect-ratio: 3/4; background: var(--card-highlight); border-radius: 16px; margin-bottom: 16px; display: flex; align-items: center; justify-content: center; overflow: hidden; }
     .pd-img-box img { height: 100%; width: 100%; object-fit: cover; }
@@ -303,8 +325,8 @@
     const TG = window.Telegram?.WebApp;
     if(TG) { TG.expand(); TG.setHeaderColor('#0F1115'); TG.setBackgroundColor('#0F1115'); }
 
-    const LS_CART = "ps_cart_v9";
-    const LS_PROF = "ps_profile_v9";
+    const LS_CART = "ps_cart_v10";
+    const LS_PROF = "ps_profile_v10";
     
     let STATE = {
       cats: [],
@@ -405,6 +427,9 @@
       `;
       
       document.getElementById('btn-pd-add').onclick = () => { Cart.add(p.id); closeSheets(); };
+      
+      // Блокируем фон, чтобы скроллилась только шторка
+      document.body.classList.add('no-scroll');
       document.getElementById('sheet-product').classList.add('open');
       document.getElementById('overlay').classList.add('open');
     };
@@ -554,12 +579,14 @@
     }
 
     window.openSearch = () => {
+      document.body.classList.add('no-scroll');
       document.getElementById('sheet-search').classList.add('open');
       document.getElementById('overlay').classList.add('open');
       setTimeout(() => document.getElementById('search-inp').focus(), 100);
     };
     
     window.closeSheets = () => {
+      document.body.classList.remove('no-scroll');
       document.getElementById('sheet-search').classList.remove('open');
       document.getElementById('sheet-product').classList.remove('open');
       document.getElementById('overlay').classList.remove('open');
