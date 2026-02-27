@@ -282,10 +282,21 @@ function adminUpdateOrderStatus_(e) {
 
 function adminGetProducts_(e) {
   if (!adminCheck_(e)) return { ok: false, error: "403" };
-  // Маппим описание: берём desc, если пусто — specs (совместимость со старой структурой)
   const raw = readSheetData_("products");
   const products = raw.map(function (x) {
-    x.desc = String(x.desc || x.specs || "");
+    // Сначала пробуем desc, потом specs (текст)
+    var textDesc = String(x.desc || x.specs || "").trim();
+
+    // Если текстового описания нет — форматируем из specs_json
+    if (!textDesc && x.specs_json) {
+      var parsed = parseJsonMaybe_(String(x.specs_json));
+      if (parsed && typeof parsed === "object") {
+        textDesc = Object.entries(parsed)
+          .map(function (entry) { return entry[0] + ": " + entry[1]; })
+          .join(" | ");
+      }
+    }
+    x.desc = textDesc;
     return x;
   });
   return {
