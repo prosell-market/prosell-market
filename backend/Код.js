@@ -165,9 +165,14 @@ function getInitialData_() {
     image_url: x.image_url || "",
     stock: toBool_(x.in_stock) ? 999 : 0,
     specs: parseJsonMaybe_(x.specs_json) || {},
-    // ВАЖНО: Маппинг описания. Если есть 'desc' - берем его, иначе 'specs' (для совместимости)
+    // Описание — единый источник: если есть desc/specs текст, его используем
     desc: String(x.desc || x.specs || "")
   }));
+
+  // Если у товара есть текстовое описание — убираем JSON specs чтобы не дублировалось
+  products.forEach(function (p) {
+    if (p.desc) p.specs = {};
+  });
 
   // Баннеры (если есть таблица)
   let banners = [];
@@ -370,6 +375,10 @@ function adminSaveProduct_(e) {
     var specsIdx = h.indexOf("specs");
     if (descIdx !== -1) sh.getRange(rowIdx, descIdx + 1).setValue(descVal);
     if (specsIdx !== -1) sh.getRange(rowIdx, specsIdx + 1).setValue(descVal);
+
+    // Очищаем specs_json — текстовое описание теперь единственный источник
+    var specsJsonIdx = h.indexOf("specs_json");
+    if (specsJsonIdx !== -1) sh.getRange(rowIdx, specsJsonIdx + 1).setValue("");
 
     // Force stock=TRUE
     const stockIdx = h.indexOf("in_stock");
