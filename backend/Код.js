@@ -40,6 +40,7 @@ function handleRequest_(e) {
     if (action === "order") return json_(createOrder_(e));
     if (action === "notifications") return json_(getUserOrdersList_(e));
     if (action === "notifications_read") return json_({ ok: true });
+    if (action === "debug_logs") return json_(getDebugLogs_());
 
     // --- ADMIN ENDPOINTS ---
     if (action === "admin_orders") return json_(adminGetOrders_(e));
@@ -305,6 +306,10 @@ function appendDebug_(action, data, error) {
   } catch (e) {
     console.error("Debug logger failed", e);
   }
+}
+
+function getDebugLogs_() {
+  return { ok: true, logs: readSheetData_("Debug", 50) };
 }
 
 function getUserOrdersList_(e) {
