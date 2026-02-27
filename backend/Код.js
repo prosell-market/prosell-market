@@ -85,16 +85,27 @@ function toBool_(v) {
   return (s === "true" || s === "yes" || s === "1");
 }
 
-function readSheetData_(sheetName) {
+function readSheetData_(sheetName, maxRows) {
   const ss = getSS_();
   const sh = ss.getSheetByName(sheetName);
   if (!sh) return [];
 
-  const data = sh.getDataRange().getValues();
-  if (data.length < 2) return [];
+  const lastRow = sh.getLastRow();
+  if (lastRow < 2) return [];
 
-  const headers = data[0].map(String);
-  return data.slice(1).map(row => rowToObj_(headers, row));
+  const lastCol = sh.getLastColumn();
+  const headers = sh.getRange(1, 1, 1, lastCol).getValues()[0].map(String);
+
+  // Оптимизация: читаем только последние maxRows строк
+  var startRow = 2;
+  var numRows = lastRow - 1;
+  if (maxRows && numRows > maxRows) {
+    startRow = lastRow - maxRows + 1;
+    numRows = maxRows;
+  }
+
+  const data = sh.getRange(startRow, 1, numRows, lastCol).getValues();
+  return data.map(row => rowToObj_(headers, row));
 }
 
 function rowToObj_(headers, row) {
@@ -196,7 +207,39 @@ function createOrder_(e) {
     let sh = ss.getSheetByName("Orders");
     if (!sh) {
       sh = ss.insertSheet("Orders");
-      sh.appendRow(["ts", "order_id", "tg_id", "name", "phone", "city", "comment", "total", "items_json", "status"]);
+      sh.appendRow(["ts", "order_id", "tg_id", "name", "phone", "city", "comment", "total", "items_json", "status", "idem_key"]);
+    }
+
+    // Валидация данных
+    if (!payload.items || !payload.items.length) {
+      return { ok: false, error: "Корзина пуста" };
+    }
+    if (!payload.total || payload.total <= 0) {
+      return { ok: false, error: "Некорректная сумма" };
+    }
+    if (!payload.profile?.name || !payload.profile?.phone) {
+      return { ok: false, error: "Укажите имя и телефон" };
+    }
+
+    // Защита от дублей по idempotency_key
+    const idemKey = payload.idempotency_key || "";
+    if (idemKey) {
+      ensureHeaders_(sh, ["idem_key"]);
+      const h = sh.getRange(1, 1, 1, sh.getLastColumn()).getValues()[0].map(String);
+      const idemCol = h.indexOf("idem_key");
+      if (idemCol !== -1) {
+        const lastRow = sh.getLastRow();
+        // Проверяем последние 100 строк на дубль
+        var checkStart = Math.max(2, lastRow - 100);
+        if (lastRow >= checkStart) {
+          var existingKeys = sh.getRange(checkStart, idemCol + 1, lastRow - checkStart + 1, 1).getValues();
+          for (var k = 0; k < existingKeys.length; k++) {
+            if (String(existingKeys[k][0]) === idemKey) {
+              return { ok: true, order_id: "DUP", message: "Заказ уже создан" };
+            }
+          }
+        }
+      }
     }
 
     const orderId = "ORD-" + Utilities.getUuid().slice(0, 8).toUpperCase();
@@ -214,7 +257,8 @@ function createOrder_(e) {
       commentVal,
       payload.total,
       JSON.stringify(payload.items || []),
-      "new"
+      "new",
+      idemKey
     ]);
 
     return { ok: true, order_id: orderId };

@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="ru">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
@@ -21,11 +22,22 @@
       --safe-bottom: env(safe-area-inset-bottom, 0px);
     }
 
-    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-    
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
     /* СКРЫВАЕМ ВСЕ СКРОЛЛБАРЫ (App feel) */
-    ::-webkit-scrollbar { display: none; }
-    * { scrollbar-width: none; -ms-overflow-style: none; }
+    ::-webkit-scrollbar {
+      display: none;
+    }
+
+    * {
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+    }
 
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
@@ -51,8 +63,11 @@
     body::before {
       content: "";
       position: fixed;
-      top: 0; left: 0; right: 0; bottom: 0;
-      background: 
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background:
         radial-gradient(circle at 10% 20%, rgba(102, 126, 234, 0.15) 0%, transparent 50%),
         radial-gradient(circle at 90% 80%, rgba(118, 75, 162, 0.15) 0%, transparent 50%);
       pointer-events: none;
@@ -60,121 +75,637 @@
     }
 
     /* Loader */
-    .app-loader { position: fixed; inset: 0; background: var(--bg); z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: opacity 0.3s; }
-    .app-loader.hidden { opacity: 0; pointer-events: none; }
-    .spinner { width: 40px; height: 40px; border: 4px solid var(--card-highlight); border-top-color: #667EEA; border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 15px; }
-    @keyframes spin { to { transform: rotate(360deg); } }
+    .app-loader {
+      position: fixed;
+      inset: 0;
+      background: var(--bg);
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      transition: opacity 0.3s;
+    }
 
-    .page { display: none; padding-bottom: 20px; animation: fadeIn 0.3s ease; }
-    .page.active { display: block; }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    .app-loader.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 4px solid var(--card-highlight);
+      border-top-color: #667EEA;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-bottom: 15px;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    .page {
+      display: none;
+      padding-bottom: 20px;
+      animation: fadeIn 0.3s ease;
+    }
+
+    .page.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
 
     /* Topbar */
-    .topbar { position: sticky; top: 0; z-index: 20; background: rgba(15, 17, 21, 0.85); backdrop-filter: blur(20px); padding: 12px 16px; border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; justify-content: space-between; align-items: center; }
-    .brand { font-size: 20px; font-weight: 800; letter-spacing: 0.5px; }
-    .brand span { background: var(--brand-grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-    .search-btn { width: 40px; height: 40px; border-radius: 12px; background: rgba(255,255,255,0.05); display: flex; align-items: center; justify-content: center; color: var(--text); border: 1px solid rgba(255,255,255,0.05); cursor: pointer; transition: 0.2s; }
-    
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      background: rgba(15, 17, 21, 0.85);
+      backdrop-filter: blur(20px);
+      padding: 12px 16px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .brand {
+      font-size: 20px;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+    }
+
+    .brand span {
+      background: var(--brand-grad);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .search-btn {
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.05);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
     /* Categories */
-    .cats { display: flex; gap: 8px; padding: 16px; overflow-x: auto; }
-    .cat-chip { padding: 10px 20px; border-radius: 20px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.05); color: var(--text-muted); font-size: 13px; font-weight: 600; white-space: nowrap; cursor: pointer; transition: 0.2s; }
-    .cat-chip.active { background: #fff; color: #000; border-color: #fff; box-shadow: 0 0 15px rgba(255,255,255,0.3); }
+    .cats {
+      display: flex;
+      gap: 8px;
+      padding: 16px;
+      overflow-x: auto;
+    }
+
+    .cat-chip {
+      padding: 10px 20px;
+      border-radius: 20px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      color: var(--text-muted);
+      font-size: 13px;
+      font-weight: 600;
+      white-space: nowrap;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    .cat-chip.active {
+      background: #fff;
+      color: #000;
+      border-color: #fff;
+      box-shadow: 0 0 15px rgba(255, 255, 255, 0.3);
+    }
 
     /* Product Grid */
-    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 0 16px; }
-    .card { background: var(--card); border-radius: 20px; padding: 10px; border: 1px solid rgba(255,255,255,0.03); box-shadow: 0 4px 10px rgba(0,0,0,0.2); display: flex; flex-direction: column; position: relative; cursor: pointer; transition: transform 0.1s; }
-    .card:active { transform: scale(0.98); }
-    .card-img { aspect-ratio: 3 / 4; width: 100%; background: var(--card-highlight); border-radius: 16px; display: flex; align-items: center; justify-content: center; margin-bottom: 10px; overflow: hidden; }
-    .card-img img { width: 100%; height: 100%; object-fit: cover; }
-    .card-title { font-size: 13px; font-weight: 600; line-height: 1.3; color: #fff; margin-bottom: auto; min-height: 34px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-    .card-foot { display: flex; justify-content: space-between; align-items: flex-end; margin-top: 8px; }
-    .price { font-size: 16px; font-weight: 800; color: #fff; }
-    .old-price { font-size: 11px; text-decoration: line-through; color: var(--text-muted); }
-    .btn-add { width: 32px; height: 32px; border-radius: 50%; background: var(--brand-grad); display: flex; align-items: center; justify-content: center; color: #fff; box-shadow: 0 4px 15px rgba(118, 75, 162, 0.4); cursor: pointer; z-index: 5; }
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      padding: 0 16px;
+    }
+
+    .card {
+      background: var(--card);
+      border-radius: 20px;
+      padding: 10px;
+      border: 1px solid rgba(255, 255, 255, 0.03);
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      cursor: pointer;
+      transition: transform 0.1s;
+    }
+
+    .card:active {
+      transform: scale(0.98);
+    }
+
+    .card-img {
+      aspect-ratio: 3 / 4;
+      width: 100%;
+      background: var(--card-highlight);
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 10px;
+      overflow: hidden;
+    }
+
+    .card-img img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .card-title {
+      font-size: 13px;
+      font-weight: 600;
+      line-height: 1.3;
+      color: #fff;
+      margin-bottom: auto;
+      min-height: 34px;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .card-foot {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      margin-top: 8px;
+    }
+
+    .price {
+      font-size: 16px;
+      font-weight: 800;
+      color: #fff;
+    }
+
+    .old-price {
+      font-size: 11px;
+      text-decoration: line-through;
+      color: var(--text-muted);
+    }
+
+    .btn-add {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: var(--brand-grad);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      box-shadow: 0 4px 15px rgba(118, 75, 162, 0.4);
+      cursor: pointer;
+      z-index: 5;
+    }
 
     /* Cart & Checkout */
-    .cart-list { padding: 0 16px; }
-    .c-item { background: var(--card); border-radius: 18px; padding: 12px; margin-bottom: 10px; display: flex; align-items: center; gap: 12px; border: 1px solid rgba(255,255,255,0.03); }
-    .c-info { flex: 1; }
-    .c-name { font-size: 14px; font-weight: 700; margin-bottom: 4px; }
-    .c-price { color: var(--accent-green); font-weight: 700; font-size: 13px; }
-    .c-ctrl { background: var(--card-highlight); border-radius: 10px; display: flex; align-items: center; padding: 4px; gap: 8px; }
-    .c-btn { width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; font-weight: 700; cursor: pointer; }
-    
-    .checkout-bar { position: fixed; left: 16px; right: 16px; bottom: calc(85px + var(--safe-bottom)); background: rgba(30, 34, 43, 0.95); backdrop-filter: blur(20px); border-radius: 20px; padding: 16px; z-index: 90; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 10px 30px rgba(0,0,0,0.5); display: none; animation: slideUpCheck 0.3s cubic-bezier(0.2, 0.8, 0.2, 1); }
-    @keyframes slideUpCheck { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-    .checkout-row { display: flex; justify-content: space-between; margin-bottom: 12px; font-weight: 700; font-size: 16px; }
-    .btn-main { width: 100%; padding: 14px; border-radius: 14px; border: none; background: var(--brand-grad); color: #fff; font-weight: 700; font-size: 16px; box-shadow: 0 4px 15px rgba(118, 75, 162, 0.4); cursor: pointer; }
+    .cart-list {
+      padding: 0 16px;
+    }
+
+    .c-item {
+      background: var(--card);
+      border-radius: 18px;
+      padding: 12px;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.03);
+    }
+
+    .c-info {
+      flex: 1;
+    }
+
+    .c-name {
+      font-size: 14px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .c-price {
+      color: var(--accent-green);
+      font-weight: 700;
+      font-size: 13px;
+    }
+
+    .c-ctrl {
+      background: var(--card-highlight);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      padding: 4px;
+      gap: 8px;
+    }
+
+    .c-btn {
+      width: 24px;
+      height: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .checkout-bar {
+      position: fixed;
+      left: 16px;
+      right: 16px;
+      bottom: calc(85px + var(--safe-bottom));
+      background: rgba(30, 34, 43, 0.95);
+      backdrop-filter: blur(20px);
+      border-radius: 20px;
+      padding: 16px;
+      z-index: 90;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+      display: none;
+      animation: slideUpCheck 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+    }
+
+    @keyframes slideUpCheck {
+      from {
+        transform: translateY(20px);
+        opacity: 0;
+      }
+
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+
+    .checkout-row {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 12px;
+      font-weight: 700;
+      font-size: 16px;
+    }
+
+    .btn-main {
+      width: 100%;
+      padding: 14px;
+      border-radius: 14px;
+      border: none;
+      background: var(--brand-grad);
+      color: #fff;
+      font-weight: 700;
+      font-size: 16px;
+      box-shadow: 0 4px 15px rgba(118, 75, 162, 0.4);
+      cursor: pointer;
+    }
 
     /* Form */
-    .form-box { padding: 0 16px; }
-    .inp-group { margin-bottom: 16px; }
-    .label { font-size: 12px; color: var(--text-muted); font-weight: 700; margin-bottom: 6px; display: block; }
-    .sub-label { font-size: 10px; color: #667EEA; margin-left: 4px; }
-    .input { width: 100%; background: var(--input-bg); border: 1px solid rgba(255,255,255,0.05); border-radius: 14px; padding: 14px; color: #fff; font-size: 15px; outline: none; transition: 0.2s; }
-    .input:focus { border-color: #667EEA; background: var(--card); }
+    .form-box {
+      padding: 0 16px;
+    }
+
+    .inp-group {
+      margin-bottom: 16px;
+    }
+
+    .label {
+      font-size: 12px;
+      color: var(--text-muted);
+      font-weight: 700;
+      margin-bottom: 6px;
+      display: block;
+    }
+
+    .sub-label {
+      font-size: 10px;
+      color: #667EEA;
+      margin-left: 4px;
+    }
+
+    .input {
+      width: 100%;
+      background: var(--input-bg);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 14px;
+      padding: 14px;
+      color: #fff;
+      font-size: 15px;
+      outline: none;
+      transition: 0.2s;
+    }
+
+    .input:focus {
+      border-color: #667EEA;
+      background: var(--card);
+    }
 
     /* Info / FAQ */
-    .menu-btn { background: var(--card); padding: 16px; border-radius: 16px; margin: 0 16px 10px; display: flex; align-items: center; justify-content: space-between; font-weight: 600; border: 1px solid rgba(255,255,255,0.03); cursor: pointer; }
-    
+    .menu-btn {
+      background: var(--card);
+      padding: 16px;
+      border-radius: 16px;
+      margin: 0 16px 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-weight: 600;
+      border: 1px solid rgba(255, 255, 255, 0.03);
+      cursor: pointer;
+    }
+
     /* FAQ Accordion */
-    .faq-container { padding: 0 16px; display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
-    .faq-item { background: var(--card); border-radius: 16px; overflow: hidden; border: 1px solid rgba(255,255,255,0.03); transition: background 0.2s; }
-    .faq-head { padding: 16px; font-weight: 700; font-size: 14px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
-    .faq-head i { transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); color: var(--text-muted); }
-    .faq-body-wrap { display: grid; grid-template-rows: 0fr; transition: grid-template-rows 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
-    .faq-body { overflow: hidden; }
-    .faq-content { padding: 0 16px 16px; font-size: 13px; line-height: 1.6; color: var(--text-muted); padding-top: 4px; }
-    .faq-item.open { background: var(--card-highlight); }
-    .faq-item.open .faq-head i { transform: rotate(180deg); color: #667EEA; }
-    .faq-item.open .faq-body-wrap { grid-template-rows: 1fr; }
+    .faq-container {
+      padding: 0 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .faq-item {
+      background: var(--card);
+      border-radius: 16px;
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.03);
+      transition: background 0.2s;
+    }
+
+    .faq-head {
+      padding: 16px;
+      font-weight: 700;
+      font-size: 14px;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .faq-head i {
+      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      color: var(--text-muted);
+    }
+
+    .faq-body-wrap {
+      display: grid;
+      grid-template-rows: 0fr;
+      transition: grid-template-rows 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .faq-body {
+      overflow: hidden;
+    }
+
+    .faq-content {
+      padding: 0 16px 16px;
+      font-size: 13px;
+      line-height: 1.6;
+      color: var(--text-muted);
+      padding-top: 4px;
+    }
+
+    .faq-item.open {
+      background: var(--card-highlight);
+    }
+
+    .faq-item.open .faq-head i {
+      transform: rotate(180deg);
+      color: #667EEA;
+    }
+
+    .faq-item.open .faq-body-wrap {
+      grid-template-rows: 1fr;
+    }
 
     /* Tabbar */
-    .tabbar { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(15, 17, 21, 0.85); backdrop-filter: blur(20px); border-top: 1px solid rgba(255,255,255,0.05); display: grid; grid-template-columns: repeat(4, 1fr); padding: 10px 0 calc(20px + var(--safe-bottom)); z-index: 100; }
-    .tab-btn { background: none; border: none; color: var(--text-muted); display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 10px; font-weight: 700; cursor: pointer; position: relative; }
-    .tab-btn i { font-size: 20px; transition: 0.2s; }
-    .tab-btn.active { color: #fff; }
-    .tab-btn.active i { color: #667EEA; text-shadow: 0 0 15px rgba(102, 126, 234, 0.6); }
-    .badge { position: absolute; top: -2px; right: 20px; background: var(--accent-hot); color: #fff; font-size: 9px; padding: 2px 5px; border-radius: 6px; display: none; }
+    .tabbar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: rgba(15, 17, 21, 0.85);
+      backdrop-filter: blur(20px);
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      padding: 10px 0 calc(20px + var(--safe-bottom));
+      z-index: 100;
+    }
+
+    .tab-btn {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      font-size: 10px;
+      font-weight: 700;
+      cursor: pointer;
+      position: relative;
+    }
+
+    .tab-btn i {
+      font-size: 20px;
+      transition: 0.2s;
+    }
+
+    .tab-btn.active {
+      color: #fff;
+    }
+
+    .tab-btn.active i {
+      color: #667EEA;
+      text-shadow: 0 0 15px rgba(102, 126, 234, 0.6);
+    }
+
+    .badge {
+      position: absolute;
+      top: -2px;
+      right: 20px;
+      background: var(--accent-hot);
+      color: #fff;
+      font-size: 9px;
+      padding: 2px 5px;
+      border-radius: 6px;
+      display: none;
+    }
 
     /* Product Sheet (MAX HEIGHT + SCROLL LOCK) */
     .sheet {
-      position: fixed; left: 0; right: 0; bottom: -100%;
-      background: #1E222B; border-radius: 24px 24px 0 0;
-      z-index: 200; transition: 0.3s cubic-bezier(0.1, 0.8, 0.2, 1);
-      box-shadow: 0 -10px 40px rgba(0,0,0,0.5); 
-      height: 98vh; /* ПОЧТИ НА ВЕСЬ ЭКРАН */
-      display: flex; flex-direction: column;
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: -100%;
+      background: #1E222B;
+      border-radius: 24px 24px 0 0;
+      z-index: 200;
+      transition: 0.3s cubic-bezier(0.1, 0.8, 0.2, 1);
+      box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.5);
+      height: 98vh;
+      /* ПОЧТИ НА ВЕСЬ ЭКРАН */
+      display: flex;
+      flex-direction: column;
     }
-    .sheet.open { bottom: 0; }
-    .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 150; opacity: 0; pointer-events: none; transition: 0.3s; backdrop-filter: blur(2px); }
-    .overlay.open { opacity: 1; pointer-events: auto; }
-    
-    .sheet-head { display: flex; justify-content: space-between; align-items: center; padding: 16px; border-bottom: 1px solid rgba(255,255,255,0.05); flex-shrink: 0; }
-    .sheet-title { font-size: 18px; font-weight: 800; }
+
+    .sheet.open {
+      bottom: 0;
+    }
+
+    .overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.7);
+      z-index: 150;
+      opacity: 0;
+      pointer-events: none;
+      transition: 0.3s;
+      backdrop-filter: blur(2px);
+    }
+
+    .overlay.open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .sheet-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      flex-shrink: 0;
+    }
+
+    .sheet-title {
+      font-size: 18px;
+      font-weight: 800;
+    }
+
     /* Изолированный скролл шторки */
-    .sheet-scroll { 
-      flex: 1; 
-      overflow-y: auto; 
-      padding: 16px; 
-      padding-bottom: 80px; 
+    .sheet-scroll {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px;
+      padding-bottom: 80px;
       -webkit-overflow-scrolling: touch;
-      overscroll-behavior: contain; /* Блокирует передачу скролла фону */
+      overscroll-behavior: contain;
+      /* Блокирует передачу скролла фону */
     }
-    
-    .pd-img-box { width: 100%; aspect-ratio: 3/4; background: var(--card-highlight); border-radius: 16px; margin-bottom: 16px; display: flex; align-items: center; justify-content: center; overflow: hidden; }
-    .pd-img-box img { height: 100%; width: 100%; object-fit: cover; }
-    .sheet-foot { padding: 16px; border-top: 1px solid rgba(255,255,255,0.05); background: #1E222B; position: absolute; bottom: 0; left: 0; right: 0; }
+
+    .pd-img-box {
+      width: 100%;
+      aspect-ratio: 3/4;
+      background: var(--card-highlight);
+      border-radius: 16px;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    .pd-img-box img {
+      height: 100%;
+      width: 100%;
+      object-fit: cover;
+    }
+
+    .sheet-foot {
+      padding: 16px;
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+      background: #1E222B;
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+    }
 
     /* Success Screen */
-    .full-screen { position: fixed; inset: 0; background: var(--bg); z-index: 300; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 40px; display: none; }
-    .full-screen.show { display: flex; animation: fadeIn 0.3s; }
-    .success-icon { width: 80px; height: 80px; border-radius: 50%; background: var(--accent-green); display: flex; align-items: center; justify-content: center; font-size: 40px; color: #000; margin-bottom: 20px; box-shadow: 0 0 20px rgba(0, 224, 150, 0.4); }
+    .full-screen {
+      position: fixed;
+      inset: 0;
+      background: var(--bg);
+      z-index: 300;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 40px;
+      display: none;
+    }
 
-    .toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-50px); background: #fff; color: #000; padding: 10px 20px; border-radius: 20px; font-weight: 600; font-size: 14px; opacity: 0; transition: 0.3s; z-index: 500; }
-    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+    .full-screen.show {
+      display: flex;
+      animation: fadeIn 0.3s;
+    }
+
+    .success-icon {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background: var(--accent-green);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 40px;
+      color: #000;
+      margin-bottom: 20px;
+      box-shadow: 0 0 20px rgba(0, 224, 150, 0.4);
+    }
+
+    .toast {
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%) translateY(-50px);
+      background: #fff;
+      color: #000;
+      padding: 10px 20px;
+      border-radius: 20px;
+      font-weight: 600;
+      font-size: 14px;
+      opacity: 0;
+      transition: 0.3s;
+      z-index: 500;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
   </style>
 </head>
+
 <body>
 
   <div id="loader" class="app-loader">
@@ -193,7 +724,7 @@
   </div>
 
   <div id="app" style="display:none">
-    
+
     <section id="page-shop" class="page active">
       <div class="topbar">
         <div class="brand">PRO<span>SELL</span></div>
@@ -237,41 +768,60 @@
 
     <section id="page-info" class="page">
       <div class="page-title" style="padding:20px 16px; font-size:24px; font-weight:800;">Инфо</div>
-      
+
       <div class="menu-btn" onclick="openMyOrders()">
         <span><i class="fa-solid fa-list-check" style="color:#667EEA; width:24px"></i> Мои заказы</span>
         <i class="fa-solid fa-chevron-right" style="color:var(--text-muted)"></i>
       </div>
 
       <h3 style="padding:10px 16px; font-size:16px;">Вопросы и ответы</h3>
-      
+
       <div class="faq-container" id="faq-container">
         <div class="faq-item" onclick="toggleFaq(this)">
           <div class="faq-head">Как происходит покупка?<i class="fa-solid fa-chevron-down"></i></div>
-          <div class="faq-body-wrap"><div class="faq-body"><div class="faq-content">
-            Мы работаем через безопасную сделку Ozon. После оформления заказа здесь, вам придет уведомление в приложение Ozon. Там вы оплачиваете товар, и деньги замораживаются до момента получения.
-          </div></div></div>
+          <div class="faq-body-wrap">
+            <div class="faq-body">
+              <div class="faq-content">
+                Мы работаем через безопасную сделку Ozon. После оформления заказа здесь, вам придет уведомление в
+                приложение Ozon. Там вы оплачиваете товар, и деньги замораживаются до момента получения.
+              </div>
+            </div>
+          </div>
         </div>
 
         <div class="faq-item" onclick="toggleFaq(this)">
           <div class="faq-head">Гарантия есть?<i class="fa-solid fa-chevron-down"></i></div>
-          <div class="faq-body-wrap"><div class="faq-body"><div class="faq-content">
-            Да, мы даем 1 месяц гарантии на все комплектующие. Перед отправкой каждый процессор и память проходят стресс-тесты. Если что-то не так — возврат средств без проблем.
-          </div></div></div>
+          <div class="faq-body-wrap">
+            <div class="faq-body">
+              <div class="faq-content">
+                Да, мы даем 1 месяц гарантии на все комплектующие. Перед отправкой каждый процессор и память проходят
+                стресс-тесты. Если что-то не так — возврат средств без проблем.
+              </div>
+            </div>
+          </div>
         </div>
 
         <div class="faq-item" onclick="toggleFaq(this)">
           <div class="faq-head">Почему нужен номер Ozon?<i class="fa-solid fa-chevron-down"></i></div>
-          <div class="faq-body-wrap"><div class="faq-body"><div class="faq-content">
-            Мы создаем заказ напрямую на ваш аккаунт Ozon по номеру телефона. Это гарантирует, что товар придет именно вам и вы сможете отслеживать его в официальном приложении.
-          </div></div></div>
+          <div class="faq-body-wrap">
+            <div class="faq-body">
+              <div class="faq-content">
+                Мы создаем заказ напрямую на ваш аккаунт Ozon по номеру телефона. Это гарантирует, что товар придет
+                именно вам и вы сможете отслеживать его в официальном приложении.
+              </div>
+            </div>
+          </div>
         </div>
 
         <div class="faq-item" onclick="toggleFaq(this)">
           <div class="faq-head">Срок доставки?<i class="fa-solid fa-chevron-down"></i></div>
-          <div class="faq-body-wrap"><div class="faq-body"><div class="faq-content">
-            Зависит от вашего региона. Обычно от 3 до 7 дней. Точные сроки покажет приложение Ozon после оформления.
-          </div></div></div>
+          <div class="faq-body-wrap">
+            <div class="faq-body">
+              <div class="faq-content">
+                Зависит от вашего региона. Обычно от 3 до 7 дней. Точные сроки покажет приложение Ozon после оформления.
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </section>
@@ -295,15 +845,15 @@
   </div>
 
   <div class="overlay" id="overlay" onclick="closeSheets()"></div>
-  
+
   <div class="sheet" id="sheet-search">
     <div class="sheet-head">
       <div class="sheet-title">Поиск</div>
       <i class="fa-solid fa-xmark" style="font-size:24px" onclick="closeSheets()"></i>
     </div>
     <div class="sheet-scroll">
-       <input id="search-inp" class="input" placeholder="Название товара..." oninput="Search.run()" />
-       <div id="search-res" style="margin-top:15px; display:flex; flex-direction:column; gap:10px;"></div>
+      <input id="search-inp" class="input" placeholder="Название товара..." oninput="Search.run()" />
+      <div id="search-res" style="margin-top:15px; display:flex; flex-direction:column; gap:10px;"></div>
     </div>
   </div>
 
@@ -314,7 +864,7 @@
     </div>
     <div class="sheet-scroll" id="pd-content"></div>
     <div class="sheet-foot">
-       <button class="btn-main" id="btn-pd-add">Добавить в корзину</button>
+      <button class="btn-main" id="btn-pd-add">Добавить в корзину</button>
     </div>
   </div>
 
@@ -323,11 +873,11 @@
   <script src="api.js"></script>
   <script>
     const TG = window.Telegram?.WebApp;
-    if(TG) { TG.expand(); TG.setHeaderColor('#0F1115'); TG.setBackgroundColor('#0F1115'); }
+    if (TG) { TG.expand(); TG.setHeaderColor('#0F1115'); TG.setBackgroundColor('#0F1115'); }
 
     const LS_CART = "ps_cart_v10";
     const LS_PROF = "ps_profile_v10";
-    
+
     let STATE = {
       cats: [],
       products: [],
@@ -341,14 +891,14 @@
     async function init() {
       try {
         const res = await API.getData();
-        if(res && res.categories) {
+        if (res && res.categories) {
           STATE.cats = res.categories;
           STATE.products = res.products;
           renderApp();
           document.getElementById('loader').style.display = 'none';
           document.getElementById('app').style.display = 'block';
         }
-      } catch(e) {
+      } catch (e) {
         alert("Ошибка загрузки. Проверьте интернет.");
       }
     }
@@ -380,19 +930,19 @@
     function renderProducts() {
       const grid = document.getElementById('prod-grid');
       const items = STATE.activeCat === 'all' ? STATE.products : STATE.products.filter(p => p.category_id === STATE.activeCat);
-      
+
       grid.innerHTML = items.map(p => `
-        <div class="card" onclick="openProduct('${p.id}')">
+        <div class="card" onclick="openProduct('${esc(p.id)}')">
           <div class="card-img">
-            ${p.image_url ? `<img src="${p.image_url}">` : `<i class="fa-solid fa-microchip"></i>`}
+            ${p.image_url ? `<img src="${esc(p.image_url)}" loading="lazy">` : `<i class="fa-solid fa-microchip"></i>`}
           </div>
-          <div class="card-title">${p.name}</div>
+          <div class="card-title">${esc(p.name)}</div>
           <div class="card-foot">
             <div class="price-box">
               <div class="price">${fmt(p.price)}</div>
               ${p.old_price ? `<div class="old-price">${fmt(p.old_price)}</div>` : ''}
             </div>
-            <div class="btn-add" onclick="event.stopPropagation(); Cart.add('${p.id}')">
+            <div class="btn-add" onclick="event.stopPropagation(); Cart.add('${esc(p.id)}')">
               <i class="fa-solid fa-plus"></i>
             </div>
           </div>
@@ -402,32 +952,33 @@
 
     window.openProduct = (id) => {
       const p = STATE.products.find(x => x.id === id);
-      if(!p) return;
-      
+      if (!p) return;
+
       const content = document.getElementById('pd-content');
-      
+
+      // Спецификации показываем ТОЛЬКО если нет текстового описания
       let specsHtml = '';
-      if(p.specs && typeof p.specs === 'object') {
-        specsHtml = Object.entries(p.specs).map(([k,v]) => 
-          `<div class="spec-row"><span class="spec-key">${k}</span><span class="spec-val">${v}</span></div>`
+      if (!p.desc && p.specs && typeof p.specs === 'object' && Object.keys(p.specs).length) {
+        specsHtml = Object.entries(p.specs).map(([k, v]) =>
+          `<div class="spec-row"><span class="spec-key">${esc(k)}</span><span class="spec-val">${esc(String(v))}</span></div>`
         ).join('');
       }
 
       content.innerHTML = `
         <div class="pd-img-box">
-           ${p.image_url ? `<img src="${p.image_url}">` : `<i class="fa-solid fa-microchip" style="font-size:50px;color:#555"></i>`}
+           ${p.image_url ? `<img src="${esc(p.image_url)}">` : `<i class="fa-solid fa-microchip" style="font-size:50px;color:#555"></i>`}
         </div>
-        <div style="font-size:18px; font-weight:700; margin-bottom:10px; line-height:1.3">${p.name}</div>
+        <div style="font-size:18px; font-weight:700; margin-bottom:10px; line-height:1.3">${esc(p.name)}</div>
         <div style="font-size:24px; font-weight:800; color:#667EEA; margin-bottom:20px">${fmt(p.price)}</div>
         
         <div style="background:#252A33; padding:15px; border-radius:12px; margin-bottom:20px;">
-           <div style="color:#aaa; font-size:14px; line-height:1.5; margin-bottom:10px">${p.desc || "Описание отсутствует"}</div>
+           <div style="color:#aaa; font-size:14px; line-height:1.5; margin-bottom:10px">${esc(p.desc) || "Описание отсутствует"}</div>
            ${specsHtml}
         </div>
       `;
-      
+
       document.getElementById('btn-pd-add').onclick = () => { Cart.add(p.id); closeSheets(); };
-      
+
       // Блокируем фон, чтобы скроллилась только шторка
       document.body.classList.add('no-scroll');
       document.getElementById('sheet-product').classList.add('open');
@@ -438,31 +989,41 @@
     const Cart = {
       add: (id) => {
         const p = STATE.products.find(x => x.id === id);
+        if (!p) return;
         const ex = STATE.cart.find(x => x.id === id);
-        if(ex) ex.qty++; else STATE.cart.push({ id: p.id, name: p.name, price: p.price, qty: 1 });
+        if (ex) ex.qty++; else STATE.cart.push({ id: p.id, qty: 1 });
         Cart.save();
         toast("Добавлено");
-        TG?.HapticFeedback.impactOccurred('light');
+        try { TG?.HapticFeedback?.impactOccurred('light'); } catch (e) { }
       },
       change: (id, d) => {
         const item = STATE.cart.find(x => x.id === id);
-        if(item) {
+        if (item) {
           item.qty += d;
-          if(item.qty <= 0) STATE.cart = STATE.cart.filter(x => x.id !== id);
+          if (item.qty <= 0) STATE.cart = STATE.cart.filter(x => x.id !== id);
           Cart.save();
           renderCart();
         }
       },
+      // Получить актуальную цену товара из STATE.products
+      getPrice: (id) => {
+        const p = STATE.products.find(x => x.id === id);
+        return p ? p.price : 0;
+      },
+      getName: (id) => {
+        const p = STATE.products.find(x => x.id === id);
+        return p ? p.name : 'Товар';
+      },
       save: () => {
         localStorage.setItem(LS_CART, JSON.stringify(STATE.cart));
-        const cnt = STATE.cart.reduce((a,b) => a+b.qty, 0);
+        const cnt = STATE.cart.reduce((a, b) => a + b.qty, 0);
         const badge = document.getElementById('cart-badge');
         badge.innerText = cnt;
         badge.style.display = cnt > 0 ? 'block' : 'none';
-        
-        if(document.getElementById('page-cart').classList.contains('active')) {
-           const bar = document.getElementById('checkout-bar');
-           bar.style.display = cnt > 0 ? 'block' : 'none';
+
+        if (document.getElementById('page-cart').classList.contains('active')) {
+          const bar = document.getElementById('checkout-bar');
+          bar.style.display = cnt > 0 ? 'block' : 'none';
         }
       }
     };
@@ -470,68 +1031,93 @@
     function renderCart() {
       const list = document.getElementById('cart-list');
       const empty = document.getElementById('cart-empty');
-      
-      if(!STATE.cart.length) {
+
+      // Фильтруем удалённые товары
+      STATE.cart = STATE.cart.filter(i => STATE.products.find(p => p.id === i.id));
+
+      if (!STATE.cart.length) {
         list.innerHTML = ''; empty.style.display = 'block';
         document.getElementById('checkout-bar').style.display = 'none';
         return;
       }
-      
+
       empty.style.display = 'none';
-      
-      list.innerHTML = STATE.cart.map(i => `
+
+      // Берём актуальные цены и названия из STATE.products
+      list.innerHTML = STATE.cart.map(i => {
+        const price = Cart.getPrice(i.id);
+        const name = Cart.getName(i.id);
+        return `
         <div class="c-item">
           <div class="c-info">
-            <div class="c-name">${i.name}</div>
-            <div class="c-price">${fmt(i.price * i.qty)}</div>
+            <div class="c-name">${esc(name)}</div>
+            <div class="c-price">${fmt(price * i.qty)}</div>
           </div>
           <div class="c-ctrl">
-            <div class="c-btn" onclick="Cart.change('${i.id}', -1)">-</div>
+            <div class="c-btn" onclick="Cart.change('${esc(i.id)}', -1)">-</div>
             <div style="font-weight:600; font-size:14px">${i.qty}</div>
-            <div class="c-btn" onclick="Cart.change('${i.id}', 1)">+</div>
+            <div class="c-btn" onclick="Cart.change('${esc(i.id)}', 1)">+</div>
           </div>
         </div>
-      `).join('');
-      
-      const total = STATE.cart.reduce((a,b) => a + b.price*b.qty, 0);
+      `;
+      }).join('');
+
+      const total = STATE.cart.reduce((a, b) => a + Cart.getPrice(b.id) * b.qty, 0);
       document.getElementById('cart-total').innerText = fmt(total);
     }
 
     // --- CHECKOUT ---
+    let isCheckingOut = false;
     async function startCheckout() {
-      if(!STATE.profile.name || !STATE.profile.phone) {
+      if (isCheckingOut) return; // Защита от двойного клика
+
+      if (!STATE.profile.name || !STATE.profile.phone) {
         toast("Заполните профиль!");
         Nav.go('profile');
         return;
       }
-      
+
+      isCheckingOut = true;
       const btn = document.querySelector('#checkout-bar button');
       btn.innerText = "Оформление...";
-      
+      btn.disabled = true;
+
       const profileToSend = {
-         name: STATE.profile.name,
-         phone: STATE.profile.phone,
-         city: STATE.profile.city,
-         comment: STATE.profile.address 
+        name: STATE.profile.name,
+        phone: STATE.profile.phone,
+        city: STATE.profile.city,
+        comment: STATE.profile.address
       };
+
+      // Формируем items с актуальными ценами из STATE.products
+      const items = STATE.cart.map(i => {
+        const p = STATE.products.find(x => x.id === i.id);
+        return { id: i.id, name: p?.name || '', price: p?.price || 0, qty: i.qty };
+      });
+      const total = items.reduce((a, b) => a + b.price * b.qty, 0);
 
       const payload = {
         tg: { id: TG?.initDataUnsafe?.user?.id, username: TG?.initDataUnsafe?.user?.username },
         profile: profileToSend,
-        items: STATE.cart,
-        total: STATE.cart.reduce((a,b) => a + b.price*b.qty, 0)
+        items: items,
+        total: total,
+        idempotency_key: 'ord_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8)
       };
 
       try {
         const res = await API.createOrder(payload);
-        if(res.ok) {
+        if (res.ok) {
           STATE.cart = []; Cart.save(); renderCart();
           document.getElementById('success-screen').classList.add('show');
-        } else alert("Ошибка заказа");
-      } catch(e) {
-        alert("Ошибка сети");
+        } else {
+          toast("Ошибка: " + (res.error || "Попробуйте ещё раз"));
+        }
+      } catch (e) {
+        toast("Ошибка сети. Проверьте интернет.");
       }
       btn.innerText = "Оформить";
+      btn.disabled = false;
+      isCheckingOut = false;
     }
 
     // --- NAVIGATION ---
@@ -539,17 +1125,17 @@
       go: (page) => {
         document.querySelectorAll('.page').forEach(el => el.classList.remove('active'));
         document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
-        document.getElementById('page-'+page).classList.add('active');
-        
-        const map = {shop:0, cart:1, profile:2, info:3};
+        document.getElementById('page-' + page).classList.add('active');
+
+        const map = { shop: 0, cart: 1, profile: 2, info: 3 };
         document.querySelectorAll('.tab-btn')[map[page]].classList.add('active');
-        
+
         const bar = document.getElementById('checkout-bar');
-        if(page === 'cart' && STATE.cart.length > 0) {
-           bar.style.display = 'block';
-           renderCart();
+        if (page === 'cart' && STATE.cart.length > 0) {
+          bar.style.display = 'block';
+          renderCart();
         } else {
-           bar.style.display = 'none';
+          bar.style.display = 'none';
         }
       }
     };
@@ -574,7 +1160,7 @@
     };
 
     window.toggleFaq = (el) => {
-      document.querySelectorAll('.faq-item').forEach(item => { if(item !== el) item.classList.remove('open'); });
+      document.querySelectorAll('.faq-item').forEach(item => { if (item !== el) item.classList.remove('open'); });
       el.classList.toggle('open');
     }
 
@@ -584,7 +1170,7 @@
       document.getElementById('overlay').classList.add('open');
       setTimeout(() => document.getElementById('search-inp').focus(), 100);
     };
-    
+
     window.closeSheets = () => {
       document.body.classList.remove('no-scroll');
       document.getElementById('sheet-search').classList.remove('open');
@@ -615,10 +1201,14 @@
       t.innerText = msg; t.classList.add('show');
       setTimeout(() => t.classList.remove('show'), 2000);
     }
-    
-    function fmt(n) { return new Intl.NumberFormat('ru-RU', {style:'currency', currency:'RUB', maximumFractionDigits:0}).format(n); }
+
+    function fmt(n) { return new Intl.NumberFormat('ru-RU', { style: 'currency', currency: 'RUB', maximumFractionDigits: 0 }).format(n); }
+
+    // XSS-защита
+    function esc(s) { return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;'); }
 
     init();
   </script>
 </body>
+
 </html>
