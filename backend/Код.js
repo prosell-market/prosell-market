@@ -35,7 +35,7 @@ function handleRequest_(e) {
     if (action === "data") return json_(getInitialData_());
     if (action === "order") return json_(createOrder_(e));
     if (action === "notifications") return json_(getUserOrdersList_(e));
-    if (action === "notifications_read") return json_({ ok: true }); 
+    if (action === "notifications_read") return json_({ ok: true });
 
     // --- ADMIN ENDPOINTS ---
     if (action === "admin_orders") return json_(adminGetOrders_(e));
@@ -85,18 +85,18 @@ function readSheetData_(sheetName) {
   const ss = getSS_();
   const sh = ss.getSheetByName(sheetName);
   if (!sh) return [];
-  
+
   const data = sh.getDataRange().getValues();
   if (data.length < 2) return [];
-  
+
   const headers = data[0].map(String);
   return data.slice(1).map(row => rowToObj_(headers, row));
 }
 
 function rowToObj_(headers, row) {
   const obj = {};
-  headers.forEach((h, i) => { 
-    if(h) obj[h] = row[i]; 
+  headers.forEach((h, i) => {
+    if (h) obj[h] = row[i];
   });
   return obj;
 }
@@ -120,7 +120,7 @@ function readUiConfig_() {
   const ss = getSS_();
   const sh = ss.getSheetByName("ui_config");
   if (!sh) return {};
-  
+
   const values = sh.getDataRange().getValues();
   const out = {};
   for (let i = 1; i < values.length; i++) {
@@ -145,24 +145,24 @@ function health_() {
 
 function getInitialData_() {
   const ui = readUiConfig_();
-  
+
   // Категории
   const categories = readSheetData_("categories").map(x => ({
     id: String(x.id), name: String(x.name), icon: x.icon || "fa-tag", sort: toNum_(x.sort, 100)
-  })).sort((a,b) => a.sort - b.sort);
+  })).sort((a, b) => a.sort - b.sort);
 
   // Товары
   const products = readSheetData_("products").map(x => ({
-    id: String(x.id), 
-    category_id: String(x.category || ""), 
-    name: String(x.title || ""), 
+    id: String(x.id),
+    category_id: String(x.category || ""),
+    name: String(x.title || ""),
     price: toNum_(x.price, 0),
     old_price: x.old_price ? toNum_(x.old_price, null) : null,
     image_url: x.image_url || "",
     stock: toBool_(x.in_stock) ? 999 : 0,
     specs: parseJsonMaybe_(x.specs_json) || {},
     // ВАЖНО: Маппинг описания. Если есть 'desc' - берем его, иначе 'specs' (для совместимости)
-    desc: String(x.desc || x.specs || "") 
+    desc: String(x.desc || x.specs || "")
   }));
 
   // Баннеры (если есть таблица)
@@ -174,7 +174,7 @@ function getInitialData_() {
       icon: String(x.icon || "fa-star"),
       is_hot: toBool_(x.is_hot)
     }));
-  } catch(e) { console.log("No banners sheet"); }
+  } catch (e) { console.log("No banners sheet"); }
 
   return { ui: applyUiDefaults_(ui), categories: categories, products: products, banners: banners };
 }
@@ -183,15 +183,15 @@ function createOrder_(e) {
   try {
     const payload = JSON.parse(e.postData.contents);
     const ss = getSS_();
-    
+
     let sh = ss.getSheetByName("Orders");
-    if (!sh) { 
-      sh = ss.insertSheet("Orders"); 
-      sh.appendRow(["ts", "order_id", "tg_id", "name", "phone", "city", "comment", "total", "items_json", "status"]); 
+    if (!sh) {
+      sh = ss.insertSheet("Orders");
+      sh.appendRow(["ts", "order_id", "tg_id", "name", "phone", "city", "comment", "total", "items_json", "status"]);
     }
 
-    const orderId = "ORD-" + Utilities.getUuid().slice(0,8).toUpperCase();
-    
+    const orderId = "ORD-" + Utilities.getUuid().slice(0, 8).toUpperCase();
+
     // В поле comment кладем адрес или комментарий
     const commentVal = payload.profile?.comment || payload.profile?.address || "";
 
@@ -207,9 +207,9 @@ function createOrder_(e) {
       JSON.stringify(payload.items || []),
       "new"
     ]);
-    
+
     return { ok: true, order_id: orderId };
-  } catch(err) { return { ok: false, error: String(err) }; }
+  } catch (err) { return { ok: false, error: String(err) }; }
 }
 
 function getUserOrdersList_(e) {
@@ -218,7 +218,7 @@ function getUserOrdersList_(e) {
 
   const rows = readSheetData_("Orders");
   // Фильтруем и сортируем
-  const userRows = rows.filter(r => String(r.tg_id) === tgId).sort((a,b) => new Date(b.ts) - new Date(a.ts));
+  const userRows = rows.filter(r => String(r.tg_id) === tgId).sort((a, b) => new Date(b.ts) - new Date(a.ts));
 
   const out = userRows.map(r => {
     const items = parseJsonMaybe_(r.items_json);
@@ -239,14 +239,14 @@ function getUserOrdersList_(e) {
 function adminCheck_(e) {
   const p = (e && e.parameter) ? e.parameter : {};
   if (p.token === ADMIN_TOKEN) return true;
-  try { return JSON.parse(e.postData.contents).token === ADMIN_TOKEN; } catch(_) { return false; }
+  try { return JSON.parse(e.postData.contents).token === ADMIN_TOKEN; } catch (_) { return false; }
 }
 
 function adminGetOrders_(e) {
   if (!adminCheck_(e)) return { ok: false, error: "403" };
   const rows = readSheetData_("Orders");
   // Парсим items_json -> items, чтобы фронтенд корректно отображал товары в заказах
-  const orders = rows.reverse().map(function(row) {
+  const orders = rows.reverse().map(function (row) {
     row.items = parseJsonMaybe_(row.items_json) || [];
     return row;
   });
@@ -262,7 +262,7 @@ function adminUpdateOrderStatus_(e) {
   const h = data[0].map(String);
   const idCol = h.indexOf("order_id");
   const stCol = h.indexOf("status");
-  
+
   if (idCol === -1 || stCol === -1) return { ok: false, error: "Bad columns" };
 
   for (let i = 1; i < data.length; i++) {
@@ -278,10 +278,16 @@ function adminUpdateOrderStatus_(e) {
 
 function adminGetProducts_(e) {
   if (!adminCheck_(e)) return { ok: false, error: "403" };
-  return { 
-    ok: true, 
-    products: readSheetData_("products"), 
-    categories: readSheetData_("categories") 
+  // Маппим описание: берём desc, если пусто — specs (совместимость со старой структурой)
+  const raw = readSheetData_("products");
+  const products = raw.map(function (x) {
+    x.desc = String(x.desc || x.specs || "");
+    return x;
+  });
+  return {
+    ok: true,
+    products: products,
+    categories: readSheetData_("categories")
   };
 }
 
@@ -292,29 +298,31 @@ function adminSaveProduct_(e) {
     const item = p.item;
     const ss = getSS_();
     let sh = ss.getSheetByName("products");
-    
+
     // Гарантируем заголовки. 
     // ВАЖНО: Твое описание сейчас в 'specs', но мы добавим 'desc' на будущее
     const headers = ["id", "category", "title", "price", "old_price", "in_stock", "image_url", "desc", "specs", "specs_json"];
     if (!sh) { sh = ss.insertSheet("products"); sh.appendRow(headers); }
     ensureHeaders_(sh, headers);
-    
+
     const data = sh.getDataRange().getValues();
     const h = data[0].map(String);
     const idCol = h.indexOf("id");
-    
+
     // Маппинг данных с Админки в Колонки таблицы
     // Мы пишем item.desc в колонку 'specs', чтобы не терять данные в твоей текущей структуре
     const map = {
-      "id": "id", 
-      "title": "title", 
-      "price": "price", 
+      "id": "id",
+      "title": "title",
+      "price": "price",
       "old_price": "old_price",
-      "category": "category", 
+      "category": "category",
       "image_url": "image_url",
-      "desc": "specs", // <--- FIX: Пишем описание в specs, так как у тебя там текст
       "in_stock": "in_stock"
     };
+
+    // Описание пишем в обе колонки для совместимости
+    const descMap = { "desc": "desc", "desc_to_specs": "specs" };
 
     let rowIdx = -1;
     if (item.id) {
@@ -328,7 +336,7 @@ function adminSaveProduct_(e) {
 
     if (rowIdx === -1) {
       rowIdx = sh.getLastRow() + 1;
-      if (!item.id) item.id = "PRD-" + Utilities.getUuid().slice(0,6).toUpperCase();
+      if (!item.id) item.id = "PRD-" + Utilities.getUuid().slice(0, 6).toUpperCase();
     }
 
     Object.keys(map).forEach(key => {
@@ -340,13 +348,20 @@ function adminSaveProduct_(e) {
         sh.getRange(rowIdx, colIdx + 1).setValue(val);
       }
     });
-    
+
+    // Записываем описание в обе колонки (desc и specs)
+    var descVal = item.desc || "";
+    var descIdx = h.indexOf("desc");
+    var specsIdx = h.indexOf("specs");
+    if (descIdx !== -1) sh.getRange(rowIdx, descIdx + 1).setValue(descVal);
+    if (specsIdx !== -1) sh.getRange(rowIdx, specsIdx + 1).setValue(descVal);
+
     // Force stock=TRUE
     const stockIdx = h.indexOf("in_stock");
     if (stockIdx !== -1) sh.getRange(rowIdx, stockIdx + 1).setValue(true);
 
     return { ok: true };
-  } catch(e) { return { ok: false, error: String(e) }; }
+  } catch (e) { return { ok: false, error: String(e) }; }
 }
 
 function adminDeleteProduct_(e) {
@@ -357,10 +372,10 @@ function adminDeleteProduct_(e) {
   const data = sh.getDataRange().getValues();
   const h = data[0].map(String);
   const idIdx = h.indexOf("id");
-  
-  for(let i=1; i<data.length; i++) {
-    if(String(data[i][idIdx]) === String(p.id)) {
-      sh.deleteRow(i+1);
+
+  for (let i = 1; i < data.length; i++) {
+    if (String(data[i][idIdx]) === String(p.id)) {
+      sh.deleteRow(i + 1);
       return { ok: true };
     }
   }
@@ -372,7 +387,7 @@ function adminUploadImage_(e) {
   try {
     const p = JSON.parse(e.postData.contents);
     const blob = Utilities.newBlob(Utilities.base64Decode(p.data), p.mime, "prod_" + Date.now() + ".jpg");
-    
+
     // Ищем папку ProSell_Images
     const folderName = "ProSell_Images";
     const folders = DriveApp.getFoldersByName(folderName);
@@ -382,14 +397,14 @@ function adminUploadImage_(e) {
     } else {
       folder = DriveApp.createFolder(folderName);
     }
-    
+
     // Создаем файл
     const file = folder.createFile(blob);
     file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
-    
+
     // Возвращаем ссылку
     return { ok: true, url: "https://lh3.googleusercontent.com/d/" + file.getId() };
-  } catch(e) { 
-    return { ok: false, error: "Drive Error: " + String(e) }; 
+  } catch (e) {
+    return { ok: false, error: "Drive Error: " + String(e) };
   }
 }

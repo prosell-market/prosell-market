@@ -321,8 +321,8 @@ const Products={
     UI.id('p-price').value=p.price||"";
     UI.id('p-old').value=p.old_price||"";
     UI.id('p-img-url').value=p.image_url||"";
-    // ОПИСАНИЕ: Берем из поля desc, которое бэкенд наполнит из specs
-    UI.id('p-desc').value=p.desc||""; 
+    // ОПИСАНИЕ: Берем из desc, если пусто — из specs (совместимость)
+    UI.id('p-desc').value=p.desc||p.specs||""; 
     
     if(p.image_url){ UI.id('p-prev').src=p.image_url; UI.id('p-prev').style.display='block'; UI.id('p-ph').style.display='none'; }
     else{ UI.id('p-prev').style.display='none'; UI.id('p-ph').style.display='block'; }
