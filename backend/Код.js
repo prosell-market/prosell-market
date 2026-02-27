@@ -245,7 +245,12 @@ function adminCheck_(e) {
 function adminGetOrders_(e) {
   if (!adminCheck_(e)) return { ok: false, error: "403" };
   const rows = readSheetData_("Orders");
-  return { ok: true, orders: rows.reverse() }; // Новые сверху
+  // Парсим items_json -> items, чтобы фронтенд корректно отображал товары в заказах
+  const orders = rows.reverse().map(function(row) {
+    row.items = parseJsonMaybe_(row.items_json) || [];
+    return row;
+  });
+  return { ok: true, orders: orders };
 }
 
 function adminUpdateOrderStatus_(e) {
