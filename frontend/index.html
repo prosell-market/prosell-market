@@ -153,6 +153,7 @@
     .brand span {
       background: var(--brand-grad);
       -webkit-background-clip: text;
+      background-clip: text;
       -webkit-text-fill-color: transparent;
     }
 
@@ -250,6 +251,7 @@
       min-height: 34px;
       display: -webkit-box;
       -webkit-line-clamp: 2;
+      line-clamp: 2;
       -webkit-box-orient: vertical;
       overflow: hidden;
     }
@@ -703,14 +705,337 @@
       opacity: 1;
       transform: translateX(-50%) translateY(0);
     }
+
+    /* ===== SKELETON LOADING ===== */
+    .skeleton-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      padding: 0 16px;
+    }
+
+    .skel-card {
+      background: var(--card-highlight, #252A33);
+      border-radius: 20px;
+      padding: 10px;
+      animation: shimmer 1.4s infinite;
+    }
+
+    .skel-img {
+      aspect-ratio: 3/4;
+      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.06);
+      margin-bottom: 10px;
+    }
+
+    .skel-line {
+      height: 12px;
+      border-radius: 6px;
+      background: rgba(255, 255, 255, 0.06);
+      margin-bottom: 8px;
+    }
+
+    .skel-line.short {
+      width: 60%;
+    }
+
+    .skel-btn {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.06);
+      float: right;
+    }
+
+    @keyframes shimmer {
+      0% {
+        opacity: 1;
+      }
+
+      50% {
+        opacity: 0.55;
+      }
+
+      100% {
+        opacity: 1;
+      }
+    }
+
+    /* ===== CART BUTTON ANIMATION ===== */
+    .btn-add.added {
+      background: #00E096 !important;
+      transform: scale(1.2);
+      transition: background 0.2s, transform 0.2s;
+    }
+
+    .btn-add {
+      transition: background 0.3s, transform 0.3s;
+    }
+
+    /* ===== PULL-TO-REFRESH ===== */
+    #ptr-indicator {
+      position: fixed;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%) translateY(-80px);
+      background: rgba(102, 126, 234, 0.95);
+      color: #fff;
+      padding: 10px 20px;
+      border-radius: 0 0 20px 20px;
+      font-size: 13px;
+      font-weight: 700;
+      z-index: 9998;
+      transition: transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    }
+
+    #ptr-indicator.visible {
+      transform: translateX(-50%) translateY(0);
+    }
+
+    #ptr-indicator i {
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    /* ===== CONFIRM MODAL ===== */
+    #modal-confirm {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.7);
+      z-index: 400;
+      display: none;
+      align-items: flex-end;
+      justify-content: center;
+      backdrop-filter: blur(4px);
+    }
+
+    #modal-confirm.active {
+      display: flex;
+    }
+
+    .confirm-sheet {
+      background: #1E222B;
+      width: 100%;
+      border-radius: 24px 24px 0 0;
+      padding: 24px;
+      padding-bottom: calc(24px + env(safe-area-inset-bottom, 0px));
+      animation: slideUp 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
+      max-height: 85vh;
+      overflow-y: auto;
+    }
+
+    @keyframes slideUp {
+      from {
+        transform: translateY(100%);
+      }
+
+      to {
+        transform: translateY(0);
+      }
+    }
+
+    .confirm-handle {
+      width: 40px;
+      height: 4px;
+      background: rgba(255, 255, 255, 0.15);
+      border-radius: 2px;
+      margin: 0 auto 20px;
+    }
+
+    .confirm-title {
+      font-size: 20px;
+      font-weight: 900;
+      margin-bottom: 16px;
+    }
+
+    .confirm-items-list {
+      margin: 12px 0;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .confirm-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: rgba(255, 255, 255, 0.04);
+      border-radius: 14px;
+      padding: 10px 12px;
+    }
+
+    .confirm-item-img {
+      width: 44px;
+      height: 44px;
+      border-radius: 10px;
+      object-fit: cover;
+      background: #252A33;
+      flex-shrink: 0;
+    }
+
+    .confirm-item-name {
+      font-size: 13px;
+      font-weight: 700;
+      flex: 1;
+      line-height: 1.3;
+    }
+
+    .confirm-item-qty {
+      color: #667EEA;
+      font-weight: 800;
+      font-size: 13px;
+    }
+
+    .confirm-item-price {
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .confirm-divider {
+      border: none;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      margin: 16px 0;
+    }
+
+    .confirm-total-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 18px;
+      font-weight: 900;
+      margin-bottom: 20px;
+    }
+
+    .confirm-total-amount {
+      color: #667EEA;
+    }
+
+    .confirm-profile-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: rgba(255, 255, 255, 0.04);
+      border-radius: 12px;
+      padding: 12px;
+      margin-bottom: 16px;
+      font-size: 13px;
+    }
+
+    .confirm-profile-row i {
+      color: #667EEA;
+      width: 16px;
+      text-align: center;
+    }
+
+    .confirm-btns {
+      display: flex;
+      gap: 10px;
+    }
+
+    .confirm-btn-back {
+      flex: 1;
+      padding: 14px;
+      border-radius: 14px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: rgba(255, 255, 255, 0.05);
+      color: #fff;
+      font-weight: 700;
+      font-size: 15px;
+      cursor: pointer;
+    }
+
+    .confirm-btn-ok {
+      flex: 2;
+      padding: 14px;
+      border-radius: 14px;
+      border: none;
+      background: linear-gradient(135deg, #667EEA, #764BA2);
+      color: #fff;
+      font-weight: 800;
+      font-size: 15px;
+      cursor: pointer;
+      box-shadow: 0 4px 15px rgba(118, 75, 162, 0.4);
+      transition: opacity 0.2s;
+    }
+
+    .confirm-btn-ok:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
   </style>
 </head>
 
 <body>
 
-  <div id="loader" class="app-loader">
-    <div class="spinner"></div>
-    <div style="font-weight:600; color:#667EEA">Загрузка...</div>
+  <div id="loader" class="app-loader"
+    style="flex-direction:column;align-items:stretch;justify-content:flex-start;padding:0;overflow:hidden;">
+    <!-- Fake topbar -->
+    <div
+      style="padding:14px 16px;border-bottom:1px solid rgba(255,255,255,0.05);display:flex;justify-content:space-between;align-items:center;background:rgba(15,17,21,0.85);flex-shrink:0;">
+      <div style="font-size:18px;font-weight:900;">PRO<span
+          style="background:linear-gradient(135deg,#667EEA,#764BA2);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;">SELL</span>
+      </div>
+      <div style="width:36px;height:36px;border-radius:10px;background:rgba(255,255,255,0.05);"></div>
+    </div>
+    <!-- Fake category chips -->
+    <div style="display:flex;gap:8px;padding:14px 16px;flex-shrink:0;">
+      <div class="skel-line"
+        style="width:60px;height:34px;border-radius:20px;margin:0;background:rgba(255,255,255,0.08);animation:shimmer 1.4s infinite;">
+      </div>
+      <div class="skel-line"
+        style="width:80px;height:34px;border-radius:20px;margin:0;background:rgba(255,255,255,0.05);animation:shimmer 1.4s infinite 0.1s;">
+      </div>
+      <div class="skel-line"
+        style="width:70px;height:34px;border-radius:20px;margin:0;background:rgba(255,255,255,0.05);animation:shimmer 1.4s infinite 0.2s;">
+      </div>
+    </div>
+    <!-- Skeleton product grid -->
+    <div class="skeleton-grid" style="overflow-y:auto;flex:1;">
+      <div class="skel-card" style="animation-delay:0s">
+        <div class="skel-img"></div>
+        <div class="skel-line"></div>
+        <div class="skel-line short"></div>
+        <div class="skel-btn"></div>
+      </div>
+      <div class="skel-card" style="animation-delay:0.1s">
+        <div class="skel-img"></div>
+        <div class="skel-line"></div>
+        <div class="skel-line short"></div>
+        <div class="skel-btn"></div>
+      </div>
+      <div class="skel-card" style="animation-delay:0.2s">
+        <div class="skel-img"></div>
+        <div class="skel-line"></div>
+        <div class="skel-line short"></div>
+        <div class="skel-btn"></div>
+      </div>
+      <div class="skel-card" style="animation-delay:0.3s">
+        <div class="skel-img"></div>
+        <div class="skel-line"></div>
+        <div class="skel-line short"></div>
+        <div class="skel-btn"></div>
+      </div>
+      <div class="skel-card" style="animation-delay:0.4s">
+        <div class="skel-img"></div>
+        <div class="skel-line"></div>
+        <div class="skel-line short"></div>
+        <div class="skel-btn"></div>
+      </div>
+      <div class="skel-card" style="animation-delay:0.5s">
+        <div class="skel-img"></div>
+        <div class="skel-line"></div>
+        <div class="skel-line short"></div>
+        <div class="skel-btn"></div>
+      </div>
+    </div>
   </div>
 
   <div id="success-screen" class="full-screen">
@@ -868,6 +1193,38 @@
     </div>
   </div>
 
+  <!-- PULL TO REFRESH INDICATOR -->
+  <div id="ptr-indicator"><i class="fa-solid fa-arrows-rotate"></i> Обновление...</div>
+
+  <!-- ORDER CONFIRM MODAL (bottom sheet) -->
+  <div id="modal-confirm">
+    <div class="confirm-sheet">
+      <div class="confirm-handle"></div>
+      <div class="confirm-title">🛒 Подтверждение заказа</div>
+      <div class="confirm-profile-row">
+        <i class="fa-solid fa-user"></i>
+        <span id="confirm-profile-name">—</span>
+        <span style="color:var(--text-muted);margin:0 4px">·</span>
+        <i class="fa-solid fa-phone"></i>
+        <span id="confirm-profile-phone">—</span>
+      </div>
+      <div class="confirm-profile-row" id="confirm-profile-city-row" style="margin-top:-10px">
+        <i class="fa-solid fa-location-dot"></i>
+        <span id="confirm-profile-city">—</span>
+      </div>
+      <div class="confirm-items-list" id="confirm-items-list"></div>
+      <hr class="confirm-divider" />
+      <div class="confirm-total-row">
+        <span>Итого</span>
+        <span class="confirm-total-amount" id="confirm-total">0 ₽</span>
+      </div>
+      <div class="confirm-btns">
+        <button class="confirm-btn-back" onclick="closeConfirm()">← Назад</button>
+        <button class="confirm-btn-ok" id="btn-confirm-ok" onclick="submitOrder()">Оформить заказ</button>
+      </div>
+    </div>
+  </div>
+
   <div id="toast" class="toast">Сохранено</div>
 
   <script src="api.js"></script>
@@ -888,7 +1245,19 @@
     };
 
     // --- INITIALIZATION ---
+    // --- SKELETON HELPERS ---
+    function showSkeleton() {
+      const grid = document.getElementById('prod-grid');
+      let html = '<div class="skeleton-grid">';
+      for (let i = 0; i < 6; i++) {
+        html += `<div class="skel-card"><div class="skel-img"></div><div class="skel-line"></div><div class="skel-line short"></div><div class="skel-btn"></div></div>`;
+      }
+      grid.outerHTML = '<div id="prod-grid"><div class="skeleton-grid">' + html.slice(html.indexOf('>') + 1) + '</div></div>';
+    }
+
     async function init() {
+      // Show skeleton before fetch
+      showSkeleton();
       try {
         const res = await API.getData();
         if (res && res.categories) {
@@ -942,7 +1311,7 @@
               <div class="price">${fmt(p.price)}</div>
               ${p.old_price ? `<div class="old-price">${fmt(p.old_price)}</div>` : ''}
             </div>
-            <div class="btn-add" onclick="event.stopPropagation(); Cart.add('${esc(p.id)}')">
+            <div class="btn-add" data-add-id="${esc(p.id)}" onclick="event.stopPropagation(); Cart.add('${esc(p.id)}', this)">
               <i class="fa-solid fa-plus"></i>
             </div>
           </div>
@@ -987,14 +1356,22 @@
 
     // --- CART ---
     const Cart = {
-      add: (id) => {
+      add: (id, btnEl) => {
         const p = STATE.products.find(x => x.id === id);
         if (!p) return;
         const ex = STATE.cart.find(x => x.id === id);
         if (ex) ex.qty++; else STATE.cart.push({ id: p.id, qty: 1 });
         Cart.save();
-        toast("Добавлено");
+        toast("✓ Добавлено в корзину");
         try { TG?.HapticFeedback?.impactOccurred('light'); } catch (e) { }
+        // Animate button: show checkmark for 500ms
+        const btn = btnEl || document.querySelector(`[data-add-id="${id}"]`);
+        if (btn) {
+          btn.classList.add('added');
+          const orig = btn.innerHTML;
+          btn.innerHTML = '<i class="fa-solid fa-check"></i>';
+          setTimeout(() => { btn.classList.remove('added'); btn.innerHTML = orig; }, 500);
+        }
       },
       change: (id, d) => {
         const item = STATE.cart.find(x => x.id === id);
@@ -1066,59 +1443,75 @@
       document.getElementById('cart-total').innerText = fmt(total);
     }
 
-    // --- CHECKOUT ---
+    // --- CHECKOUT (with confirm modal) ---
     let isCheckingOut = false;
-    async function startCheckout() {
-      if (isCheckingOut) return; // Защита от двойного клика
 
+    function startCheckout() {
       if (!STATE.profile.name || !STATE.profile.phone) {
         toast("Заполните профиль!");
         Nav.go('profile');
         return;
       }
+      // Build confirm modal content
+      document.getElementById('confirm-profile-name').textContent = STATE.profile.name || '—';
+      document.getElementById('confirm-profile-phone').textContent = STATE.profile.phone || '—';
+      const city = STATE.profile.city || STATE.profile.address || '';
+      document.getElementById('confirm-profile-city').textContent = city || '—';
+      document.getElementById('confirm-profile-city-row').style.display = city ? '' : 'none';
 
+      let total = 0;
+      const itemsHtml = STATE.cart.map(i => {
+        const p = STATE.products.find(x => x.id === i.id);
+        if (!p) return '';
+        const lineTotal = (p.price || 0) * i.qty;
+        total += lineTotal;
+        const img = p.image_url
+          ? `<img src="${esc(p.image_url)}" class="confirm-item-img">`
+          : `<div class="confirm-item-img" style="display:flex;align-items:center;justify-content:center"><i class="fa-solid fa-box" style="color:#555"></i></div>`;
+        return `<div class="confirm-item">${img}<div class="confirm-item-name">${esc(p.name)}</div><div class="confirm-item-qty">×${i.qty}</div><div class="confirm-item-price">${fmt(lineTotal)}</div></div>`;
+      }).join('');
+
+      document.getElementById('confirm-items-list').innerHTML = itemsHtml;
+      document.getElementById('confirm-total').textContent = fmt(total);
+      document.getElementById('modal-confirm').classList.add('active');
+      document.body.classList.add('no-scroll');
+    }
+
+    window.closeConfirm = () => {
+      document.getElementById('modal-confirm').classList.remove('active');
+      document.body.classList.remove('no-scroll');
+    };
+
+    window.submitOrder = async () => {
+      if (isCheckingOut) return;
       isCheckingOut = true;
-      const btn = document.querySelector('#checkout-bar button');
-      btn.innerText = "Оформление...";
+      const btn = document.getElementById('btn-confirm-ok');
+      btn.textContent = 'Отправка...';
       btn.disabled = true;
 
-      const profileToSend = {
-        name: STATE.profile.name,
-        phone: STATE.profile.phone,
-        city: STATE.profile.city,
-        comment: STATE.profile.address
-      };
-
-      // Формируем items с актуальными ценами из STATE.products
       const items = STATE.cart.map(i => {
         const p = STATE.products.find(x => x.id === i.id);
         return { id: i.id, name: p?.name || '', price: p?.price || 0, qty: i.qty };
       });
       const total = items.reduce((a, b) => a + b.price * b.qty, 0);
-
       const payload = {
         tg: { id: TG?.initDataUnsafe?.user?.id, username: TG?.initDataUnsafe?.user?.username },
-        profile: profileToSend,
-        items: items,
-        total: total,
+        profile: { name: STATE.profile.name, phone: STATE.profile.phone, city: STATE.profile.city, comment: STATE.profile.address },
+        items, total,
         idempotency_key: 'ord_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8)
       };
-
       try {
         const res = await API.createOrder(payload);
         if (res.ok) {
+          closeConfirm();
           STATE.cart = []; Cart.save(); renderCart();
           document.getElementById('success-screen').classList.add('show');
-        } else {
-          toast("Ошибка: " + (res.error || "Попробуйте ещё раз"));
-        }
-      } catch (e) {
-        toast("Ошибка сети. Проверьте интернет.");
-      }
-      btn.innerText = "Оформить";
+        } else { toast('Ошибка: ' + (res.error || 'Попробуйте ещё раз')); }
+      } catch (e) { toast('Ошибка сети. Проверьте интернет.'); }
+      btn.textContent = 'Оформить заказ';
       btn.disabled = false;
       isCheckingOut = false;
-    }
+    };
 
     // --- NAVIGATION ---
     const Nav = {
@@ -1206,6 +1599,49 @@
 
     // XSS-защита
     function esc(s) { return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;'); }
+
+    // --- PULL TO REFRESH ---
+    (function () {
+      let startY = 0, isPulling = false, triggered = false;
+      const THRESHOLD = 80;
+      const shopPage = () => document.getElementById('page-shop');
+      const indicator = () => document.getElementById('ptr-indicator');
+
+      document.addEventListener('touchstart', e => {
+        const page = shopPage();
+        if (!page || !page.classList.contains('active')) return;
+        if (page.scrollTop > 0) return;
+        startY = e.touches[0].clientY;
+        isPulling = true;
+        triggered = false;
+      }, { passive: true });
+
+      document.addEventListener('touchmove', e => {
+        if (!isPulling) return;
+        const dy = e.touches[0].clientY - startY;
+        if (dy > THRESHOLD && !triggered) {
+          triggered = true;
+          indicator().classList.add('visible');
+        }
+      }, { passive: true });
+
+      document.addEventListener('touchend', async () => {
+        if (!isPulling) return;
+        isPulling = false;
+        if (!triggered) return;
+        // Reload data
+        try {
+          const res = await API.getData();
+          if (res && res.categories) {
+            STATE.cats = res.categories;
+            STATE.products = res.products;
+            renderApp();
+          }
+        } catch (e) { }
+        setTimeout(() => indicator().classList.remove('visible'), 600);
+        triggered = false;
+      });
+    })();
 
     init();
   </script>
