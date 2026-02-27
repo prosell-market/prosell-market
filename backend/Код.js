@@ -201,8 +201,18 @@ function getInitialData_() {
 
 function createOrder_(e) {
   try {
-    const payload = JSON.parse(e.postData.contents);
+    const rawPayload = e.postData.contents;
+    let payload;
+    try {
+      payload = JSON.parse(rawPayload);
+    } catch (parseErr) {
+      appendDebug_("JSON Parse Error", rawPayload, String(parseErr));
+      return { ok: false, error: "Invalid JSON" };
+    }
     const ss = getSS_();
+
+    // Логируем входящий payload для дебага
+    appendDebug_("createOrder payload", JSON.stringify(payload), "");
 
     const headers = ["ts", "order_id", "tg_id", "name", "phone", "city", "comment", "total", "items_json", "status", "idem_key"];
     let sh = ss.getSheetByName("Orders");
@@ -277,7 +287,24 @@ function createOrder_(e) {
     sh.appendRow(newRow);
 
     return { ok: true, order_id: orderId };
-  } catch (err) { return { ok: false, error: String(err) }; }
+  } catch (err) {
+    appendDebug_("createOrder_ Error", "", String(err));
+    return { ok: false, error: String(err) };
+  }
+}
+
+function appendDebug_(action, data, error) {
+  try {
+    const ss = getSS_();
+    let sh = ss.getSheetByName("Debug");
+    if (!sh) {
+      sh = ss.insertSheet("Debug");
+      sh.appendRow(["ts", "action", "data", "error"]);
+    }
+    sh.appendRow([new Date().toISOString(), action, data, error]);
+  } catch (e) {
+    console.error("Debug logger failed", e);
+  }
 }
 
 function getUserOrdersList_(e) {
