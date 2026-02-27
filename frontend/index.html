@@ -29,6 +29,10 @@
       -webkit-tap-highlight-color: transparent;
     }
 
+    .hidden {
+      display: none !important;
+    }
+
     /* СКРЫВАЕМ ВСЕ СКРОЛЛБАРЫ (App feel) */
     ::-webkit-scrollbar {
       display: none;
@@ -1089,7 +1093,7 @@
     </div>
   </div>
 
-  <div id="success-screen" class="full-screen">
+  <div id="success-screen" class="full-screen hidden">
     <div class="success-icon"><i class="fa-solid fa-check"></i></div>
     <h2 style="margin-bottom:10px;">Заказ оформлен!</h2>
     <p style="color:var(--text-muted); margin-bottom:30px; line-height:1.5;">
@@ -1099,7 +1103,7 @@
     <button class="btn-main" onclick="location.reload()">Отлично</button>
   </div>
 
-  <div id="app" style="display:none">
+  <div id="app" class="hidden">
 
     <section id="page-shop" class="page active">
       <div class="topbar">
@@ -1280,9 +1284,7 @@
   <div id="toast" class="toast">Сохранено</div>
 
   <script src="api.js"></script>
-
-</html>
-<script src="app.js"></script>
+  <script src="app.js"></script>
 </body>
 
 </html>

@@ -245,13 +245,14 @@ const App = {
     container.innerHTML = "";
 
     const ui = this.state.data?.ui || {};
-    const emptyEl = document.getElementById("cart-empty-state");
-    const summaryEl = document.getElementById("cart-summary");
+    const emptyEl = document.getElementById("cart-empty");
+    const summaryEl = document.getElementById("checkout-bar");
 
     if (!this.state.cart.length) {
       emptyEl.classList.remove("hidden");
       summaryEl.classList.add("hidden");
-      document.getElementById("btn-go-shop").textContent = ui.go_shop || "В магазин";
+      const btnShop = document.getElementById("btn-go-shop");
+      if (btnShop) btnShop.textContent = ui.go_shop || "В магазин";
       return;
     }
 
@@ -354,7 +355,7 @@ const App = {
   renderCrossSell(product) {
     let csContainer = document.getElementById("cross-sell-container");
     if (!csContainer) {
-      const body = document.getElementById("product-detail-body");
+      const body = document.getElementById("pd-content");
       if (body) {
         csContainer = document.createElement("div");
         csContainer.id = "cross-sell-container";
@@ -401,7 +402,7 @@ const App = {
     this.state.productSheet.qty = 1;
 
     const sheet = document.getElementById("sheet-product");
-    const body = document.getElementById("product-detail-body");
+    const body = document.getElementById("pd-content");
 
     let specsHtml = "";
     // Показываем структурированные спецификации только если нет текстового описания
@@ -436,14 +437,13 @@ const App = {
     document.getElementById("pd-qty-val").textContent = String(this.state.productSheet.qty);
 
     const btnAdd = document.getElementById("btn-pd-add");
-    const btnAddLabel = document.getElementById("lbl-btn-add");
 
     if (typeof product.stock === "number" && product.stock <= 0) {
       btnAdd.disabled = true;
-      btnAddLabel.textContent = "Нет в наличии";
+      if (btnAdd) btnAdd.textContent = "Нет в наличии";
     } else {
       btnAdd.disabled = false;
-      btnAddLabel.textContent = this.state.data?.ui?.buttons?.add || "Добавить";
+      if (btnAdd) btnAdd.textContent = this.state.data?.ui?.buttons?.add || "Добавить";
     }
 
     this.renderCrossSell(product);
@@ -625,7 +625,7 @@ const App = {
     document.getElementById("lbl-success-subtitle").textContent = subtitle;
 
     document.getElementById("btn-success-back").textContent = ui.back_to_shop || "Вернуться в магазин";
-    document.getElementById("screen-success").classList.remove("hidden");
+    document.getElementById("success-screen").classList.remove("hidden");
 
     this.haptic("success");
   },
@@ -658,7 +658,7 @@ const App = {
 
   updateBadge() {
     const count = this.state.cart.reduce((a, b) => a + (b.qty || 0), 0);
-    const badge = document.getElementById("badge-cart");
+    const badge = document.getElementById("cart-badge");
     if (!badge) return;
 
     if (count > 0) {
@@ -744,7 +744,7 @@ const App = {
     document.getElementById("btn-confirm-ok").addEventListener("click", () => this.confirmOrder());
 
     document.getElementById("btn-success-back").addEventListener("click", () => {
-      document.getElementById("screen-success").classList.add("hidden");
+      document.getElementById("success-screen").classList.add("hidden");
       this.switchTab("shop");
     });
     document.getElementById("btn-success-notif").addEventListener("click", () => {
