@@ -9,16 +9,16 @@ function getTelegramSafe() {
   return {
     platform: "browser",
     initDataUnsafe: {},
-    ready() {},
-    expand() {},
-    close() {},
+    ready() { },
+    expand() { },
+    close() { },
     HapticFeedback: null,
     MainButton: {
-      show() {},
-      hide() {},
-      setText() {},
-      onClick() {},
-      offClick() {}
+      show() { },
+      hide() { },
+      setText() { },
+      onClick() { },
+      offClick() { }
     },
     openTelegramLink(url) { window.open(url, "_blank"); },
     openLink(url) { window.open(url, "_blank"); }
@@ -40,8 +40,8 @@ const App = {
   storageKeys: { cart: "prosell_cart_anon", profile: "prosell_profile_anon" },
 
   init() {
-    try { this.tg.expand(); } catch (e) {}
-    try { this.tg.ready(); } catch (e) {}
+    try { this.tg.expand(); } catch (e) { }
+    try { this.tg.ready(); } catch (e) { }
 
     const userId = this.tg.initDataUnsafe?.user?.id || "anon";
     this.storageKeys = {
@@ -76,7 +76,7 @@ const App = {
     try {
       localStorage.setItem(this.storageKeys.cart, JSON.stringify(this.state.cart));
       localStorage.setItem(this.storageKeys.profile, JSON.stringify(this.state.profile));
-    } catch (e) {}
+    } catch (e) { }
 
     this.updateBadge();
     this.updateMainButton();
@@ -339,7 +339,8 @@ const App = {
     const body = document.getElementById("product-detail-body");
 
     let specsHtml = "";
-    if (product.specs && typeof product.specs === "object") {
+    // Показываем структурированные спецификации только если нет текстового описания
+    if (!product.desc && product.specs && typeof product.specs === "object") {
       specsHtml = '<div class="pd-specs">';
       Object.entries(product.specs).forEach(([k, v]) => {
         specsHtml += `<div class="spec-row"><span class="spec-label">${escapeHtml(k)}</span><span>${escapeHtml(String(v))}</span></div>`;
@@ -585,7 +586,7 @@ const App = {
     try {
       if (type === "selection") h.selectionChanged();
       if (type === "success") h.notificationOccurred("success");
-    } catch (e) {}
+    } catch (e) { }
   },
 
   updateBadge() {

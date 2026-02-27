@@ -9,8 +9,12 @@ const ADMIN_TOKEN = "ps_admin_2026_02_13";
 
 // --- AUTHORIZATION TRIGGER (Запусти вручную один раз!) ---
 function doDriveCheck() {
+  // Тестируем ЧТЕНИЕ
   const folders = DriveApp.getFolders();
-  console.log("Drive Access Granted. Folders iterator created.");
+  // Тестируем ЗАПИСЬ — создаём тестовую папку и сразу удаляем
+  const testFolder = DriveApp.createFolder("_ProSell_Drive_Auth_Test_");
+  testFolder.setTrashed(true);
+  console.log("Drive Access Granted (read + write). Authorization OK!");
 }
 
 /* ==========================================================================
