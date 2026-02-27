@@ -1,0 +1,26 @@
+{
+  "name": "prosell-market",
+  "version": "1.0.0",
+  "description": "ProSell Market — frontend + GAS backend deploy automation",
+  "scripts": {
+    "repo:push": "git add . && git diff --cached --quiet && echo 'Nothing to commit, skipping push' || (git commit -m 'Auto deploy: $(date +\"%Y-%m-%d %H:%M\")' && git push origin main)",
+    "gas:push": "npx clasp push",
+    "gas:deploy": "node scripts/deploy-gas.js",
+    "deploy:all": "npm run repo:push && npm run gas:deploy"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/prosell-market/prosell-market.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/prosell-market/prosell-market/issues"
+  },
+  "homepage": "https://github.com/prosell-market/prosell-market#readme",
+  "devDependencies": {
+    "@google/clasp": "^3.2.0"
+  }
+}
