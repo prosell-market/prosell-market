@@ -1771,6 +1771,21 @@
         }).join('');
       },
       async set(id, st) {
+        // --- OPTIMISTIC UI: immediately dim the card ---
+        const cards = document.querySelectorAll('.ord-card');
+        let targetCard = null;
+        cards.forEach(card => { if (card.innerHTML.includes('#' + id)) targetCard = card; });
+        if (targetCard) {
+          targetCard.style.opacity = '0.45';
+          targetCard.style.pointerEvents = 'none';
+          targetCard.style.transition = 'opacity 0.2s';
+          // Add spinning indicator over card
+          const overlay = document.createElement('div');
+          overlay.style.cssText = 'position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(99,102,241,0.08);border-radius:14px;z-index:10';
+          overlay.innerHTML = '<span style="font-size:13px;font-weight:700;color:var(--primary)"><i class="fa-solid fa-spinner fa-spin"></i> Применяю...</span>';
+          targetCard.style.position = 'relative';
+          targetCard.appendChild(overlay);
+        }
         await API.adminUpdateOrderStatus(UI.id('token').value, id, st);
         Orders.load();
       }
@@ -1785,7 +1800,12 @@
           DATA.products = res.products; DATA.categories = res.categories || [];
           const sel = UI.id('prod-cat-filter');
           sel.innerHTML = '<option value="">Все категории</option>' + DATA.categories.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+          // Also populate product category select in modal
+          const pcat = UI.id('p-cat');
+          if (pcat) pcat.innerHTML = '<option value="">Без категории</option>' + DATA.categories.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
           this.render();
+          // Refresh dashboard so top-products and metrics use latest data
+          if (DATA.orders.length) Dashboard.render();
         }
       },
       render() {

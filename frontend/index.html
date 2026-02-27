@@ -1256,8 +1256,6 @@
     }
 
     async function init() {
-      // Show skeleton before fetch
-      showSkeleton();
       try {
         const res = await API.getData();
         if (res && res.categories) {
