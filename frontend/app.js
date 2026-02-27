@@ -119,6 +119,9 @@ const App = {
       },
       categories: [],
       products: [],
+      banners: [
+        { id: "demo1", image_url: "", link: "" }
+      ],
       meta: { updated_at: new Date().toISOString() }
     };
   },
@@ -145,6 +148,8 @@ const App = {
     safeText("lbl-empty-subtitle", ui.empty_cart_subtitle || "Добавьте товары");
     safeText("lbl-support", ui.support_text || "Поддержка");
 
+    this.renderBanners();
+
     const catContainer = document.getElementById("categories-container");
     catContainer.innerHTML = "";
 
@@ -169,6 +174,24 @@ const App = {
     this.updateMainButton();
 
     if (this.state.activeTab === "cart") this.renderCart();
+  },
+
+  renderBanners() {
+    const bannersContainer = document.getElementById("banners-container");
+    if (!bannersContainer) return;
+
+    const banners = this.state.data?.banners || [];
+    if (banners.length === 0) {
+      bannersContainer.style.display = "none";
+      return;
+    }
+
+    bannersContainer.style.display = "flex";
+    bannersContainer.innerHTML = banners.map(b => {
+      const imgHtml = b.image_url ? `<img src="${escapeAttr(b.image_url)}" alt="Banner">` : `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:var(--brand-grad);"><i class="fa-solid fa-gift" style="font-size:24px;color:#fff;"></i></div>`;
+      const action = b.link ? `onclick="window.open('${escapeAttr(b.link)}', '_blank')"` : "";
+      return `<div class="banner-item" ${action}>${imgHtml}</div>`;
+    }).join('');
   },
 
   renderProducts() {

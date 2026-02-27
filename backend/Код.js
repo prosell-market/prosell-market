@@ -199,15 +199,21 @@ function getInitialData_() {
     if (p.desc) p.specs = {};
   });
 
-  // Баннеры (если есть таблица)
+  // Баннеры
   let banners = [];
   try {
-    banners = readSheetData_("banners").map(x => ({
-      title: String(x.title || ""),
-      text: String(x.text || ""),
-      icon: String(x.icon || "fa-star"),
-      is_hot: toBool_(x.is_hot)
-    }));
+    const bannersRaw = readSheetData_("banners");
+    if (bannersRaw && bannersRaw.length > 0) {
+      bannersRaw.forEach(x => {
+        if (x.image_url) {
+          banners.push({
+            id: String(x.id || Math.random().toString(36).substring(7)),
+            image_url: String(x.image_url || ""),
+            link: String(x.link || "")
+          });
+        }
+      });
+    }
   } catch (e) { console.log("No banners sheet"); }
 
   const result = { ui: applyUiDefaults_(ui), categories: categories, products: products, banners: banners };
