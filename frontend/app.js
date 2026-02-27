@@ -328,6 +328,48 @@ const App = {
     this.updateMainButton();
   },
 
+  renderCrossSell(product) {
+    let csContainer = document.getElementById("cross-sell-container");
+    if (!csContainer) {
+      const body = document.getElementById("product-detail-body");
+      if (body) {
+        csContainer = document.createElement("div");
+        csContainer.id = "cross-sell-container";
+        csContainer.style.marginTop = "24px";
+        csContainer.style.paddingTop = "16px";
+        csContainer.style.borderTop = "1px solid rgba(255,255,255,0.05)";
+        body.appendChild(csContainer);
+      } else return;
+    }
+
+    const allProducts = this.state.data?.products || [];
+    let related = allProducts.filter(x => x.category_id === product.category_id && x.id !== product.id);
+    related = related.sort(() => 0.5 - Math.random()).slice(0, 4);
+
+    if (related.length === 0) {
+      csContainer.innerHTML = "";
+      return;
+    }
+
+    let html = `<h3 style="font-size: 16px; margin-bottom: 12px; font-weight: 700;">С этим покупают</h3>`;
+    html += `<div style="display: flex; gap: 12px; overflow-x: auto; padding-bottom: 10px; scroll-snap-type: x mandatory; margin-left:-16px; margin-right:-16px; padding-left:16px; padding-right:16px;">`;
+
+    related.forEach(p => {
+      const img = p.image_url ? `<img src="${escapeAttr(p.image_url)}" style="width:100%; height:100%; object-fit:cover; border-radius:12px;">` : `<div style="background:var(--bg); width:100%; height:100%; border-radius:12px; display:flex; align-items:center; justify-content:center"><i class="fa-solid fa-box" style="color:var(--text-muted)"></i></div>`;
+      html += `
+        <div style="min-width: 130px; width: 130px; flex-shrink: 0; scroll-snap-align: start; cursor: pointer; background: var(--card-highlight); border-radius: 16px; padding: 8px;" onclick="App.openProduct('${escapeAttr(p.id)}')">
+          <div style="aspect-ratio:1; margin-bottom:8px; border-radius:12px; overflow:hidden;">
+            ${img}
+          </div>
+          <div style="font-size: 11px; font-weight: 600; line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; margin-bottom: 6px; height: 28px;">${escapeHtml(p.name)}</div>
+          <div style="font-size: 13px; font-weight: 800; color: #fff">${formatMoney(p.price)}</div>
+        </div>
+      `;
+    });
+    html += `</div>`;
+    csContainer.innerHTML = html;
+  },
+
   openProduct(id) {
     const product = (this.state.data?.products || []).find((p) => p.id === id);
     if (!product) return;
@@ -380,6 +422,8 @@ const App = {
       btnAdd.disabled = false;
       btnAddLabel.textContent = this.state.data?.ui?.buttons?.add || "Добавить";
     }
+
+    this.renderCrossSell(product);
 
     sheet.classList.add("active");
   },

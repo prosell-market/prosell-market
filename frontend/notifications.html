@@ -28,25 +28,79 @@
       display: flex; flex-direction: column; gap: 8px;
     }
     
-    /* Статусы */
-    .status-badge {
-      display: inline-block; padding: 4px 10px; border-radius: 6px;
-      font-size: 12px; font-weight: 700; text-transform: uppercase;
-      align-self: flex-start;
+    /* Статусы (Timeline) */
+    .timeline {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 16px;
+      position: relative;
     }
-    .st-new { background: #dbeafe; color: #1e40af; }        /* Синий */
-    .st-in_work { background: #ffedd5; color: #9a3412; }    /* Оранжевый */
-    .st-assembled { background: #fef9c3; color: #854d0e; }  /* Желтый */
-    .st-shipped { background: #e0e7ff; color: #3730a3; }    /* Фиолетовый */
-    .st-done { background: #d1fae5; color: #065f46; }       /* Зеленый */
-    .st-archived { background: #f3f4f6; color: #4b5563; }   /* Серый */
-    .st-canceled { background: #fee2e2; color: #991b1b; }   /* Красный */
+    
+    .timeline::before {
+      content: '';
+      position: absolute;
+      top: 12px;
+      left: 10px;
+      right: 10px;
+      height: 2px;
+      background: #e5e7eb;
+      z-index: 1;
+    }
+    
+    .timeline-step {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      z-index: 2;
+      width: 25%;
+    }
+    
+    .step-icon {
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      background: #e5e7eb;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      transition: background 0.3s;
+    }
+    
+    .timeline-step.active .step-icon {
+      background: #00E096;
+      box-shadow: 0 0 10px rgba(0,224,150,0.4);
+    }
+
+    .timeline-step.active-current .step-icon {
+      background: #3b82f6; 
+      box-shadow: 0 0 10px rgba(59,130,246,0.4);
+    }
+    
+    .step-label {
+      font-size: 10px;
+      color: #9ca3af;
+      font-weight: 600;
+      text-align: center;
+      line-height: 1.1;
+    }
+    
+    .timeline-step.active .step-label, .timeline-step.active-current .step-label {
+      color: #111;
+    }
+
+    .st-canceled {
+      color: #ef4444; font-weight: 700; font-size: 13px; text-align: center; padding: 10px; background: #fee2e2; border-radius: 8px; margin-top: 10px;
+    }
 
     .row-top { display: flex; justify-content: space-between; align-items: center; }
     .order-id { font-size: 12px; color: #9ca3af; font-family: monospace; }
     .order-date { font-size: 12px; color: #9ca3af; }
     
-    .prod-title { font-weight: 700; font-size: 15px; color: #111; line-height: 1.3; }
+    .prod-title { font-weight: 700; font-size: 15px; color: #111; line-height: 1.3; margin-top: 4px; }
     .order-meta { font-size: 13px; color: #6b7280; display: flex; justify-content: space-between; margin-top: 4px; }
     .total-price { font-weight: 700; color: #111; }
 
@@ -100,43 +154,71 @@
     async function load() {
       const list = document.getElementById("list");
       try {
-        // Мы используем тот же метод API, но теперь бэкенд возвращает список заказов, а не уведомлений
         const res = await API.getNotifications(userId);
-        
         if (!res || !res.ok) throw new Error("Ошибка API");
 
-        const orders = res.notifications || []; // В поле notifications теперь лежат заказы
+        const orders = res.notifications || [];
         
         if (orders.length === 0) {
-          list.innerHTML = '<div class="center"><i class="fa-solid fa-basket-shopping" style="font-size:32px;margin-bottom:10px"></i><br>У вас пока нет заказов</div>';
+          list.innerHTML = '<div class="center"><i class="fa-solid fa-box-open" style="font-size:32px;margin-bottom:10px"></i><br>У вас пока нет заказов</div>';
           return;
         }
 
+        const STEPS = ["new", "assembled", "shipped", "done"];
+        const STEP_LABELS = {
+          "new": { icon: "fa-clipboard-check", title: "Оформлен" },
+          "assembled": { icon: "fa-box", title: "Собран" },
+          "shipped": { icon: "fa-truck-fast", title: "В пути" },
+          "done": { icon: "fa-check", title: "Получен" },
+        };
+
         list.innerHTML = orders.map(o => {
-           // Определяем статус
-           const stKey = o.status || 'new';
-           const stInfo = STATUS_MAP[stKey] || { text: stKey, class: 'st-archived' };
+           let stKey = o.status || 'new';
+           if (stKey === "in_work") stKey = "new"; // группируем статусы для timeline
+           if (stKey === "archived") stKey = "done";
+
+           const isCanceled = stKey === "canceled";
+           
+           let timelineHtml = "";
+           if (!isCanceled) {
+             const currentIdx = STEPS.indexOf(stKey);
+             timelineHtml = '<div class="timeline">';
+             STEPS.forEach((step, idx) => {
+               let stateClass = "";
+               if (idx < currentIdx || (idx === currentIdx && step === 'done')) stateClass = "active";
+               else if (idx === currentIdx) stateClass = "active-current";
+
+               timelineHtml += `
+                 <div class="timeline-step ${stateClass}">
+                   <div class="step-icon"><i class="fa-solid ${STEP_LABELS[step].icon}"></i></div>
+                   <div class="step-label">${STEP_LABELS[step].title}</div>
+                 </div>
+               `;
+             });
+             timelineHtml += '</div>';
+           } else {
+             timelineHtml = `<div class="st-canceled"><i class="fa-solid fa-ban"></i> Заказ отменен</div>`;
+           }
            
            return `
             <div class="card">
               <div class="row-top">
-                <span class="status-badge ${stInfo.class}">${stInfo.text}</span>
+                <span class="order-id">#${escapeHtml(o.id)}</span>
                 <span class="order-date">${fmtTime(o.ts)}</span>
               </div>
               
               <div class="prod-title">${escapeHtml(o.title)}</div>
               
               <div class="order-meta">
-                <span class="order-id">#${escapeHtml(o.id)}</span>
                 <span class="total-price">${fmtMoney(o.total)}</span>
               </div>
+
+              ${timelineHtml}
             </div>
            `;
         }).join("");
 
       } catch (e) {
-        console.error(e);
-        // Не показываем ошибку пользователю явно при автообновлении, чтобы не мелькало
         if (list.innerHTML.includes("Загрузка")) {
            list.innerHTML = `<div class="center">Ошибка сети :(</div>`;
         }

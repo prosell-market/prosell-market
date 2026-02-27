@@ -160,6 +160,19 @@ function health_() {
    ========================================================================== */
 
 function getInitialData_() {
+  const cache = CacheService.getScriptCache();
+  const cacheKey = "prosell_catalog_data";
+
+  // 1. Пытаемся отдать кеш (Мгновенный ответ)
+  const cachedData = cache.get(cacheKey);
+  if (cachedData) {
+    try {
+      const parsed = JSON.parse(cachedData);
+      return parsed; // Возвращаем сразу, не трогая Google Таблицу
+    } catch (e) { }
+  }
+
+  // 2. Если кеша нет — читаем таблицу (Тяжелая операция)
   const ui = readUiConfig_();
 
   // Категории
@@ -197,10 +210,25 @@ function getInitialData_() {
     }));
   } catch (e) { console.log("No banners sheet"); }
 
-  return { ui: applyUiDefaults_(ui), categories: categories, products: products, banners: banners };
+  const result = { ui: applyUiDefaults_(ui), categories: categories, products: products, banners: banners };
+
+  // 3. Сохраняем результат в кеш на 5 минут (300 секунд)
+  try {
+    cache.put(cacheKey, JSON.stringify(result), 300);
+  } catch (e) { }
+
+  return result;
 }
 
 function createOrder_(e) {
+  // Инициализируем блокировку: если 30 человек купят одновременно, они выстроятся в очередь (ждем до 10 секунд)
+  const lock = LockService.getScriptLock();
+  try {
+    lock.waitLock(10000);
+  } catch (e) {
+    return { ok: false, error: "Система перегружена, попробуйте через пару секунд" };
+  }
+
   try {
     const rawPayload = e.postData.contents;
     let payload;
@@ -297,6 +325,9 @@ function createOrder_(e) {
   } catch (err) {
     appendDebug_("createOrder_ Error", "", String(err));
     return { ok: false, error: String(err) };
+  } finally {
+    // В любом случае освобождаем блокировку очереди
+    lock.releaseLock();
   }
 }
 
@@ -422,6 +453,9 @@ function adminSaveProduct_(e) {
     if (!sh) { sh = ss.insertSheet("products"); sh.appendRow(headers); }
     ensureHeaders_(sh, headers);
 
+    // Скидываем кеш каталога при любом сохранении товара, чтобы изменения сразу появились на фронте
+    CacheService.getScriptCache().remove("prosell_catalog_data");
+
     const data = sh.getDataRange().getValues();
     const h = data[0].map(String);
     const idCol = h.indexOf("id");
@@ -497,6 +531,7 @@ function adminDeleteProduct_(e) {
   for (let i = 1; i < data.length; i++) {
     if (String(data[i][idIdx]) === String(p.id)) {
       sh.deleteRow(i + 1);
+      CacheService.getScriptCache().remove("prosell_catalog_data");
       return { ok: true };
     }
   }
