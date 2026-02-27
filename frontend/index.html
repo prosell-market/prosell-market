@@ -1355,7 +1355,7 @@
     // --- CART ---
     const Cart = {
       add: (id, btnEl) => {
-        const p = STATE.products.find(x => x.id === id);
+        const p = STATE.products.find(x => String(x.id) === String(id));
         if (!p) return;
         const ex = STATE.cart.find(x => x.id === id);
         if (ex) ex.qty++; else STATE.cart.push({ id: p.id, qty: 1 });
@@ -1382,12 +1382,12 @@
       },
       // Получить актуальную цену товара из STATE.products
       getPrice: (id) => {
-        const p = STATE.products.find(x => x.id === id);
-        return p ? p.price : 0;
+        const p = STATE.products.find(x => String(x.id) === String(id));
+        return p ? Number(p.price || 0) : 0;
       },
       getName: (id) => {
-        const p = STATE.products.find(x => x.id === id);
-        return p ? p.name : 'Товар';
+        const p = STATE.products.find(x => String(x.id) === String(id));
+        return p ? (p.title || p.name || 'Товар') : 'Товар';
       },
       save: () => {
         localStorage.setItem(LS_CART, JSON.stringify(STATE.cart));
@@ -1408,7 +1408,7 @@
       const empty = document.getElementById('cart-empty');
 
       // Фильтруем удалённые товары
-      STATE.cart = STATE.cart.filter(i => STATE.products.find(p => p.id === i.id));
+      STATE.cart = STATE.cart.filter(i => STATE.products.find(p => String(p.id) === String(i.id)));
 
       if (!STATE.cart.length) {
         list.innerHTML = ''; empty.style.display = 'block';
@@ -1459,14 +1459,14 @@
 
       let total = 0;
       const itemsHtml = STATE.cart.map(i => {
-        const p = STATE.products.find(x => x.id === i.id);
+        const p = STATE.products.find(x => String(x.id) === String(i.id));
         if (!p) return '';
-        const lineTotal = (p.price || 0) * i.qty;
+        const lineTotal = Number(p.price || 0) * i.qty;
         total += lineTotal;
         const img = p.image_url
           ? `<img src="${esc(p.image_url)}" class="confirm-item-img">`
           : `<div class="confirm-item-img" style="display:flex;align-items:center;justify-content:center"><i class="fa-solid fa-box" style="color:#555"></i></div>`;
-        return `<div class="confirm-item">${img}<div class="confirm-item-name">${esc(p.name)}</div><div class="confirm-item-qty">×${i.qty}</div><div class="confirm-item-price">${fmt(lineTotal)}</div></div>`;
+        return `<div class="confirm-item">${img}<div class="confirm-item-name">${esc(p.title || p.name)}</div><div class="confirm-item-qty">×${i.qty}</div><div class="confirm-item-price">${fmt(lineTotal)}</div></div>`;
       }).join('');
 
       document.getElementById('confirm-items-list').innerHTML = itemsHtml;
@@ -1488,8 +1488,8 @@
       btn.disabled = true;
 
       const items = STATE.cart.map(i => {
-        const p = STATE.products.find(x => x.id === i.id);
-        return { id: i.id, name: p?.name || '', price: p?.price || 0, qty: i.qty };
+        const p = STATE.products.find(x => String(x.id) === String(i.id));
+        return { id: i.id, name: p?.title || p?.name || '', price: Number(p?.price || 0), qty: i.qty };
       });
       const total = items.reduce((a, b) => a + b.price * b.qty, 0);
       const payload = {

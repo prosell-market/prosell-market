@@ -204,10 +204,13 @@ function createOrder_(e) {
     const payload = JSON.parse(e.postData.contents);
     const ss = getSS_();
 
+    const headers = ["ts", "order_id", "tg_id", "name", "phone", "city", "comment", "total", "items_json", "status", "idem_key"];
     let sh = ss.getSheetByName("Orders");
     if (!sh) {
       sh = ss.insertSheet("Orders");
-      sh.appendRow(["ts", "order_id", "tg_id", "name", "phone", "city", "comment", "total", "items_json", "status", "idem_key"]);
+      sh.appendRow(headers);
+    } else {
+      ensureHeaders_(sh, headers);
     }
 
     // Валидация данных
@@ -224,7 +227,6 @@ function createOrder_(e) {
     // Защита от дублей по idempotency_key
     const idemKey = payload.idempotency_key || "";
     if (idemKey) {
-      ensureHeaders_(sh, ["idem_key"]);
       const h = sh.getRange(1, 1, 1, sh.getLastColumn()).getValues()[0].map(String);
       const idemCol = h.indexOf("idem_key");
       if (idemCol !== -1) {
@@ -247,19 +249,32 @@ function createOrder_(e) {
     // В поле comment кладем адрес или комментарий
     const commentVal = payload.profile?.comment || payload.profile?.address || "";
 
-    sh.appendRow([
-      new Date().toISOString(),
-      orderId,
-      payload.tg?.id || "",
-      payload.profile?.name,
-      payload.profile?.phone,
-      payload.profile?.city,
-      commentVal,
-      payload.total,
-      JSON.stringify(payload.items || []),
-      "new",
-      idemKey
-    ]);
+    const dataRange = sh.getRange(1, 1, 1, sh.getLastColumn()).getValues()[0];
+    const h = dataRange.map(String);
+    const newRow = new Array(h.length).fill("");
+
+    const rowMap = {
+      "ts": new Date().toISOString(),
+      "order_id": orderId,
+      "tg_id": payload.tg?.id || "",
+      "name": payload.profile?.name || "",
+      "phone": payload.profile?.phone || "",
+      "city": payload.profile?.city || "",
+      "comment": commentVal,
+      "total": payload.total,
+      "items_json": JSON.stringify(payload.items || []),
+      "status": "new",
+      "idem_key": idemKey
+    };
+
+    Object.keys(rowMap).forEach(key => {
+      const colIdx = h.indexOf(key);
+      if (colIdx !== -1) {
+        newRow[colIdx] = rowMap[key];
+      }
+    });
+
+    sh.appendRow(newRow);
 
     return { ok: true, order_id: orderId };
   } catch (err) { return { ok: false, error: String(err) }; }
