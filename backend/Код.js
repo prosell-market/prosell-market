@@ -268,11 +268,12 @@ function createOrder_(e) {
       "ts": new Date().toISOString(),
       "order_id": orderId,
       "tg_id": payload.tg?.id || "",
+      "tg_username": payload.tg?.username || payload.tg?.first_name || "",
       "name": payload.profile?.name || "",
       "phone": payload.profile?.phone || "",
       "city": payload.profile?.city || "",
       "comment": commentVal,
-      "total": payload.total,
+      "total": payload.total || 0,
       "items_json": JSON.stringify(payload.items || []),
       "status": "new",
       "idem_key": idemKey
@@ -284,6 +285,11 @@ function createOrder_(e) {
         newRow[colIdx] = rowMap[key];
       }
     });
+
+    // Безопасность: если каких-то колонок вообще нет (даже после ensureHeaders_), они запишутся в конец
+    // чтобы не потерять важные данные, если таблица была сломана пользователем.
+    if (h.indexOf("total") === -1) newRow[h.length] = payload.total;
+    if (h.indexOf("status") === -1) newRow[h.length + 1] = "new";
 
     sh.appendRow(newRow);
 
