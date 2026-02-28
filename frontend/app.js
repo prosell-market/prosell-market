@@ -649,8 +649,8 @@ const App = {
 
     toast.textContent = msg;
     toast.style.background = (type === "error") ? "var(--danger)" : "rgba(0,0,0,0.8)";
-    toast.classList.add("active");
-    setTimeout(() => toast.classList.remove("active"), 2600);
+    toast.classList.add("show");
+    setTimeout(() => toast.classList.remove("show"), 2600);
   },
 
   haptic(type) {
