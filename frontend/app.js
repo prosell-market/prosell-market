@@ -43,6 +43,12 @@ const App = {
     try { this.tg.expand(); } catch (e) { }
     try { this.tg.ready(); } catch (e) { }
 
+    // Force Telegram API to use our background color so it doesn't try to auto-theme the app
+    try {
+      if (this.tg.setHeaderColor) this.tg.setHeaderColor('#0F1115');
+      if (this.tg.setBackgroundColor) this.tg.setBackgroundColor('#0F1115');
+    } catch (e) { }
+
     const userId = this.tg.initDataUnsafe?.user?.id || "anon";
     this.storageKeys = {
       cart: "prosell_cart_" + userId,
