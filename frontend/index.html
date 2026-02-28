@@ -1030,7 +1030,7 @@
 
 <body>
 
-  <div id="loader" class="app-loader"
+  <div id="app-loader" class="app-loader"
     style="flex-direction:column;align-items:stretch;justify-content:flex-start;padding:0;overflow:hidden;">
     <!-- Fake topbar -->
     <div
@@ -1098,7 +1098,8 @@
     <h2 id="lbl-success-title" style="margin-bottom:10px;">Заказ оформлен!</h2>
     <p id="lbl-success-subtitle" style="color:var(--text-muted); margin-bottom:30px; line-height:1.5;">Ожидайте</p>
     <button class="btn-main" id="btn-success-back">Назад в магазин</button>
-    <button class="btn-main" id="btn-success-notif" style="margin-top:10px; background:transparent; border:1px solid rgba(255,255,255,0.15);">Мои заказы</button>
+    <button class="btn-main" id="btn-success-notif"
+      style="margin-top:10px; background:transparent; border:1px solid rgba(255,255,255,0.15);">Мои заказы</button>
   </div>
 
   <div id="app" class="hidden">
@@ -1119,7 +1120,8 @@
         <i class="fa-solid fa-basket-shopping" style="font-size:40px; margin-bottom:10px"></i><br>
         <p id="lbl-empty-title" style="font-weight:700; margin-top:8px;">Корзина пуста</p>
         <p id="lbl-empty-subtitle" style="font-size:13px; color:var(--text-muted); margin-top:4px;">Добавьте товары</p>
-        <button class="btn-main" id="btn-go-shop" style="margin-top:16px; width:auto; padding:12px 24px;">В магазин</button>
+        <button class="btn-main" id="btn-go-shop" style="margin-top:16px; width:auto; padding:12px 24px;">В
+          магазин</button>
       </div>
     </section>
 
@@ -1152,22 +1154,36 @@
         <i class="fa-solid fa-chevron-right" style="color:var(--text-muted)"></i>
       </div>
       <div class="menu-btn" id="btn-support">
-        <span><i class="fa-solid fa-headset" style="color:#667EEA; width:24px"></i> <span id="lbl-support">Поддержка</span></span>
+        <span><i class="fa-solid fa-headset" style="color:#667EEA; width:24px"></i> <span
+            id="lbl-support">Поддержка</span></span>
         <i class="fa-solid fa-chevron-right" style="color:var(--text-muted)"></i>
       </div>
       <h3 style="padding:10px 16px; font-size:16px;">Вопросы и ответы</h3>
       <div class="faq-container">
         <div class="faq-item" onclick="toggleFaq(this)">
           <div class="faq-head">Как происходит покупка?<i class="fa-solid fa-chevron-down"></i></div>
-          <div class="faq-body-wrap"><div class="faq-body"><div class="faq-content">Мы работаем через безопасную сделку Ozon. После оформления заказа вам придёт уведомление в приложение Ozon.</div></div></div>
+          <div class="faq-body-wrap">
+            <div class="faq-body">
+              <div class="faq-content">Мы работаем через безопасную сделку Ozon. После оформления заказа вам придёт
+                уведомление в приложение Ozon.</div>
+            </div>
+          </div>
         </div>
         <div class="faq-item" onclick="toggleFaq(this)">
           <div class="faq-head">Гарантия есть?<i class="fa-solid fa-chevron-down"></i></div>
-          <div class="faq-body-wrap"><div class="faq-body"><div class="faq-content">Да, 1 месяц гарантии. Если что-то не так — возврат средств без проблем.</div></div></div>
+          <div class="faq-body-wrap">
+            <div class="faq-body">
+              <div class="faq-content">Да, 1 месяц гарантии. Если что-то не так — возврат средств без проблем.</div>
+            </div>
+          </div>
         </div>
         <div class="faq-item" onclick="toggleFaq(this)">
           <div class="faq-head">Срок доставки?<i class="fa-solid fa-chevron-down"></i></div>
-          <div class="faq-body-wrap"><div class="faq-body"><div class="faq-content">От 3 до 7 дней в зависимости от региона.</div></div></div>
+          <div class="faq-body-wrap">
+            <div class="faq-body">
+              <div class="faq-content">От 3 до 7 дней в зависимости от региона.</div>
+            </div>
+          </div>
         </div>
       </div>
     </section>
@@ -1182,16 +1198,20 @@
   </div>
 
   <div class="tabbar">
-    <button class="tab-btn active" data-tab="shop"><i class="fa-solid fa-store"></i><span id="lbl-menu-shop">Магазин</span></button>
+    <button class="tab-btn active" data-tab="shop"><i class="fa-solid fa-store"></i><span
+        id="lbl-menu-shop">Магазин</span></button>
     <button class="tab-btn" data-tab="cart">
       <i class="fa-solid fa-cart-shopping"></i><span id="lbl-menu-cart">Корзина</span>
       <div class="badge hidden" id="cart-badge">0</div>
     </button>
-    <button class="tab-btn" data-tab="profile"><i class="fa-solid fa-user"></i><span id="lbl-menu-profile">Профиль</span></button>
-    <button class="tab-btn" data-tab="info"><i class="fa-solid fa-circle-info"></i><span id="lbl-menu-info">Инфо</span></button>
+    <button class="tab-btn" data-tab="profile"><i class="fa-solid fa-user"></i><span
+        id="lbl-menu-profile">Профиль</span></button>
+    <button class="tab-btn" data-tab="info"><i class="fa-solid fa-circle-info"></i><span
+        id="lbl-menu-info">Инфо</span></button>
   </div>
 
-  <div id="retry-init-btn" class="hidden" style="position:fixed;bottom:100px;left:0;right:0;text-align:center;z-index:200;">
+  <div id="retry-init-btn" class="hidden"
+    style="position:fixed;bottom:100px;left:0;right:0;text-align:center;z-index:200;">
     <button class="btn-main" style="width:auto; padding:12px 24px;">Повторить загрузку</button>
   </div>
 
@@ -1216,7 +1236,8 @@
     <div class="sheet-scroll" id="pd-content">
       <div style="display:flex; gap:8px; align-items:center; margin-bottom:12px;">
         <span id="pd-price" style="font-size:24px; font-weight:900;">0 ₽</span>
-        <span id="pd-old-price" class="hidden" style="font-size:16px; color:var(--text-muted); text-decoration:line-through;">0 ₽</span>
+        <span id="pd-old-price" class="hidden"
+          style="font-size:16px; color:var(--text-muted); text-decoration:line-through;">0 ₽</span>
       </div>
     </div>
     <div class="sheet-foot">
@@ -1247,4 +1268,5 @@
   <script src="api.js"></script>
   <script src="app.js"></script>
 </body>
+
 </html>
