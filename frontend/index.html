@@ -1095,32 +1095,31 @@
 
   <div id="success-screen" class="full-screen hidden">
     <div class="success-icon"><i class="fa-solid fa-check"></i></div>
-    <h2 style="margin-bottom:10px;">Заказ оформлен!</h2>
-    <p style="color:var(--text-muted); margin-bottom:30px; line-height:1.5;">
-      Ожидайте появления заказа в вашем личном кабинете <b>Ozon</b>.<br>
-      Статус можно отследить в разделе "Мои заказы".
-    </p>
-    <button class="btn-main" onclick="location.reload()">Отлично</button>
+    <h2 id="lbl-success-title" style="margin-bottom:10px;">Заказ оформлен!</h2>
+    <p id="lbl-success-subtitle" style="color:var(--text-muted); margin-bottom:30px; line-height:1.5;">Ожидайте</p>
+    <button class="btn-main" id="btn-success-back">Назад в магазин</button>
+    <button class="btn-main" id="btn-success-notif" style="margin-top:10px; background:transparent; border:1px solid rgba(255,255,255,0.15);">Мои заказы</button>
   </div>
 
   <div id="app" class="hidden">
-
     <section id="page-shop" class="page active">
       <div class="topbar">
         <div class="brand">PRO<span>SELL</span></div>
-        <div class="search-btn" onclick="openSearch()"><i class="fa-solid fa-magnifying-glass"></i></div>
+        <div class="search-btn" id="btn-open-search"><i class="fa-solid fa-magnifying-glass"></i></div>
       </div>
-
       <div class="banners-scroll" id="banners-container"></div>
-      <div class="cats" id="cats-container"></div>
-      <div class="grid" id="prod-grid"></div>
+      <div class="cats" id="categories-container"></div>
+      <div class="grid" id="product-grid"></div>
     </section>
 
     <section id="page-cart" class="page">
       <div class="page-title" style="padding:20px 16px; font-size:24px; font-weight:800;">Корзина</div>
       <div id="cart-list" class="cart-list"></div>
       <div id="cart-empty" style="text-align:center; padding:40px; color:var(--text-muted)">
-        <i class="fa-solid fa-basket-shopping" style="font-size:40px; margin-bottom:10px"></i><br>Пусто
+        <i class="fa-solid fa-basket-shopping" style="font-size:40px; margin-bottom:10px"></i><br>
+        <p id="lbl-empty-title" style="font-weight:700; margin-top:8px;">Корзина пуста</p>
+        <p id="lbl-empty-subtitle" style="font-size:13px; color:var(--text-muted); margin-top:4px;">Добавьте товары</p>
+        <button class="btn-main" id="btn-go-shop" style="margin-top:16px; width:auto; padding:12px 24px;">В магазин</button>
       </div>
     </section>
 
@@ -1140,151 +1139,112 @@
           <input id="inp-city" class="input" placeholder="Москва" />
         </div>
         <div class="inp-group">
-          <label class="label">Адрес ПВЗ (Ozon)</label>
-          <input id="inp-addr" class="input" placeholder="Улица, дом, ПВЗ..." />
+          <label class="label">Комментарий</label>
+          <input id="inp-comment" class="input" placeholder="Доп. пожелания..." />
         </div>
-        <button class="btn-main" onclick="saveProfile()">Сохранить</button>
       </div>
     </section>
 
     <section id="page-info" class="page">
       <div class="page-title" style="padding:20px 16px; font-size:24px; font-weight:800;">Инфо</div>
-
-      <div class="menu-btn" onclick="openMyOrders()">
+      <div class="menu-btn" id="btn-open-notifications">
         <span><i class="fa-solid fa-list-check" style="color:#667EEA; width:24px"></i> Мои заказы</span>
         <i class="fa-solid fa-chevron-right" style="color:var(--text-muted)"></i>
       </div>
-
+      <div class="menu-btn" id="btn-support">
+        <span><i class="fa-solid fa-headset" style="color:#667EEA; width:24px"></i> <span id="lbl-support">Поддержка</span></span>
+        <i class="fa-solid fa-chevron-right" style="color:var(--text-muted)"></i>
+      </div>
       <h3 style="padding:10px 16px; font-size:16px;">Вопросы и ответы</h3>
-
-      <div class="faq-container" id="faq-container">
+      <div class="faq-container">
         <div class="faq-item" onclick="toggleFaq(this)">
           <div class="faq-head">Как происходит покупка?<i class="fa-solid fa-chevron-down"></i></div>
-          <div class="faq-body-wrap">
-            <div class="faq-body">
-              <div class="faq-content">
-                Мы работаем через безопасную сделку Ozon. После оформления заказа здесь, вам придет уведомление в
-                приложение Ozon. Там вы оплачиваете товар, и деньги замораживаются до момента получения.
-              </div>
-            </div>
-          </div>
+          <div class="faq-body-wrap"><div class="faq-body"><div class="faq-content">Мы работаем через безопасную сделку Ozon. После оформления заказа вам придёт уведомление в приложение Ozon.</div></div></div>
         </div>
-
         <div class="faq-item" onclick="toggleFaq(this)">
           <div class="faq-head">Гарантия есть?<i class="fa-solid fa-chevron-down"></i></div>
-          <div class="faq-body-wrap">
-            <div class="faq-body">
-              <div class="faq-content">
-                Да, мы даем 1 месяц гарантии на все комплектующие. Перед отправкой каждый процессор и память проходят
-                стресс-тесты. Если что-то не так — возврат средств без проблем.
-              </div>
-            </div>
-          </div>
+          <div class="faq-body-wrap"><div class="faq-body"><div class="faq-content">Да, 1 месяц гарантии. Если что-то не так — возврат средств без проблем.</div></div></div>
         </div>
-
-        <div class="faq-item" onclick="toggleFaq(this)">
-          <div class="faq-head">Почему нужен номер Ozon?<i class="fa-solid fa-chevron-down"></i></div>
-          <div class="faq-body-wrap">
-            <div class="faq-body">
-              <div class="faq-content">
-                Мы создаем заказ напрямую на ваш аккаунт Ozon по номеру телефона. Это гарантирует, что товар придет
-                именно вам и вы сможете отслеживать его в официальном приложении.
-              </div>
-            </div>
-          </div>
-        </div>
-
         <div class="faq-item" onclick="toggleFaq(this)">
           <div class="faq-head">Срок доставки?<i class="fa-solid fa-chevron-down"></i></div>
-          <div class="faq-body-wrap">
-            <div class="faq-body">
-              <div class="faq-content">
-                Зависит от вашего региона. Обычно от 3 до 7 дней. Точные сроки покажет приложение Ozon после оформления.
-              </div>
-            </div>
-          </div>
+          <div class="faq-body-wrap"><div class="faq-body"><div class="faq-content">От 3 до 7 дней в зависимости от региона.</div></div></div>
         </div>
       </div>
     </section>
-
   </div>
 
-  <div class="checkout-bar" id="checkout-bar">
+  <div class="checkout-bar hidden" id="checkout-bar">
     <div class="checkout-row">
-      <span>Итого:</span><span id="cart-total" style="color:#667EEA">0 ₽</span>
+      <span>Итого:</span>
+      <span id="cart-total-price" style="color:#667EEA; font-weight:800;">0 ₽</span>
     </div>
-    <button class="btn-main" onclick="startCheckout()">Оформить</button>
+    <button class="btn-main" id="btn-checkout">Оформить</button>
   </div>
 
   <div class="tabbar">
-    <button class="tab-btn active" onclick="Nav.go('shop')"><i class="fa-solid fa-store"></i>Главная</button>
-    <button class="tab-btn" onclick="Nav.go('cart')">
-      <i class="fa-solid fa-cart-shopping"></i>Корзина<div class="badge" id="cart-badge">0</div>
+    <button class="tab-btn active" data-tab="shop"><i class="fa-solid fa-store"></i><span id="lbl-menu-shop">Магазин</span></button>
+    <button class="tab-btn" data-tab="cart">
+      <i class="fa-solid fa-cart-shopping"></i><span id="lbl-menu-cart">Корзина</span>
+      <div class="badge hidden" id="cart-badge">0</div>
     </button>
-    <button class="tab-btn" onclick="Nav.go('profile')"><i class="fa-solid fa-user"></i>Профиль</button>
-    <button class="tab-btn" onclick="Nav.go('info')"><i class="fa-solid fa-circle-info"></i>Инфо</button>
+    <button class="tab-btn" data-tab="profile"><i class="fa-solid fa-user"></i><span id="lbl-menu-profile">Профиль</span></button>
+    <button class="tab-btn" data-tab="info"><i class="fa-solid fa-circle-info"></i><span id="lbl-menu-info">Инфо</span></button>
   </div>
 
-  <div class="overlay" id="overlay" onclick="closeSheets()"></div>
+  <div id="retry-init-btn" class="hidden" style="position:fixed;bottom:100px;left:0;right:0;text-align:center;z-index:200;">
+    <button class="btn-main" style="width:auto; padding:12px 24px;">Повторить загрузку</button>
+  </div>
+
+  <div class="overlay" id="overlay" data-close="product"></div>
 
   <div class="sheet" id="sheet-search">
     <div class="sheet-head">
       <div class="sheet-title">Поиск</div>
-      <i class="fa-solid fa-xmark" style="font-size:24px" onclick="closeSheets()"></i>
+      <i class="fa-solid fa-xmark" style="font-size:24px" data-close="search"></i>
     </div>
     <div class="sheet-scroll">
-      <input id="search-inp" class="input" placeholder="Название товара..." oninput="Search.run()" />
-      <div id="search-res" style="margin-top:15px; display:flex; flex-direction:column; gap:10px;"></div>
+      <input id="inp-search" class="input" placeholder="Название товара..." />
+      <div id="search-results" style="margin-top:15px; display:flex; flex-direction:column; gap:10px;"></div>
     </div>
   </div>
 
   <div class="sheet" id="sheet-product">
     <div class="sheet-head">
       <div class="sheet-title">Товар</div>
-      <i class="fa-solid fa-xmark" style="font-size:24px" onclick="closeSheets()"></i>
+      <i class="fa-solid fa-xmark" style="font-size:24px" data-close="product"></i>
     </div>
-    <div class="sheet-scroll" id="pd-content"></div>
+    <div class="sheet-scroll" id="pd-content">
+      <div style="display:flex; gap:8px; align-items:center; margin-bottom:12px;">
+        <span id="pd-price" style="font-size:24px; font-weight:900;">0 ₽</span>
+        <span id="pd-old-price" class="hidden" style="font-size:16px; color:var(--text-muted); text-decoration:line-through;">0 ₽</span>
+      </div>
+    </div>
     <div class="sheet-foot">
+      <div style="display:flex; align-items:center; gap:12px; margin-bottom:12px;">
+        <button class="c-btn" id="btn-pd-minus"><i class="fa-solid fa-minus"></i></button>
+        <span id="pd-qty-val" style="font-weight:800; font-size:16px; width:20px; text-align:center;">1</span>
+        <button class="c-btn" id="btn-pd-plus"><i class="fa-solid fa-plus"></i></button>
+      </div>
       <button class="btn-main" id="btn-pd-add">Добавить в корзину</button>
     </div>
   </div>
 
-  <!-- PULL TO REFRESH INDICATOR -->
-  <div id="ptr-indicator"><i class="fa-solid fa-arrows-rotate"></i> Обновление...</div>
-
-  <!-- ORDER CONFIRM MODAL (bottom sheet) -->
   <div id="modal-confirm">
     <div class="confirm-sheet">
       <div class="confirm-handle"></div>
-      <div class="confirm-title">🛒 Подтверждение заказа</div>
-      <div class="confirm-profile-row">
-        <i class="fa-solid fa-user"></i>
-        <span id="confirm-profile-name">—</span>
-        <span style="color:var(--text-muted);margin:0 4px">·</span>
-        <i class="fa-solid fa-phone"></i>
-        <span id="confirm-profile-phone">—</span>
-      </div>
-      <div class="confirm-profile-row" id="confirm-profile-city-row" style="margin-top:-10px">
-        <i class="fa-solid fa-location-dot"></i>
-        <span id="confirm-profile-city">—</span>
-      </div>
-      <div class="confirm-items-list" id="confirm-items-list"></div>
-      <hr class="confirm-divider" />
-      <div class="confirm-total-row">
-        <span>Итого</span>
-        <span class="confirm-total-amount" id="confirm-total">0 ₽</span>
-      </div>
+      <div id="lbl-confirm-title" class="confirm-title">Подтверждение</div>
+      <div id="confirm-summary" style="margin:12px 0;"></div>
       <div class="confirm-btns">
-        <button class="confirm-btn-back" onclick="closeConfirm()">← Назад</button>
-        <button class="confirm-btn-ok" id="btn-confirm-ok" onclick="submitOrder()">Оформить заказ</button>
+        <button class="confirm-btn-back" id="btn-confirm-cancel">Отмена</button>
+        <button class="confirm-btn-ok" id="btn-confirm-ok">Оформить</button>
       </div>
     </div>
   </div>
 
+  <div id="ptr-indicator"><i class="fa-solid fa-arrows-rotate"></i> Обновление...</div>
   <div id="toast" class="toast">Сохранено</div>
 
   <script src="api.js"></script>
   <script src="app.js"></script>
 </body>
-
 </html>
