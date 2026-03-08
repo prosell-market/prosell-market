@@ -29,7 +29,8 @@
       --green: #10E8A0;
       --gold: #F5A623;
       --danger: #FF4757;
-      --grad: linear-gradient(135deg, #8B5CF6 0%, #06CEFF 100%);
+      /* Менее явный, более профессиональный градиент */
+      --grad: linear-gradient(135deg, #6366F1 0%, #3B82F6 100%);
       --grad-hot: linear-gradient(135deg, #FF6B6B, #FF8E53);
       --safe-bottom: env(safe-area-inset-bottom, 0px);
     }
@@ -950,9 +951,11 @@
     }
 
     .pd-desc {
-      font-size: 13px;
-      line-height: 1.7;
-      color: var(--muted);
+      font-size: 15px;
+      /* Увеличен размер по просьбе пользователя */
+      line-height: 1.6;
+      color: rgba(255, 255, 255, 0.85);
+      /* Сделан более ярким, убран цвет muted */
       margin-bottom: 16px;
     }
 
@@ -973,7 +976,7 @@
     }
 
     .spec-label {
-      color: var(--muted);
+      color: rgba(255, 255, 255, 0.6);
     }
 
     /* Нижняя панель шторки */

@@ -371,7 +371,7 @@ const App = {
     if (page) page.classList.add("active");
 
     document.querySelectorAll(".tab-btn").forEach((el) => el.classList.remove("active"));
-    const btn = document.querySelector(`.tab - btn[data - tab="${tab}"]`);
+    const btn = document.querySelector(`.tab-btn[data-tab="${tab}"]`);
     if (btn) btn.classList.add("active");
 
     if (tab === "cart") {
