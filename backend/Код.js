@@ -41,6 +41,11 @@ function handleRequest_(e) {
     if (action === "notifications") return json_(getUserOrdersList_(e));
     if (action === "notifications_read") return json_({ ok: true });
     if (action === "debug_logs") return json_(getDebugLogs_());
+    if (action === "debug_sheet") {
+      const sh = getSS_().getSheetByName("products");
+      const h = sh.getRange(1, 1, 1, sh.getLastColumn()).getValues()[0];
+      return json_({ headers: h, maxCol: sh.getMaxColumns(), lastCol: sh.getLastColumn() });
+    }
 
     // --- ADMIN ENDPOINTS ---
     if (action === "admin_orders") return json_(adminGetOrders_(e));
