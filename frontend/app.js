@@ -223,18 +223,19 @@ const App = {
       el.innerHTML = `
         ${badge}
         <div class="card-img-wrap">${img}</div>
-        <div class="card-title">${escapeHtml(p.name || "")}</div>
-        <div class="card-footer">
-          <div>
-            <span class="price">${formatMoney(p.price)}</span>
-            ${p.old_price ? `<span class="price-old">${formatMoney(p.old_price)}</span>` : ""}
+        <div class="card-body">
+          <div class="card-title">${escapeHtml(p.name || "")}</div>
+          <div class="card-footer">
+            <div>
+              <span class="price">${formatMoney(p.price)}</span>
+              ${p.old_price ? `<span class="price-old">${formatMoney(p.old_price)}</span>` : ""}
+            </div>
+            <button class="btn-add-sm" data-add="${escapeAttr(p.id)}" ${disabled} aria-label="В корзину">
+              <i class="fa-solid fa-plus"></i>
+            </button>
           </div>
-          <button class="btn-add-sm" data-add="${escapeAttr(p.id)}" ${disabled} aria-label="В корзину">
-            <i class="fa-solid fa-plus"></i>
-          </button>
         </div>
       `;
-
       // Клик на всю карточку открывает товар
       el.addEventListener("click", () => this.openProduct(p.id));
 
@@ -400,15 +401,19 @@ const App = {
       specsHtml += "</div>";
     }
 
-    const imgHtml = product.image_url
-      ? `<div class="pd-img-box"><img src="${escapeAttr(product.image_url)}" alt=""></div>`
-      : "";
+    let imgHtml = "";
+    if (product.image_url) {
+      const safeUrl = escapeAttr(product.image_url);
+      imgHtml = `<div class="pd-img-box" style="--pd-img-src: url('${safeUrl}')"><img src="${safeUrl}" alt=""></div>`;
+    }
 
     body.innerHTML = `
       ${imgHtml}
-      <div class="pd-title">${escapeHtml(product.name || "")}</div>
-      ${product.desc ? `<div class="pd-desc">${escapeHtml(product.desc)}</div>` : ""}
-      ${specsHtml}
+      <div class="pd-scroll-inner">
+        <div class="pd-title">${escapeHtml(product.name || "")}</div>
+        ${product.desc ? `<div class="pd-desc">${escapeHtml(product.desc)}</div>` : ""}
+        ${specsHtml}
+      </div>
     `;
 
     document.getElementById("pd-price").textContent = formatMoney(product.price);
