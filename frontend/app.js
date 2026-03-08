@@ -286,8 +286,8 @@ const App = {
       el.className = "c-item";
 
       const imgHtml = product.image_url
-        ? `< img src = "${escapeAttr(product.image_url)}" class="c-thumb" alt = "" > `
-        : `< div class="c-thumb c-thumb-icon" > <i class="fa-solid fa-box-open"></i></div > `;
+        ? `<img src="${escapeAttr(product.image_url)}" class="c-thumb" alt="">`
+        : `<div class="c-thumb c-thumb-icon"><i class="fa-solid fa-box-open"></i></div>`;
 
       el.innerHTML = `
         ${imgHtml}
@@ -726,7 +726,7 @@ const App = {
       hits.forEach((p) => {
         const row = document.createElement("div");
         row.className = "search-result-item";
-        row.innerHTML = `< div > <b>${escapeHtml(p.name || "")}</b></div > <div style="font-size:12px;color:#888">${formatMoney(p.price)}</div>`;
+        row.innerHTML = `<div><b>${escapeHtml(p.name || "")}</b></div><div style="font-size:12px;color:#888">${formatMoney(p.price)}</div>`;
         row.addEventListener("click", () => {
           this.openProduct(p.id);
           this.closeSheet("search");

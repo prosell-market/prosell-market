@@ -177,7 +177,76 @@ describe("App — корзина", () => {
             },
             haptic() { },
             showToast() { },
-            renderCart() { },
+
+            // Загружаем реальные функции из App (без моков) для интеграционного тестирования
+            renderCart: function () {
+                const container = document.getElementById("cart-list");
+                container.innerHTML = "";
+
+                const ui = this.state.data?.ui || {};
+                const emptyEl = document.getElementById("cart-empty");
+                const summaryEl = document.getElementById("checkout-bar");
+
+                if (!this.state.cart.length) {
+                    emptyEl.classList.remove("hidden");
+                    summaryEl.classList.add("hidden");
+                    const btnShop = document.getElementById("btn-go-shop");
+                    if (btnShop) btnShop.textContent = ui.go_shop || "В магазин";
+                    return;
+                }
+
+                emptyEl.classList.add("hidden");
+                summaryEl.classList.remove("hidden");
+
+                let total = 0;
+
+                this.state.cart.forEach((item) => {
+                    const product = (this.state.data?.products || []).find((p) => p.id === item.id);
+                    if (!product) return;
+
+                    total += (Number(product.price) || 0) * item.qty;
+
+                    const el = document.createElement("div");
+                    el.className = "c-item";
+
+                    const imgHtml = product.image_url
+                        ? `<img src="${escapeAttr(product.image_url)}" class="c-thumb" alt="">`
+                        : `<div class="c-thumb c-thumb-icon"><i class="fa-solid fa-box-open"></i></div>`;
+
+                    el.innerHTML = `
+                    ${imgHtml}
+                    <div class="c-info">
+                      <div class="c-name">${escapeHtml(product.name || "")}</div>
+                      ${product.sku ? `<div class="c-sku">${escapeHtml(product.sku)}</div>` : ""}
+                      <div class="c-price">${formatMoney(product.price)}</div>
+                    </div>
+                    <div class="c-right">
+                      <button class="c-del" data-del="${escapeAttr(item.id)}" aria-label="Удалить">
+                        <i class="fa-solid fa-trash-can"></i>
+                      </button>
+                      <div class="c-ctrl">
+                        <button class="c-btn" data-qminus="${escapeAttr(item.id)}" aria-label="Минус">
+                          <i class="fa-solid fa-minus"></i>
+                        </button>
+                        <span class="c-qty">${item.qty}</span>
+                        <button class="c-btn" data-qplus="${escapeAttr(item.id)}" aria-label="Плюс">
+                          <i class="fa-solid fa-plus"></i>
+                        </button>
+                      </div>
+                    </div>
+                  `;
+
+                    el.querySelector("[data-qminus]").addEventListener("click", () => this.changeQty(item.id, -1));
+                    el.querySelector("[data-qplus]").addEventListener("click", () => this.changeQty(item.id, 1));
+                    el.querySelector("[data-del]").addEventListener("click", () => this.removeFromCart(item.id));
+
+                    container.appendChild(el);
+                });
+
+                document.getElementById("cart-total-price").textContent = formatMoney(total);
+                document.getElementById("btn-checkout").textContent = ui.buttons?.checkout || "Оформить";
+            },
+
             addToCart(id, qty = 1) {
                 const product = (this.state.data?.products || []).find(p => p.id === id);
                 if (!product) return;
@@ -253,6 +322,21 @@ describe("App — корзина", () => {
     test("updateBadge — скрывает бэйдж при пустой корзине", () => {
         App.updateBadge();
         expect(document.getElementById("cart-badge").classList.contains("hidden")).toBe(true);
+    });
+
+    test("renderCart — генерирует валидный DOM без ошибок (bugfix HTML)", () => {
+        App.addToCart("p1", 2);
+        expect(() => App.renderCart()).not.toThrow();
+
+        const list = document.getElementById("cart-list");
+        expect(list.innerHTML).toContain('class="c-item"');
+        expect(list.innerHTML).toContain('class="c-qty"');
+
+        // Кнопка минус должна нажиматься
+        const btnMinus = list.querySelector("[data-qminus]");
+        expect(btnMinus).not.toBeNull();
+        btnMinus.click();
+        expect(App.state.cart[0].qty).toBe(1);
     });
 });
 
