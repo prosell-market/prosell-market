@@ -1919,7 +1919,7 @@
       onCategoryChange() {
         const catId = UI.id('p-cat').value;
         const cat = DATA.categories.find(c => String(c.id) === String(catId));
-        const catName = cat ? cat.name : "";
+        const catName = cat ? cat.name.trim() : "";
         const specsNames = this.CATEGORY_SPECS[catName];
 
         const wrap = UI.id('p-specs-wrapper');

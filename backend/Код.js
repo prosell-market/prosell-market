@@ -122,11 +122,17 @@ function ensureHeaders_(sh, headers) {
     sh.appendRow(headers);
     return;
   }
-  const h = sh.getRange(1, 1, 1, sh.getLastColumn()).getValues()[0].map(String);
+  let lastCol = sh.getLastColumn();
+  const maxCol = sh.getMaxColumns();
+  const h = sh.getRange(1, 1, 1, lastCol).getValues()[0].map(String);
+
   headers.forEach(k => {
     if (h.indexOf(k) === -1) {
-      sh.insertColumnAfter(sh.getLastColumn());
-      sh.getRange(1, sh.getLastColumn()).setValue(k);
+      lastCol++;
+      if (lastCol > sh.getMaxColumns()) {
+        sh.insertColumnAfter(sh.getMaxColumns());
+      }
+      sh.getRange(1, lastCol).setValue(k);
     }
   });
 }
