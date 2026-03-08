@@ -396,8 +396,8 @@ const App = {
     const body = document.getElementById("pd-content");
 
     let specsHtml = "";
-    // Показываем структурированные спецификации только если нет текстового описания
-    if (!product.desc && product.specs && typeof product.specs === "object") {
+    // Показываем структурированные спецификации если они есть
+    if (product.specs && typeof product.specs === "object" && Object.keys(product.specs).length > 0) {
       specsHtml = '<div class="pd-specs">';
       Object.entries(product.specs).forEach(([k, v]) => {
         specsHtml += `<div class="spec-row"><span class="spec-label">${escapeHtml(k)}</span><span>${escapeHtml(String(v))}</span></div>`;
