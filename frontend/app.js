@@ -214,15 +214,15 @@ const App = {
       el.className = "card";
 
       const badge = p.badge ? `<div class="badge">${escapeHtml(String(p.badge))}</div>` : "";
-      const img = p.image_url
-        ? `<img src="${escapeAttr(p.image_url)}" loading="lazy" alt="">`
-        : `<i class="fa-solid fa-box-open"></i>`;
+      const imgWrap = p.image_url
+        ? `<div class="card-img-wrap" style="--ci:url('${escapeAttr(p.image_url)}')"><img src="${escapeAttr(p.image_url)}" loading="lazy" alt=""></div>`
+        : `<div class="card-img-wrap"><i class="fa-solid fa-box-open"></i></div>`;
 
       const disabled = (typeof p.stock === "number" && p.stock <= 0) ? "disabled" : "";
 
       el.innerHTML = `
         ${badge}
-        <div class="card-img-wrap">${img}</div>
+        ${imgWrap}
         <div class="card-body">
           <div class="card-title">${escapeHtml(p.name || "")}</div>
           <div class="card-footer">
@@ -282,8 +282,8 @@ const App = {
       el.className = "c-item";
 
       const imgHtml = product.image_url
-        ? `<img src="${escapeAttr(product.image_url)}" class="c-thumb" alt="">`
-        : `<div class="c-thumb c-thumb-icon"><i class="fa-solid fa-box-open"></i></div>`;
+        ? `< img src = "${escapeAttr(product.image_url)}" class="c-thumb" alt = "" > `
+        : `< div class="c-thumb c-thumb-icon" > <i class="fa-solid fa-box-open"></i></div > `;
 
       el.innerHTML = `
         ${imgHtml}
@@ -367,7 +367,7 @@ const App = {
     if (page) page.classList.add("active");
 
     document.querySelectorAll(".tab-btn").forEach((el) => el.classList.remove("active"));
-    const btn = document.querySelector(`.tab-btn[data-tab="${tab}"]`);
+    const btn = document.querySelector(`.tab - btn[data - tab="${tab}"]`);
     if (btn) btn.classList.add("active");
 
     if (tab === "cart") {
@@ -396,7 +396,7 @@ const App = {
     if (!product.desc && product.specs && typeof product.specs === "object") {
       specsHtml = '<div class="pd-specs">';
       Object.entries(product.specs).forEach(([k, v]) => {
-        specsHtml += `<div class="spec-row"><span class="spec-label">${escapeHtml(k)}</span><span>${escapeHtml(String(v))}</span></div>`;
+        specsHtml += `< div class="spec-row" ><span class="spec-label">${escapeHtml(k)}</span><span>${escapeHtml(String(v))}</span></div > `;
       });
       specsHtml += "</div>";
     }
@@ -404,7 +404,7 @@ const App = {
     let imgHtml = "";
     if (product.image_url) {
       const safeUrl = escapeAttr(product.image_url);
-      imgHtml = `<div class="pd-img-box" style="--pd-img-src: url('${safeUrl}')"><img src="${safeUrl}" alt=""></div>`;
+      imgHtml = `< div class="pd-img-box" style = "--pd-img-src: url('${safeUrl}')" > <img src="${safeUrl}" alt=""></div>`;
     }
 
     body.innerHTML = `
@@ -414,7 +414,7 @@ const App = {
         ${product.desc ? `<div class="pd-desc">${escapeHtml(product.desc)}</div>` : ""}
         ${specsHtml}
       </div>
-    `;
+      `;
 
     document.getElementById("pd-price").textContent = formatMoney(product.price);
 
@@ -515,9 +515,9 @@ const App = {
 
     document.getElementById("lbl-confirm-title").textContent = ui.buttons?.confirm || "Подтверждение";
 
-    let html = `<strong>${escapeHtml(this.state.profile.name)}</strong> (${escapeHtml(this.state.profile.phone)})<br>${escapeHtml(this.state.profile.city)}`;
-    if (this.state.profile.comment) html += `<br>${escapeHtml(this.state.profile.comment)}`;
-    html += `<hr style="margin:8px 0;border:0;border-top:1px dashed #ccc">`;
+    let html = `< strong > ${escapeHtml(this.state.profile.name)}</strong > (${escapeHtml(this.state.profile.phone)}) < br > ${escapeHtml(this.state.profile.city)} `;
+    if (this.state.profile.comment) html += `< br > ${escapeHtml(this.state.profile.comment)} `;
+    html += `< hr style = "margin:8px 0;border:0;border-top:1px dashed #ccc" > `;
 
     let total = 0;
 
@@ -528,10 +528,10 @@ const App = {
       const line = (Number(product.price) || 0) * item.qty;
       total += line;
 
-      html += `${escapeHtml(product.name || "")} x${item.qty} - <b>${formatMoney(line)}</b><br>`;
+      html += `${escapeHtml(product.name || "")} x${item.qty} - <b>${formatMoney(line)}</b> < br > `;
     });
 
-    html += `<hr style="margin:8px 0;border:0;border-top:1px solid #000"><b>Итого: ${formatMoney(total)}</b>`;
+    html += `< hr style = "margin:8px 0;border:0;border-top:1px solid #000" > <b>Итого: ${formatMoney(total)}</b>`;
 
     summary.innerHTML = html;
     modal.classList.add("active");
@@ -722,7 +722,7 @@ const App = {
       hits.forEach((p) => {
         const row = document.createElement("div");
         row.className = "search-result-item";
-        row.innerHTML = `<div><b>${escapeHtml(p.name || "")}</b></div><div style="font-size:12px;color:#888">${formatMoney(p.price)}</div>`;
+        row.innerHTML = `< div > <b>${escapeHtml(p.name || "")}</b></div > <div style="font-size:12px;color:#888">${formatMoney(p.price)}</div>`;
         row.addEventListener("click", () => {
           this.openProduct(p.id);
           this.closeSheet("search");
