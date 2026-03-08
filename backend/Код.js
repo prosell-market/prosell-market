@@ -506,16 +506,17 @@ function adminSaveProduct_(e) {
       }
     });
 
-    // Записываем описание в обе колонки (desc и specs)
+    // Записываем описание в обе колонки (desc и specs) для совместимости
     var descVal = item.desc || "";
     var descIdx = h.indexOf("desc");
     var specsIdx = h.indexOf("specs");
     if (descIdx !== -1) sh.getRange(rowIdx, descIdx + 1).setValue(descVal);
     if (specsIdx !== -1) sh.getRange(rowIdx, specsIdx + 1).setValue(descVal);
 
-    // Очищаем specs_json — текстовое описание теперь единственный источник
+    // Сохраняем переданный specs_json
+    var specsJsonVal = item.specs_json || "";
     var specsJsonIdx = h.indexOf("specs_json");
-    if (specsJsonIdx !== -1) sh.getRange(rowIdx, specsJsonIdx + 1).setValue("");
+    if (specsJsonIdx !== -1) sh.getRange(rowIdx, specsJsonIdx + 1).setValue(specsJsonVal);
 
     // Force stock=TRUE
     const stockIdx = h.indexOf("in_stock");

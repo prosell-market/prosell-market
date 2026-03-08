@@ -1492,9 +1492,11 @@
           <option value="">Без категории</option>
         </select>
       </div>
-      <div class="form-group">
-        <label class="form-lbl">Описание</label>
-        <textarea id="p-desc" class="form-in" rows="3" placeholder="Текст описания..."></textarea>
+      <div class="form-group" id="p-dynamic-specs">
+        <label class="form-lbl">Описание / Характеристики</label>
+        <div id="p-specs-wrapper">
+          <textarea id="p-desc" class="form-in" rows="3" placeholder="Свободное описание товара..."></textarea>
+        </div>
       </div>
       <div class="modal-acts">
         <button class="btn-lg btn-cancel" onclick="UI.modal('prod',false)">Отмена</button>
@@ -1521,7 +1523,9 @@
         const d = Date.now() - new Date(ts).getTime(), m = Math.floor(d / 60000), h = Math.floor(m / 60), dy = Math.floor(h / 24);
         if (dy > 0) return dy + 'д назад'; if (h > 0) return h + 'ч назад'; if (m > 0) return m + 'м назад'; return 'только что';
       },
-      elapsedH: ts => Math.round((Date.now() - new Date(ts).getTime()) / 3600000)
+      elapsedH: ts => Math.round((Date.now() - new Date(ts).getTime()) / 3600000),
+      escapeHtml: s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'),
+      escapeAttr: s => String(s).replace(/&/g, '&amp;').replace(/"/g, '&quot;')
     };
 
     // ---- THEME ----
@@ -1861,13 +1865,29 @@
         UI.id('p-price').value = p.price || '';
         UI.id('p-old').value = p.old_price || '';
         UI.id('p-img-url').value = p.image_url || '';
-        UI.id('p-desc').value = p.desc || p.specs || '';
+
+        // Популярные характеристики
+        this.currentProductDesc = p.desc || p.specs || '';
+        this.currentProductSpecs = null;
+        if (p.specs_json) {
+          try { this.currentProductSpecs = JSON.parse(p.specs_json); } catch (e) { }
+        }
+
         const prev = UI.id('p-prev'), ph = UI.id('p-ph');
         if (p.image_url) { prev.src = p.image_url; prev.style.display = 'block'; ph.style.display = 'none'; }
         else { prev.style.display = 'none'; ph.style.display = 'block'; }
-        UI.id('p-cat').innerHTML = '<option value="">Без категории</option>' + DATA.categories.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
-        UI.id('p-cat').value = p.category_id || p.category || '';
+
+        const catSelect = UI.id('p-cat');
+        catSelect.innerHTML = '<option value="">Без категории</option>' + DATA.categories.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+        catSelect.value = p.category_id || p.category || '';
+        // Отловить изменение/установку категории
+        catSelect.onchange = () => this.onCategoryChange();
+
         UI.id('btn-del-prod').style.display = p.id ? '' : 'none';
+
+        // Отрисовка полей после установки значения
+        this.onCategoryChange();
+
         UI.modal('prod', true);
       },
       async upload(el) {
@@ -1891,8 +1911,59 @@
         };
         r.readAsDataURL(file);
       },
+      CATEGORY_SPECS: {
+        "Материнские платы": ["Форм-фактор", "Чипсет", "Сокет", "RAM слотов", "Макс. RAM (ГБ)", "SATA", "M.2"],
+        "Оперативная память": ["Объем (ГБ)", "Тип (DDR)", "Заявленная частота (МГц)", "Тайминги", "Радиатор", "Кол-во планок"],
+        "Процессоры": ["Сокет", "Ядер / Потоков", "Базовая частота (ГГц)", "TDP (Вт)"]
+      },
+      onCategoryChange() {
+        const catId = UI.id('p-cat').value;
+        const cat = DATA.categories.find(c => String(c.id) === String(catId));
+        const catName = cat ? cat.name : "";
+        const specsNames = this.CATEGORY_SPECS[catName];
+
+        const wrap = UI.id('p-specs-wrapper');
+        if (specsNames) {
+          let html = '<div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-top:8px;">';
+          specsNames.forEach(s => {
+            let val = this.currentProductSpecs ? (this.currentProductSpecs[s] || '') : '';
+            html += `<div><label style="font-size:11px;color:var(--muted);display:block;margin-bottom:4px;">${s}</label><input class="form-in dyn-spec-in" data-key="${s}" value="${UI.escapeAttr(val)}" placeholder="..." /></div>`;
+          });
+          html += '</div>';
+          wrap.innerHTML = html;
+        } else {
+          let val = this.currentProductDesc || '';
+          wrap.innerHTML = `<textarea id="p-desc" class="form-in" rows="3" placeholder="Свободное описание товара...">${UI.escapeHtml(val)}</textarea>`;
+        }
+      },
       async save() {
-        const item = { id: UI.id('p-id').value, title: UI.id('p-title').value, price: UI.id('p-price').value, old_price: UI.id('p-old').value, category: UI.id('p-cat').value, image_url: UI.id('p-img-url').value, desc: UI.id('p-desc').value, in_stock: true };
+        // Собрать JSON характеристики если есть
+        let descVal = '';
+        let specsJsonStr = '';
+        const dynInputs = document.querySelectorAll('.dyn-spec-in');
+        if (dynInputs.length > 0) {
+          const obj = {};
+          dynInputs.forEach(inp => {
+            const k = inp.getAttribute('data-key');
+            if (k && inp.value.trim()) obj[k] = inp.value.trim();
+          });
+          if (Object.keys(obj).length > 0) specsJsonStr = JSON.stringify(obj);
+        } else {
+          const dInp = UI.id('p-desc');
+          if (dInp) descVal = dInp.value;
+        }
+
+        const item = {
+          id: UI.id('p-id').value,
+          title: UI.id('p-title').value,
+          price: UI.id('p-price').value,
+          old_price: UI.id('p-old').value,
+          category: UI.id('p-cat').value,
+          image_url: UI.id('p-img-url').value,
+          desc: descVal,
+          specs_json: specsJsonStr,
+          in_stock: true
+        };
         if (!item.title) return alert('Введите название');
         const btn = UI.id('btn-save-prod'); btn.textContent = 'Сохранение...'; btn.disabled = true;
         const res = await API.fetchJson('admin_save_product', { method: 'POST', body: { token: UI.id('token').value, item } });
