@@ -143,6 +143,7 @@
       display: none;
       padding-bottom: 24px;
       animation: pageIn 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+      will-change: opacity, transform;
     }
 
     .page.active {
@@ -168,9 +169,7 @@
       position: sticky;
       top: 0;
       z-index: 20;
-      background: rgba(7, 9, 15, 0.75);
-      backdrop-filter: blur(32px);
-      -webkit-backdrop-filter: blur(32px);
+      background: rgba(7, 9, 15, 0.96);
       padding: 14px 16px;
       border-bottom: 1px solid var(--border);
       display: flex;
@@ -740,9 +739,7 @@
       bottom: 0;
       left: 0;
       right: 0;
-      background: rgba(7, 9, 15, 0.85);
-      backdrop-filter: blur(32px);
-      -webkit-backdrop-filter: blur(32px);
+      background: rgba(7, 9, 15, 0.96);
       border-top: 1px solid var(--border);
       display: grid;
       grid-template-columns: repeat(4, 1fr);
@@ -1172,7 +1169,7 @@
       background: var(--card-hi);
       border-radius: 20px;
       overflow: hidden;
-      animation: shimmer 1.5s infinite;
+      animation: shimmer 2.5s infinite;
     }
 
     .skel-img {
@@ -1468,11 +1465,11 @@
         <span><i class="fa-solid fa-list-check" style="color:#667EEA; width:24px"></i> Мои заказы</span>
         <i class="fa-solid fa-chevron-right" style="color:var(--text-muted)"></i>
       </div>
-      <div class="menu-btn" id="btn-support">
-        <span><i class="fa-solid fa-headset" style="color:#667EEA; width:24px"></i> <span
-            id="lbl-support">Поддержка</span></span>
-        <i class="fa-solid fa-chevron-right" style="color:var(--text-muted)"></i>
-      </div>
+      <button class="btn-main" id="btn-support"
+        style="margin: 16px; width: calc(100% - 32px); display: flex; align-items: center; justify-content: center; gap: 8px;">
+        <i class="fa-solid fa-headset" style="font-size: 18px;"></i> <span id="lbl-support">Связаться с
+          поддержкой</span>
+      </button>
       <h3 style="padding:10px 16px; font-size:16px;">Вопросы и ответы</h3>
       <div class="faq-container">
         <div class="faq-item" onclick="toggleFaq(this)">

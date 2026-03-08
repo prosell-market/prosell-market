@@ -219,7 +219,7 @@ const App = {
 
       const badge = p.badge ? `<div class="badge">${escapeHtml(String(p.badge))}</div>` : "";
       const imgWrap = p.image_url
-        ? `<div class="card-img-wrap" style="--ci:url('${escapeAttr(p.image_url)}')"><img src="${escapeAttr(p.image_url)}" loading="lazy" alt=""></div>`
+        ? `<div class="card-img-wrap" style="--ci:url('${escapeAttr(p.image_url)}')"><img src="${escapeAttr(p.image_url)}" loading="lazy" decoding="async" alt=""></div>`
         : `<div class="card-img-wrap"><i class="fa-solid fa-box-open"></i></div>`;
 
       const disabled = (typeof p.stock === "number" && p.stock <= 0) ? "disabled" : "";
@@ -286,7 +286,7 @@ const App = {
       el.className = "c-item";
 
       const imgHtml = product.image_url
-        ? `<img src="${escapeAttr(product.image_url)}" class="c-thumb" alt="">`
+        ? `<img src="${escapeAttr(product.image_url)}" class="c-thumb" loading="lazy" decoding="async" alt="">`
         : `<div class="c-thumb c-thumb-icon"><i class="fa-solid fa-box-open"></i></div>`;
 
       el.innerHTML = `
