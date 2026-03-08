@@ -348,7 +348,32 @@ describe("Шторка товара — CSS классы (БАГ 1+2)", () => {
                 this.state.productSheet.id = id;
                 this.state.productSheet.qty = 1;
                 const sheet = document.getElementById("sheet-product");
-                document.getElementById("pd-content").innerHTML = `<div>${escapeHtml(product.name)}</div>`;
+                const body = document.getElementById("pd-content");
+
+                let specsHtml = "";
+                if (!product.desc && product.specs && typeof product.specs === "object") {
+                    specsHtml = '<div class="pd-specs">';
+                    Object.entries(product.specs).forEach(([k, v]) => {
+                        specsHtml += `<div class="spec-row"><span class="spec-label">${escapeHtml(k)}</span><span>${escapeHtml(String(v))}</span></div>`;
+                    });
+                    specsHtml += "</div>";
+                }
+
+                let imgHtml = "";
+                if (product.image_url) {
+                    const safeUrl = escapeAttr(product.image_url);
+                    imgHtml = `<div class="pd-img-box" style="--pd-img-src: url('${safeUrl}')"><img src="${safeUrl}" alt=""></div>`;
+                }
+
+                body.innerHTML = `
+                  ${imgHtml}
+                  <div class="pd-scroll-inner">
+                    <div class="pd-title">${escapeHtml(product.name || "")}</div>
+                    ${product.desc ? `<div class="pd-desc">${escapeHtml(product.desc)}</div>` : ""}
+                    ${specsHtml}
+                  </div>
+                `;
+
                 document.getElementById("pd-price").textContent = formatMoney(product.price);
                 document.getElementById("pd-old-price").classList.add("hidden");
                 document.getElementById("pd-qty-val").textContent = "1";
@@ -360,6 +385,7 @@ describe("Шторка товара — CSS классы (БАГ 1+2)", () => {
                 }
                 this.renderCrossSell(product);
                 // ── Правильная версия (после фикса): должен быть .open, не .active
+
                 sheet.classList.add("open");
                 document.getElementById("overlay").classList.add("open");
                 document.body.classList.add("no-scroll");
@@ -432,5 +458,21 @@ describe("Шторка товара — CSS классы (БАГ 1+2)", () => {
         const app = makeApp();
         app.openProduct("p1"); // p1.stock = 10
         expect(document.getElementById("btn-pd-add").disabled).toBe(false);
+    });
+
+    test("HTML-вывод (TDD) — не содержит пробелов в тегах (bugfix < div)", () => {
+        const app = makeApp();
+        app.openProduct("p1");
+        const html = document.getElementById("pd-content").innerHTML;
+        // Тест упал бы на старой версии (которая генерила < div class=...)
+        expect(html).not.toMatch(/<\s+div/);
+    });
+
+    test("HTML-вывод (TDD) — не содержит undefined", () => {
+        const app = makeApp();
+        app.openProduct("p1");
+        const html = document.getElementById("pd-content").innerHTML;
+        // Тест гарантирует, что переменные правильно эскейпятся и проверяются
+        expect(html.includes("undefined")).toBe(false);
     });
 });

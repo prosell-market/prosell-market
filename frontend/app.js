@@ -64,7 +64,11 @@ const App = {
   loadState() {
     try {
       const savedCart = localStorage.getItem(this.storageKeys.cart);
-      if (savedCart) this.state.cart = JSON.parse(savedCart);
+      if (savedCart) {
+        const parsed = JSON.parse(savedCart);
+        if (Array.isArray(parsed)) this.state.cart = parsed;
+        else this.state.cart = []; // Очистка при конфликте кэша
+      }
 
       const savedProfile = localStorage.getItem(this.storageKeys.profile);
       if (savedProfile) {
