@@ -396,7 +396,7 @@ const App = {
     if (!product.desc && product.specs && typeof product.specs === "object") {
       specsHtml = '<div class="pd-specs">';
       Object.entries(product.specs).forEach(([k, v]) => {
-        specsHtml += `< div class="spec-row" ><span class="spec-label">${escapeHtml(k)}</span><span>${escapeHtml(String(v))}</span></div > `;
+        specsHtml += `<div class="spec-row"><span class="spec-label">${escapeHtml(k)}</span><span>${escapeHtml(String(v))}</span></div>`;
       });
       specsHtml += "</div>";
     }
@@ -404,7 +404,7 @@ const App = {
     let imgHtml = "";
     if (product.image_url) {
       const safeUrl = escapeAttr(product.image_url);
-      imgHtml = `< div class="pd-img-box" style = "--pd-img-src: url('${safeUrl}')" > <img src="${safeUrl}" alt=""></div>`;
+      imgHtml = `<div class="pd-img-box" style="--pd-img-src: url('${safeUrl}')"><img src="${safeUrl}" alt=""></div>`;
     }
 
     body.innerHTML = `
