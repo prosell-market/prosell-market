@@ -673,19 +673,9 @@ const App = {
   },
 
   updateMainButton() {
-    const mb = this.tg.MainButton;
-    if (!mb) return;
-
-    if (this.state.activeTab === "cart" && this.state.cart.length > 0 && this.state.data) {
-      const total = this.state.cart.reduce((sum, item) => {
-        const p = (this.state.data?.products || []).find((x) => x.id === item.id);
-        return sum + ((Number(p?.price) || 0) * item.qty);
-      }, 0);
-
-      mb.setText("Оформить - " + formatMoney(total));
-      mb.show();
-      mb.onClick(this.mainButtonHandler);
-    } else {
+    // У нас есть своя checkout-bar, Telegram MainButton не нужна
+    const mb = this.tg?.MainButton;
+    if (mb) {
       mb.hide();
       mb.offClick(this.mainButtonHandler);
     }

@@ -272,8 +272,8 @@
        PRODUCT GRID & CARDS
     ════════════════════════════ */
     .grid {
-      display: flex;
-      flex-direction: column;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
       gap: 10px;
       padding: 0 12px;
     }
@@ -284,39 +284,37 @@
       border-radius: 20px;
       overflow: hidden;
       display: flex;
-      flex-direction: row;
+      flex-direction: column;
       position: relative;
       cursor: pointer;
-      height: 130px;
       transition: transform 0.18s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.2s, border-color 0.2s;
     }
 
     .card:active {
-      transform: scale(0.98);
+      transform: scale(0.97);
       border-color: rgba(139, 92, 246, 0.5);
       box-shadow: 0 4px 24px rgba(139, 92, 246, 0.2);
     }
 
-    /* Картинка — квадрат слева */
+    /* Картинка — квадрат, не обрезается */
     .card-img-wrap {
-      width: 130px;
-      min-width: 130px;
-      height: 100%;
+      aspect-ratio: 1 / 1;
+      width: 100%;
       background: var(--card-hi);
       overflow: hidden;
       position: relative;
-      flex-shrink: 0;
     }
 
     .card-img-wrap img {
       width: 100%;
       height: 100%;
-      object-fit: cover;
+      object-fit: contain;
       transition: transform 0.3s;
+      padding: 4px;
     }
 
     .card:active .card-img-wrap img {
-      transform: scale(1.04);
+      transform: scale(1.03);
     }
 
     .card-img-wrap i {
@@ -343,41 +341,50 @@
       box-shadow: 0 2px 10px rgba(255, 107, 107, 0.45);
     }
 
-    /* Правая часть карточки */
+    /* Нижняя часть карточки */
     .card-body {
-      padding: 14px 14px;
+      padding: 10px;
       display: flex;
       flex-direction: column;
       flex: 1;
-      min-width: 0;
     }
 
     .card-title {
-      font-size: 13px;
+      font-size: 12px;
       font-weight: 700;
       color: var(--text);
-      line-height: 1.4;
+      line-height: 1.35;
+      min-height: 32px;
       display: -webkit-box;
-      -webkit-line-clamp: 3;
-      line-clamp: 3;
+      -webkit-line-clamp: 2;
+      line-clamp: 2;
       -webkit-box-orient: vertical;
       overflow: hidden;
-      flex: 1;
+      margin-bottom: 8px;
     }
 
     .card-footer {
       display: flex;
       justify-content: space-between;
-      align-items: flex-end;
-      margin-top: 10px;
+      align-items: center;
+      margin-top: auto;
     }
 
     .price {
-      font-size: 18px;
+      font-size: 14px;
       font-weight: 900;
       color: var(--text);
-      letter-spacing: -0.5px;
+      letter-spacing: -0.3px;
     }
+
+    .price-old {
+      font-size: 10px;
+      text-decoration: line-through;
+      color: var(--muted);
+      display: block;
+      margin-top: 1px;
+    }
+
 
     .price-old {
       font-size: 11px;
@@ -1366,8 +1373,8 @@
           <input id="inp-city" class="input" placeholder="Москва" />
         </div>
         <div class="inp-group">
-          <label class="label">Комментарий</label>
-          <input id="inp-comment" class="input" placeholder="Доп. пожелания..." />
+          <label class="label">Адрес ПВЗ</label>
+          <input id="inp-comment" class="input" placeholder="Улица, дом, пункт выдачи Ozon..." />
         </div>
       </div>
     </section>
