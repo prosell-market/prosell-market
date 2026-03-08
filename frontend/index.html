@@ -354,33 +354,90 @@
     /* Cart & Checkout */
     .cart-list {
       padding: 0 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
     }
 
     .c-item {
       background: var(--card);
       border-radius: 18px;
       padding: 12px;
-      margin-bottom: 10px;
       display: flex;
       align-items: center;
       gap: 12px;
-      border: 1px solid rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+      animation: fadeIn 0.25s ease;
+    }
+
+    /* Миниатюра товара в корзине */
+    .c-thumb {
+      width: 56px;
+      height: 56px;
+      border-radius: 14px;
+      object-fit: cover;
+      flex-shrink: 0;
+      background: var(--card-highlight);
+    }
+
+    .c-thumb-icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-muted);
+      font-size: 20px;
     }
 
     .c-info {
       flex: 1;
+      min-width: 0;
     }
 
     .c-name {
       font-size: 14px;
       font-weight: 700;
+      margin-bottom: 2px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .c-sku {
+      font-size: 11px;
+      color: var(--text-muted);
       margin-bottom: 4px;
     }
 
     .c-price {
       color: var(--accent-green);
-      font-weight: 700;
+      font-weight: 800;
+      font-size: 14px;
+    }
+
+    /* Правая панель: удаление + кнопки qty */
+    .c-right {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    .c-del {
+      background: none;
+      border: none;
+      color: rgba(255, 255, 255, 0.2);
+      cursor: pointer;
       font-size: 13px;
+      padding: 2px 4px;
+      transition: color 0.2s;
+      line-height: 1;
+    }
+
+    .c-del:hover,
+    .c-del:active {
+      color: #FF6B6B;
     }
 
     .c-ctrl {
@@ -388,18 +445,35 @@
       border-radius: 10px;
       display: flex;
       align-items: center;
-      padding: 4px;
-      gap: 8px;
+      padding: 4px 6px;
+      gap: 10px;
+      border: 1px solid rgba(255, 255, 255, 0.05);
     }
 
     .c-btn {
-      width: 24px;
-      height: 24px;
+      width: 22px;
+      height: 22px;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-weight: 700;
+      font-size: 11px;
+      color: var(--text-muted);
       cursor: pointer;
+      background: none;
+      border: none;
+      transition: color 0.15s;
+    }
+
+    .c-btn:active {
+      color: #fff;
+    }
+
+    .c-qty {
+      font-size: 14px;
+      font-weight: 800;
+      color: #fff;
+      min-width: 18px;
+      text-align: center;
     }
 
     .checkout-bar {
@@ -414,7 +488,6 @@
       z-index: 90;
       border: 1px solid rgba(255, 255, 255, 0.1);
       box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-      display: none;
       animation: slideUpCheck 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
     }
 

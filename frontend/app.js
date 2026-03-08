@@ -222,8 +222,8 @@ const App = {
 
       el.innerHTML = `
         ${badge}
-        <div class="card-img-wrap" data-open="${escapeAttr(p.id)}">${img}</div>
-        <div class="card-title" data-open="${escapeAttr(p.id)}">${escapeHtml(p.name || "")}</div>
+        <div class="card-img-wrap">${img}</div>
+        <div class="card-title">${escapeHtml(p.name || "")}</div>
         <div class="card-footer">
           <div>
             <span class="price">${formatMoney(p.price)}</span>
@@ -235,7 +235,10 @@ const App = {
         </div>
       `;
 
-      el.querySelectorAll("[data-open]").forEach((x) => x.addEventListener("click", () => this.openProduct(p.id)));
+      // Клик на всю карточку открывает товар
+      el.addEventListener("click", () => this.openProduct(p.id));
+
+      // Кнопка + — только добавить в корзину, не открывать
       const addBtn = el.querySelector("[data-add]");
       addBtn.addEventListener("click", (ev) => {
         ev.stopPropagation();
@@ -243,6 +246,7 @@ const App = {
       });
 
       grid.appendChild(el);
+
     });
   },
 
@@ -274,21 +278,33 @@ const App = {
       total += (Number(product.price) || 0) * item.qty;
 
       const el = document.createElement("div");
-      el.className = "cart-item";
+      el.className = "c-item";
+
+      const imgHtml = product.image_url
+        ? `<img src="${escapeAttr(product.image_url)}" class="c-thumb" alt="">`
+        : `<div class="c-thumb c-thumb-icon"><i class="fa-solid fa-box-open"></i></div>`;
+
       el.innerHTML = `
-        <div class="cart-item-info">
-          <div class="cart-item-title">${escapeHtml(product.name || "")}</div>
-          <div class="cart-item-sku">${escapeHtml(product.sku || "")}</div>
-          <div class="cart-item-price">${formatMoney(product.price)}</div>
+        ${imgHtml}
+        <div class="c-info">
+          <div class="c-name">${escapeHtml(product.name || "")}</div>
+          ${product.sku ? `<div class="c-sku">${escapeHtml(product.sku)}</div>` : ""}
+          <div class="c-price">${formatMoney(product.price)}</div>
         </div>
-
-        <div class="qty-control-sm">
-          <button class="btn-qty-sm" data-qminus="${escapeAttr(item.id)}" aria-label="Минус"><i class="fa-solid fa-minus"></i></button>
-          <span>${item.qty}</span>
-          <button class="btn-qty-sm" data-qplus="${escapeAttr(item.id)}" aria-label="Плюс"><i class="fa-solid fa-plus"></i></button>
+        <div class="c-right">
+          <button class="c-del" data-del="${escapeAttr(item.id)}" aria-label="Удалить">
+            <i class="fa-solid fa-trash-can"></i>
+          </button>
+          <div class="c-ctrl">
+            <button class="c-btn" data-qminus="${escapeAttr(item.id)}" aria-label="Минус">
+              <i class="fa-solid fa-minus"></i>
+            </button>
+            <span class="c-qty">${item.qty}</span>
+            <button class="c-btn" data-qplus="${escapeAttr(item.id)}" aria-label="Плюс">
+              <i class="fa-solid fa-plus"></i>
+            </button>
+          </div>
         </div>
-
-        <button class="btn-del" data-del="${escapeAttr(item.id)}" aria-label="Удалить"><i class="fa-solid fa-trash"></i></button>
       `;
 
       el.querySelector("[data-qminus]").addEventListener("click", () => this.changeQty(item.id, -1));
@@ -454,12 +470,19 @@ const App = {
 
     this.renderCrossSell(product);
 
-    sheet.classList.add("active");
+    sheet.classList.add("open");
+    document.getElementById("overlay").classList.add("open");
+    document.body.classList.add("no-scroll");
   },
 
   closeSheet(name) {
     const sheet = document.getElementById("sheet-" + name);
-    if (sheet) sheet.classList.remove("active");
+    if (sheet) sheet.classList.remove("open");
+    // Убираем оверлей и разблокируем скролл только при закрытии товарной шторки
+    if (name === "product" || name === "search") {
+      document.getElementById("overlay").classList.remove("open");
+      document.body.classList.remove("no-scroll");
+    }
   },
 
   productQtyChange(delta) {
@@ -714,7 +737,9 @@ const App = {
     });
 
     document.getElementById("btn-open-search").addEventListener("click", () => {
-      document.getElementById("sheet-search").classList.add("active");
+      document.getElementById("sheet-search").classList.add("open");
+      document.getElementById("overlay").classList.add("open");
+      document.body.classList.add("no-scroll");
       setTimeout(() => document.getElementById("inp-search").focus(), 80);
     });
 
@@ -805,6 +830,11 @@ function formatMoney(v) {
   const n = Number(v);
   if (!Number.isFinite(n)) return "0 ₽";
   return n.toLocaleString("ru-RU") + " ₽";
+}
+
+// БАГ 3: Функция была удалена Gemini — восстановлена
+function toggleFaq(el) {
+  el.classList.toggle("open");
 }
 
 App.init();
