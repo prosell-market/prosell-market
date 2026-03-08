@@ -369,7 +369,12 @@ const App = {
     const btn = document.querySelector(`.tab-btn[data-tab="${tab}"]`);
     if (btn) btn.classList.add("active");
 
-    if (tab === "cart") this.renderCart();
+    if (tab === "cart") {
+      this.renderCart();
+    } else {
+      // Прячем панель оформления когда уходим с вкладки корзины
+      document.getElementById("checkout-bar")?.classList.add("hidden");
+    }
 
     this.updateMainButton();
   },
@@ -436,12 +441,14 @@ const App = {
       specsHtml += "</div>";
     }
 
-    const img = product.image_url ? `<img src="${escapeAttr(product.image_url)}" class="pd-img" alt="">` : "";
+    const imgHtml = product.image_url
+      ? `<div class="pd-img-box"><img src="${escapeAttr(product.image_url)}" alt=""></div>`
+      : "";
 
     body.innerHTML = `
-      ${img}
+      ${imgHtml}
       <div class="pd-title">${escapeHtml(product.name || "")}</div>
-      <div>${escapeHtml(product.desc || "")}</div>
+      ${product.desc ? `<div class="pd-desc">${escapeHtml(product.desc)}</div>` : ""}
       ${specsHtml}
     `;
 
@@ -671,9 +678,13 @@ const App = {
     if (!toast) return;
 
     toast.textContent = msg;
-    toast.style.background = (type === "error") ? "var(--danger)" : "rgba(0,0,0,0.8)";
+    toast.className = "toast"; // сбрасываем все доп-классы
+    if (type === "error") toast.classList.add("toast-error");
+    else toast.classList.add("toast-success");
+
     toast.classList.add("show");
-    setTimeout(() => toast.classList.remove("show"), 2600);
+    clearTimeout(this._toastTimer);
+    this._toastTimer = setTimeout(() => toast.classList.remove("show"), 2600);
   },
 
   haptic(type) {
