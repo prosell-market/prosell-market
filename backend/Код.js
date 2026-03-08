@@ -112,7 +112,8 @@ function readSheetData_(sheetName, maxRows) {
 function rowToObj_(headers, row) {
   const obj = {};
   headers.forEach((h, i) => {
-    if (h) obj[h] = row[i];
+    // Берем только ПЕРВОЕ вхождение колонки, чтобы защититься от багов с дубликатами заголовков
+    if (h && obj[h] === undefined) obj[h] = row[i];
   });
   return obj;
 }
@@ -528,6 +529,7 @@ function adminSaveProduct_(e) {
     const stockIdx = h.indexOf("in_stock");
     if (stockIdx !== -1) sh.getRange(rowIdx, stockIdx + 1).setValue(true);
 
+    SpreadsheetApp.flush(); // Гарантируем немедленное применение записи
     return { ok: true };
   } catch (e) { return { ok: false, error: String(e) }; }
 }
