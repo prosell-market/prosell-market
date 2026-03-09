@@ -1497,8 +1497,12 @@
         <div id="p-specs-wrapper">
           <textarea id="p-desc" class="form-in" rows="3" placeholder="Свободное описание товара..."></textarea>
         </div>
-        <button class="btn-del-product" id="btn-del" onclick="Products.del()">🗑 Удалить товар</button>
       </div>
+      <div class="modal-acts">
+        <button class="btn-lg btn-cancel" onclick="UI.modal('prod',false)">Отмена</button>
+        <button class="btn-lg btn-save" id="btn-save-prod" onclick="Products.save()">Сохранить</button>
+      </div>
+      <button class="btn-del-product" id="btn-del-prod" onclick="Products.del()">🗑 Удалить товар</button>
     </div>
 
     <!-- Toasts -->
@@ -1506,8 +1510,8 @@
 
     <!-- SCRIPTS -->
     <!-- Подключаем API и логику -->
-    <script src="api.js?v=3"></script>
-    <script src="admin.js?v=3"></script>
+    <script src="api.js?v=4"></script>
+    <script src="admin.js?v=4"></script>
 </body>
 <script>
   // ---- DATA ----
