@@ -660,6 +660,7 @@ const App = {
 
     // document.getElementById("btn-success-back").textContent = ui.back_to_shop || "Вернуться в магазин";
     document.getElementById("success-screen").classList.remove("hidden");
+    document.getElementById("success-screen").classList.add("show");
 
     this.haptic("success");
   },
@@ -774,10 +775,12 @@ const App = {
     document.getElementById("btn-confirm-ok").addEventListener("click", () => this.confirmOrder());
 
     document.getElementById("btn-success-back").addEventListener("click", () => {
+      document.getElementById("success-screen").classList.remove("show");
       document.getElementById("success-screen").classList.add("hidden");
       this.switchTab("shop");
     });
     document.getElementById("btn-success-orders").addEventListener("click", () => {
+      document.getElementById("success-screen").classList.remove("show");
       document.getElementById("success-screen").classList.add("hidden");
       this.switchTab("profile");
     });
