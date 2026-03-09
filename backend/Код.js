@@ -5,7 +5,7 @@
 
 const SPREADSHEET_ID = "1Bv6jeLhN_XAs7qyjNmamoYHpW2jSAAtQrk47NkcXSfA";
 const API_KEY = ""; // Опциональная защита
-const ADMIN_TOKEN = "ps_admin_2026_02_13";
+const ADMIN_TOKEN = "макаркрутой123";
 
 // --- AUTHORIZATION TRIGGER (Запусти вручную один раз!) ---
 function doDriveCheck() {
