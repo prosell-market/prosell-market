@@ -552,9 +552,9 @@ const App = {
 
     document.getElementById("lbl-confirm-title").textContent = ui.buttons?.confirm || "Подтверждение";
 
-    let html = `< strong > ${escapeHtml(this.state.profile.name)}</strong > (${escapeHtml(this.state.profile.phone)}) < br > ${escapeHtml(this.state.profile.city)} `;
-    if (this.state.profile.comment) html += `< br > ${escapeHtml(this.state.profile.comment)} `;
-    html += `< hr style = "margin:8px 0;border:0;border-top:1px dashed #ccc" > `;
+    let html = `<strong>${escapeHtml(this.state.profile.name)}</strong> (${escapeHtml(this.state.profile.phone)})<br>${escapeHtml(this.state.profile.city)}`;
+    if (this.state.profile.comment) html += `<br>${escapeHtml(this.state.profile.comment)}`;
+    html += `<hr style="margin:8px 0;border:0;border-top:1px dashed #ccc">`;
 
     let total = 0;
 
@@ -565,10 +565,10 @@ const App = {
       const line = (Number(product.price) || 0) * item.qty;
       total += line;
 
-      html += `${escapeHtml(product.name || "")} x${item.qty} - <b>${formatMoney(line)}</b> < br > `;
+      html += `${escapeHtml(product.name || "")} x${item.qty} - <b>${formatMoney(line)}</b><br>`;
     });
 
-    html += `< hr style = "margin:8px 0;border:0;border-top:1px solid #000" > <b>Итого: ${formatMoney(total)}</b>`;
+    html += `<hr style="margin:8px 0;border:0;border-top:1px solid #000"><b>Итого: ${formatMoney(total)}</b>`;
 
     summary.innerHTML = html;
     modal.classList.add("active");
@@ -800,26 +800,14 @@ const App = {
       }
     });
 
-    document.getElementById("btn-pd-minus")?.addEventListener("click", () => {
-      if (this.state.productSheet.qty > 1) {
-        this.state.productSheet.qty--;
-        document.getElementById("pd-qty-val").textContent = String(this.state.productSheet.qty);
-        this.haptic("selection");
-      }
-    });
+    document.getElementById("btn-pd-minus")?.addEventListener("click", () => this.productQtyChange(-1));
 
-    document.getElementById("btn-pd-plus")?.addEventListener("click", () => {
-      this.state.productSheet.qty++;
-      document.getElementById("pd-qty-val").textContent = String(this.state.productSheet.qty);
-      this.haptic("selection");
-    });
+    document.getElementById("btn-pd-plus")?.addEventListener("click", () => this.productQtyChange(1));
 
     document.getElementById("btn-pd-add")?.addEventListener("click", () => {
-      if (this.state.productSheet.id) {
-        this.addToCart(this.state.productSheet.id, this.state.productSheet.qty);
-        // Можно опционально закрыть товар после добавления
-        // history.back();
-      }
+      const btn = document.getElementById("btn-pd-add");
+      if (btn && btn.disabled) return;
+      this.productAddFromSheet();
     });
 
     // Обработка кнопки Назад в Telegram
@@ -853,12 +841,7 @@ const App = {
       else window.open(url, "_blank");
     });
 
-    document.getElementById("btn-pd-minus").addEventListener("click", () => this.productQtyChange(-1));
-    document.getElementById("btn-pd-plus").addEventListener("click", () => this.productQtyChange(1));
-    document.getElementById("btn-pd-add").addEventListener("click", () => {
-      if (document.getElementById("btn-pd-add").disabled) return;
-      this.productAddFromSheet();
-    });
+    // Слушатели btn-pd-minus, btn-pd-plus и btn-pd-add перенесены выше в блок с обработкой "#page-product"
   }
 };
 
