@@ -782,7 +782,7 @@ const App = {
     document.getElementById("btn-success-orders").addEventListener("click", () => {
       document.getElementById("success-screen").classList.remove("show");
       document.getElementById("success-screen").classList.add("hidden");
-      this.switchTab("profile");
+      window.location.href = "notifications.html";
     });
 
     document.getElementById("btn-open-notifications").addEventListener("click", () => {
