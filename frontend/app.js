@@ -837,8 +837,7 @@ const App = {
     });
 
     document.getElementById("btn-support").addEventListener("click", () => {
-      const url = this.state.data?.ui?.support_link;
-      if (!url) return;
+      const url = "https://t.me/prosell_16";
       if (this.tg.openTelegramLink) this.tg.openTelegramLink(url);
       else window.open(url, "_blank");
     });
