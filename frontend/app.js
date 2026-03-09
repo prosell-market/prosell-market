@@ -654,13 +654,11 @@ const App = {
     this.renderCart();
 
     const ui = this.state.data?.ui || {};
-    const title = ui.order_success_title || "Заказ принят";
-    const subtitle = ui.order_success_subtitle || "Спасибо! Мы свяжемся с вами для подтверждения.";
+    // Текст прописан жестко в HTML, не переопределяем из конфига
+    // document.getElementById("lbl-success-title").textContent = orderId ? (title + " #" + orderId) : title;
+    // document.getElementById("lbl-success-subtitle").textContent = subtitle;
 
-    document.getElementById("lbl-success-title").textContent = orderId ? (title + " #" + orderId) : title;
-    document.getElementById("lbl-success-subtitle").textContent = subtitle;
-
-    document.getElementById("btn-success-back").textContent = ui.back_to_shop || "Вернуться в магазин";
+    // document.getElementById("btn-success-back").textContent = ui.back_to_shop || "Вернуться в магазин";
     document.getElementById("success-screen").classList.remove("hidden");
 
     this.haptic("success");
@@ -779,8 +777,9 @@ const App = {
       document.getElementById("success-screen").classList.add("hidden");
       this.switchTab("shop");
     });
-    document.getElementById("btn-success-notif").addEventListener("click", () => {
-      window.location.href = "notifications.html";
+    document.getElementById("btn-success-orders").addEventListener("click", () => {
+      document.getElementById("success-screen").classList.add("hidden");
+      this.switchTab("profile");
     });
 
     document.getElementById("btn-open-notifications").addEventListener("click", () => {

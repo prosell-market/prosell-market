@@ -1497,263 +1497,271 @@
         <div id="p-specs-wrapper">
           <textarea id="p-desc" class="form-in" rows="3" placeholder="Свободное описание товара..."></textarea>
         </div>
+        <button class="btn-del-product" id="btn-del" onclick="Products.del()">🗑 Удалить товар</button>
       </div>
-      <div class="modal-acts">
-        <button class="btn-lg btn-cancel" onclick="UI.modal('prod',false)">Отмена</button>
-        <button class="btn-lg btn-save" id="btn-save-prod" onclick="Products.save()">Сохранить</button>
-      </div>
-      <button class="btn-del-product" id="btn-del-prod" onclick="Products.del()">🗑 Удалить товар</button>
     </div>
-  </div>
 
-  <script src="api.js"></script>
-  <script>
-    // ---- DATA ----
-    const LS = 'ps_adm_token_v3';
-    let DATA = { orders: [], products: [], categories: [] };
-    let CFG = { status: 'new', period: 'all', periodDash: 'today' };
+    <!-- Toasts -->
+    <div id="toast" class="toast">Успешно сохранено</div>
 
-    // ---- UTILS ----
-    const UI = {
-      id: x => document.getElementById(x),
-      modal: (n, s) => UI.id('modal-' + n).classList.toggle('active', s),
-      fmt: n => new Intl.NumberFormat('ru-RU').format(Math.round(n || 0)),
-      fmtMoney: n => UI.fmt(n) + ' ₽',
-      timeAgo: ts => {
-        const d = Date.now() - new Date(ts).getTime(), m = Math.floor(d / 60000), h = Math.floor(m / 60), dy = Math.floor(h / 24);
-        if (dy > 0) return dy + 'д назад'; if (h > 0) return h + 'ч назад'; if (m > 0) return m + 'м назад'; return 'только что';
-      },
-      elapsedH: ts => Math.round((Date.now() - new Date(ts).getTime()) / 3600000),
-      escapeHtml: s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'),
-      escapeAttr: s => String(s).replace(/&/g, '&amp;').replace(/"/g, '&quot;')
-    };
+    <!-- SCRIPTS -->
+    <!-- Подключаем API и логику -->
+    <script src="api.js?v=3"></script>
+    <script src="admin.js?v=3"></script>
+</body>
+<script>
+  // ---- DATA ----
+  const LS = 'ps_adm_token_v3';
+  let DATA = { orders: [], products: [], categories: [] };
+  let CFG = { status: 'new', period: 'all', periodDash: 'today' };
 
-    // ---- THEME ----
-    const Theme = {
-      toggle() {
-        const t = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
-        document.documentElement.setAttribute('data-theme', t);
-        localStorage.setItem('ps_theme', t);
-      },
-      init() {
-        const t = localStorage.getItem('ps_theme') || 'dark';
-        document.documentElement.setAttribute('data-theme', t);
+  // ---- UTILS ----
+  const UI = {
+    id: x => document.getElementById(x),
+    modal: (n, s) => UI.id('modal-' + n).classList.toggle('active', s),
+    fmt: n => new Intl.NumberFormat('ru-RU').format(Math.round(n || 0)),
+    fmtMoney: n => UI.fmt(n) + ' ₽',
+    timeAgo: ts => {
+      const d = Date.now() - new Date(ts).getTime(), m = Math.floor(d / 60000), h = Math.floor(m / 60), dy = Math.floor(h / 24);
+      if (dy > 0) return dy + 'д назад'; if (h > 0) return h + 'ч назад'; if (m > 0) return m + 'м назад'; return 'только что';
+    },
+    elapsedH: ts => Math.round((Date.now() - new Date(ts).getTime()) / 3600000),
+    escapeHtml: s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'),
+    escapeAttr: s => String(s).replace(/&/g, '&amp;').replace(/"/g, '&quot;')
+  };
+
+  // ---- THEME ----
+  const Theme = {
+    toggle() {
+      const t = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', t);
+      localStorage.setItem('ps_theme', t);
+    },
+    init() {
+      const t = localStorage.getItem('ps_theme') || 'dark';
+      document.documentElement.setAttribute('data-theme', t);
+    }
+  };
+  Theme.init();
+
+  // ---- AUTH ----
+  const Auth = {
+    init() { const t = localStorage.getItem(LS); if (t) { UI.id('token').value = t; Auth.login(); } },
+    login() {
+      const t = UI.id('token').value.trim(); if (!t) return;
+      localStorage.setItem(LS, t);
+      Orders.load(); Products.load();
+    }
+  };
+
+  // ---- NAV ----
+  const Nav = {
+    to(v, el) {
+      document.querySelectorAll('.view').forEach(e => e.classList.remove('active'));
+      document.querySelectorAll('.nav-item').forEach(e => e.classList.remove('active'));
+      document.querySelectorAll('.mob-tab').forEach(e => e.classList.remove('active'));
+      UI.id('view-' + v).classList.add('active');
+      // Sync sidebar button by ID
+      const sideBtn = UI.id('nav-' + v);
+      if (sideBtn) sideBtn.classList.add('active');
+      // Sync mobile tab button by ID
+      const mobBtn = UI.id('mob-tab-' + v);
+      if (mobBtn) mobBtn.classList.add('active');
+      const titles = { dash: 'Дашборд', orders: 'Заказы', products: 'Товары' };
+      UI.id('page-title').textContent = titles[v] || v;
+    }
+  };
+
+  // ---- PERIOD ----
+  const Period = {
+    set(p, el) {
+      CFG.periodDash = p;
+      document.querySelectorAll('.period-btn').forEach(e => e.classList.remove('active'));
+      if (el) el.classList.add('active');
+      Dashboard.render();
+    },
+    filter(orders, p) {
+      const now = new Date(), y = now.getFullYear(), m = now.getMonth(), d = now.getDate();
+      return orders.filter(o => {
+        const ts = new Date(o.ts);
+        if (p === 'today') return ts.getFullYear() === y && ts.getMonth() === m && ts.getDate() === d;
+        if (p === 'week') { const w = new Date(now); w.setDate(d - 7); return ts >= w; }
+        if (p === 'month') return ts.getFullYear() === y && ts.getMonth() === m;
+        return true;
+      });
+    }
+  };
+
+  // ---- DASHBOARD ----
+  const Dashboard = {
+    render() {
+      const orders = Period.filter(DATA.orders, CFG.periodDash);
+      const done = orders.filter(o => ['done', 'archived'].includes(o.status));
+      const revenue = done.reduce((a, o) => a + Number(o.total || 0), 0);
+      const avg = done.length ? revenue / done.length : 0;
+      const newCnt = DATA.orders.filter(o => o.status === 'new').length;
+      // Repeat buyers
+      const phoneCounts = {};
+      DATA.orders.forEach(o => { if (o.phone) (phoneCounts[o.phone] = (phoneCounts[o.phone] || 0) + 1); });
+      const totalBuyers = Object.keys(phoneCounts).length;
+      const repeatBuyers = Object.values(phoneCounts).filter(c => c > 1).length;
+      const repeatPct = totalBuyers ? Math.round(repeatBuyers / totalBuyers * 100) : 0;
+
+      UI.id('m-revenue').textContent = UI.fmtMoney(revenue);
+      UI.id('m-orders').textContent = orders.length;
+      UI.id('m-avg').textContent = UI.fmtMoney(avg);
+      UI.id('m-repeat').textContent = repeatPct + '%';
+      UI.id('m-new').textContent = newCnt;
+      UI.id('m-revenue-sub').textContent = done.length + ' завершённых';
+      UI.id('m-orders-sub').textContent = orders.filter(o => ['in_work', 'assembled', 'shipped'].includes(o.status)).length + ' в работе';
+
+      // Live pulse
+      const livePulse = UI.id('live-pulse');
+      newCnt > 0 ? livePulse.classList.remove('hidden') : livePulse.classList.add('hidden');
+      const navBadge = UI.id('nav-badge');
+      if (newCnt > 0) { navBadge.textContent = newCnt; navBadge.style.display = ''; } else navBadge.style.display = 'none';
+
+      // Goal (month revenue)
+      const monthOrders = DATA.orders.filter(o => {
+        const ts = new Date(o.ts), now = new Date();
+        return ts.getFullYear() === now.getFullYear() && ts.getMonth() === now.getMonth() && ['done', 'archived'].includes(o.status);
+      });
+      const monthRevenue = monthOrders.reduce((a, o) => a + Number(o.total || 0), 0);
+      const GOAL = 10000000; const pct = Math.min(100, Math.round(monthRevenue / GOAL * 100));
+      UI.id('goal-pct').textContent = pct + '%';
+      UI.id('goal-bar').style.width = pct + '%';
+      UI.id('goal-earned').textContent = UI.fmtMoney(monthRevenue);
+      UI.id('goal-text').textContent = UI.fmtMoney(GOAL - monthRevenue) + ' осталось до цели';
+
+      this.drawRevenueChart(orders);
+      this.drawHourHeat(DATA.orders);
+      this.renderTopProducts();
+    },
+    drawRevenueChart(orders) {
+      const svg = UI.id('chart-revenue');
+      const W = 300, H = 120, PAD = 10, BARS = 7;
+      const days = [];
+      for (let i = BARS - 1; i >= 0; i--) { const d = new Date(); d.setDate(d.getDate() - i); days.push(d); }
+      const vals = days.map(d => {
+        const ds = d.toDateString();
+        return orders.filter(o => new Date(o.ts).toDateString() === ds && ['done', 'archived'].includes(o.status))
+          .reduce((a, o) => a + Number(o.total || 0), 0);
+      });
+      const maxV = Math.max(...vals, 1);
+      const bw = (W - PAD * 2) / BARS - 4;
+      let html = '';
+      vals.forEach((v, i) => {
+        const bh = Math.max(4, (H - PAD * 2) * (v / maxV));
+        const x = PAD + i * ((W - PAD * 2) / BARS) + 2;
+        const y = H - PAD - bh;
+        const alpha = 0.3 + 0.7 * (v / maxV);
+        html += `<rect x="${x}" y="${y}" width="${bw}" height="${bh}" rx="4" fill="rgba(99,102,241,${alpha})"/>`;
+        const label = days[i]; const dd = label.getDate();
+        html += `<text x="${x + bw / 2}" y="${H - 1}" text-anchor="middle" font-size="9" fill="#6B7280">${dd}</text>`;
+      });
+      svg.innerHTML = html;
+    },
+    drawHourHeat(orders) {
+      const container = UI.id('hour-heat');
+      const counts = Array(24).fill(0);
+      orders.forEach(o => { if (o.ts) counts[new Date(o.ts).getHours()]++; });
+      const maxC = Math.max(...counts, 1);
+      let html = '';
+      // Show 0-23 in two rows of 12
+      for (let h = 0; h < 24; h++) {
+        const pct = counts[h] / maxC;
+        const alpha = 0.1 + 0.85 * pct;
+        const color = `rgba(99,102,241,${alpha})`;
+        html += `<div class="hour-cell" style="background:${color}" title="${h}:00 — ${counts[h]} зак."><span>${h}</span></div>`;
       }
-    };
-    Theme.init();
+      container.innerHTML = html;
+    },
+    renderTopProducts() {
+      const salesMap = {};
+      DATA.orders.forEach(o => {
+        (o.items || []).forEach(it => { salesMap[it.name] = (salesMap[it.name] || 0) + Number(it.qty || 1); });
+      });
+      const sorted = Object.entries(salesMap).sort((a, b) => b[1] - a[1]).slice(0, 3);
+      const container = UI.id('top-products-list');
+      if (!sorted.length) { container.innerHTML = '<div class="empty-state"><i class="fa-solid fa-chart-bar"></i><p>Нет данных о продажах</p></div>'; return; }
+      const medals = ['🥇', '🥈', '🥉'];
+      container.innerHTML = sorted.map(([name, qty], i) => {
+        const prod = DATA.products.find(p => p.title === name || p.name === name);
+        const img = prod?.image_url ? `<img src="${prod.image_url}" class="top-img">` : `<div class="top-img" style="display:flex;align-items:center;justify-content:center"><i class="fa-solid fa-box" style="color:var(--muted)"></i></div>`;
+        return `<div class="top-item">${img}<div class="top-name">${name}</div><span class="top-badge">${qty} шт</span></div>`;
+      }).join('');
+    }
+  };
 
-    // ---- AUTH ----
-    const Auth = {
-      init() { const t = localStorage.getItem(LS); if (t) { UI.id('token').value = t; Auth.login(); } },
-      login() {
-        const t = UI.id('token').value.trim(); if (!t) return;
-        localStorage.setItem(LS, t);
-        Orders.load(); Products.load();
-      }
-    };
+  // ---- ORDERS ----
+  const Orders = {
+    statusFilter: 'new', periodFilter: 'all',
+    setStatus(s, el) {
+      this.statusFilter = s;
+      document.querySelectorAll('#order-status-chips .chip').forEach(e => e.classList.remove('active'));
+      if (el) el.classList.add('active');
+      this.render();
+    },
+    setPeriod(p, el) {
+      this.periodFilter = p;
+      document.querySelectorAll('#order-period-chips .chip').forEach(e => e.classList.remove('active'));
+      if (el) el.classList.add('active');
+      this.render();
+    },
+    async load() {
+      const token = UI.id('token').value;
+      const res = await API.adminGetOrders(token);
+      if (res && res.ok) { DATA.orders = res.orders; Dashboard.render(); this.render(); }
+    },
+    render() {
+      const q = (UI.id('ord-search').value || '').toLowerCase();
+      let items = DATA.orders;
+      // Status filter
+      if (this.statusFilter === 'new') items = items.filter(o => o.status === 'new');
+      else if (this.statusFilter === 'work') items = items.filter(o => ['in_work', 'assembled', 'shipped'].includes(o.status));
+      else if (this.statusFilter === 'done') items = items.filter(o => ['done', 'archived', 'canceled'].includes(o.status));
+      // Period filter
+      items = Period.filter(items, this.periodFilter);
+      // Search
+      if (q) items = items.filter(o => (o.name || '').toLowerCase().includes(q) || (o.phone || '').includes(q) || (o.order_id || '').toLowerCase().includes(q));
 
-    // ---- NAV ----
-    const Nav = {
-      to(v, el) {
-        document.querySelectorAll('.view').forEach(e => e.classList.remove('active'));
-        document.querySelectorAll('.nav-item').forEach(e => e.classList.remove('active'));
-        document.querySelectorAll('.mob-tab').forEach(e => e.classList.remove('active'));
-        UI.id('view-' + v).classList.add('active');
-        // Sync sidebar button by ID
-        const sideBtn = UI.id('nav-' + v);
-        if (sideBtn) sideBtn.classList.add('active');
-        // Sync mobile tab button by ID
-        const mobBtn = UI.id('mob-tab-' + v);
-        if (mobBtn) mobBtn.classList.add('active');
-        const titles = { dash: 'Дашборд', orders: 'Заказы', products: 'Товары' };
-        UI.id('page-title').textContent = titles[v] || v;
-      }
-    };
+      const list = UI.id('orders-list');
+      if (!items.length) { list.innerHTML = '<div class="empty-state"><i class="fa-solid fa-bag-shopping"></i><p>Нет заказов</p></div>'; return; }
 
-    // ---- PERIOD ----
-    const Period = {
-      set(p, el) {
-        CFG.periodDash = p;
-        document.querySelectorAll('.period-btn').forEach(e => e.classList.remove('active'));
-        if (el) el.classList.add('active');
-        Dashboard.render();
-      },
-      filter(orders, p) {
-        const now = new Date(), y = now.getFullYear(), m = now.getMonth(), d = now.getDate();
-        return orders.filter(o => {
-          const ts = new Date(o.ts);
-          if (p === 'today') return ts.getFullYear() === y && ts.getMonth() === m && ts.getDate() === d;
-          if (p === 'week') { const w = new Date(now); w.setDate(d - 7); return ts >= w; }
-          if (p === 'month') return ts.getFullYear() === y && ts.getMonth() === m;
-          return true;
-        });
-      }
-    };
-
-    // ---- DASHBOARD ----
-    const Dashboard = {
-      render() {
-        const orders = Period.filter(DATA.orders, CFG.periodDash);
-        const done = orders.filter(o => ['done', 'archived'].includes(o.status));
-        const revenue = done.reduce((a, o) => a + Number(o.total || 0), 0);
-        const avg = done.length ? revenue / done.length : 0;
-        const newCnt = DATA.orders.filter(o => o.status === 'new').length;
-        // Repeat buyers
-        const phoneCounts = {};
-        DATA.orders.forEach(o => { if (o.phone) (phoneCounts[o.phone] = (phoneCounts[o.phone] || 0) + 1); });
-        const totalBuyers = Object.keys(phoneCounts).length;
-        const repeatBuyers = Object.values(phoneCounts).filter(c => c > 1).length;
-        const repeatPct = totalBuyers ? Math.round(repeatBuyers / totalBuyers * 100) : 0;
-
-        UI.id('m-revenue').textContent = UI.fmtMoney(revenue);
-        UI.id('m-orders').textContent = orders.length;
-        UI.id('m-avg').textContent = UI.fmtMoney(avg);
-        UI.id('m-repeat').textContent = repeatPct + '%';
-        UI.id('m-new').textContent = newCnt;
-        UI.id('m-revenue-sub').textContent = done.length + ' завершённых';
-        UI.id('m-orders-sub').textContent = orders.filter(o => ['in_work', 'assembled', 'shipped'].includes(o.status)).length + ' в работе';
-
-        // Live pulse
-        const livePulse = UI.id('live-pulse');
-        newCnt > 0 ? livePulse.classList.remove('hidden') : livePulse.classList.add('hidden');
-        const navBadge = UI.id('nav-badge');
-        if (newCnt > 0) { navBadge.textContent = newCnt; navBadge.style.display = ''; } else navBadge.style.display = 'none';
-
-        // Goal (month revenue)
-        const monthOrders = DATA.orders.filter(o => {
-          const ts = new Date(o.ts), now = new Date();
-          return ts.getFullYear() === now.getFullYear() && ts.getMonth() === now.getMonth() && ['done', 'archived'].includes(o.status);
-        });
-        const monthRevenue = monthOrders.reduce((a, o) => a + Number(o.total || 0), 0);
-        const GOAL = 10000000; const pct = Math.min(100, Math.round(monthRevenue / GOAL * 100));
-        UI.id('goal-pct').textContent = pct + '%';
-        UI.id('goal-bar').style.width = pct + '%';
-        UI.id('goal-earned').textContent = UI.fmtMoney(monthRevenue);
-        UI.id('goal-text').textContent = UI.fmtMoney(GOAL - monthRevenue) + ' осталось до цели';
-
-        this.drawRevenueChart(orders);
-        this.drawHourHeat(DATA.orders);
-        this.renderTopProducts();
-      },
-      drawRevenueChart(orders) {
-        const svg = UI.id('chart-revenue');
-        const W = 300, H = 120, PAD = 10, BARS = 7;
-        const days = [];
-        for (let i = BARS - 1; i >= 0; i--) { const d = new Date(); d.setDate(d.getDate() - i); days.push(d); }
-        const vals = days.map(d => {
-          const ds = d.toDateString();
-          return orders.filter(o => new Date(o.ts).toDateString() === ds && ['done', 'archived'].includes(o.status))
-            .reduce((a, o) => a + Number(o.total || 0), 0);
-        });
-        const maxV = Math.max(...vals, 1);
-        const bw = (W - PAD * 2) / BARS - 4;
-        let html = '';
-        vals.forEach((v, i) => {
-          const bh = Math.max(4, (H - PAD * 2) * (v / maxV));
-          const x = PAD + i * ((W - PAD * 2) / BARS) + 2;
-          const y = H - PAD - bh;
-          const alpha = 0.3 + 0.7 * (v / maxV);
-          html += `<rect x="${x}" y="${y}" width="${bw}" height="${bh}" rx="4" fill="rgba(99,102,241,${alpha})"/>`;
-          const label = days[i]; const dd = label.getDate();
-          html += `<text x="${x + bw / 2}" y="${H - 1}" text-anchor="middle" font-size="9" fill="#6B7280">${dd}</text>`;
-        });
-        svg.innerHTML = html;
-      },
-      drawHourHeat(orders) {
-        const container = UI.id('hour-heat');
-        const counts = Array(24).fill(0);
-        orders.forEach(o => { if (o.ts) counts[new Date(o.ts).getHours()]++; });
-        const maxC = Math.max(...counts, 1);
-        let html = '';
-        // Show 0-23 in two rows of 12
-        for (let h = 0; h < 24; h++) {
-          const pct = counts[h] / maxC;
-          const alpha = 0.1 + 0.85 * pct;
-          const color = `rgba(99,102,241,${alpha})`;
-          html += `<div class="hour-cell" style="background:${color}" title="${h}:00 — ${counts[h]} зак."><span>${h}</span></div>`;
+      list.innerHTML = items.map(o => {
+        const elapsed = UI.elapsedH(o.ts);
+        const isActive = ['new', 'in_work', 'assembled', 'shipped'].includes(o.status);
+        let timerHtml = '';
+        if (isActive) {
+          const cls = elapsed > 4 ? 'danger' : elapsed > 2 ? 'warn' : '';
+          timerHtml = `<span class="ord-timer ${cls}"><i class="fa-regular fa-clock"></i> ${elapsed > 0 ? elapsed + 'ч' : '<1ч'}</span>`;
         }
-        container.innerHTML = html;
-      },
-      renderTopProducts() {
-        const salesMap = {};
-        DATA.orders.forEach(o => {
-          (o.items || []).forEach(it => { salesMap[it.name] = (salesMap[it.name] || 0) + Number(it.qty || 1); });
-        });
-        const sorted = Object.entries(salesMap).sort((a, b) => b[1] - a[1]).slice(0, 3);
-        const container = UI.id('top-products-list');
-        if (!sorted.length) { container.innerHTML = '<div class="empty-state"><i class="fa-solid fa-chart-bar"></i><p>Нет данных о продажах</p></div>'; return; }
-        const medals = ['🥇', '🥈', '🥉'];
-        container.innerHTML = sorted.map(([name, qty], i) => {
-          const prod = DATA.products.find(p => p.title === name || p.name === name);
-          const img = prod?.image_url ? `<img src="${prod.image_url}" class="top-img">` : `<div class="top-img" style="display:flex;align-items:center;justify-content:center"><i class="fa-solid fa-box" style="color:var(--muted)"></i></div>`;
-          return `<div class="top-item">${img}<div class="top-name">${name}</div><span class="top-badge">${qty} шт</span></div>`;
-        }).join('');
-      }
-    };
+        const statusClasses = { new: 'status-new', in_work: 'status-in_work', assembled: 'status-in_work', shipped: 'status-in_work', done: 'status-done', canceled: 'status-canceled', archived: 'status-archived' };
+        const statusLabels = { new: '🔵 Новый', in_work: '🟡 В работе', assembled: '🟡 Собран', shipped: '🟡 Отправлен', done: '🟢 Выдан', canceled: '⚫ Отменён', archived: '⚫ Архив' };
+        const badge = `<span class="status-badge ${statusClasses[o.status] || ''}">${statusLabels[o.status] || o.status}</span>`;
 
-    // ---- ORDERS ----
-    const Orders = {
-      statusFilter: 'new', periodFilter: 'all',
-      setStatus(s, el) {
-        this.statusFilter = s;
-        document.querySelectorAll('#order-status-chips .chip').forEach(e => e.classList.remove('active'));
-        if (el) el.classList.add('active');
-        this.render();
-      },
-      setPeriod(p, el) {
-        this.periodFilter = p;
-        document.querySelectorAll('#order-period-chips .chip').forEach(e => e.classList.remove('active'));
-        if (el) el.classList.add('active');
-        this.render();
-      },
-      async load() {
-        const token = UI.id('token').value;
-        const res = await API.adminGetOrders(token);
-        if (res && res.ok) { DATA.orders = res.orders; Dashboard.render(); this.render(); }
-      },
-      render() {
-        const q = (UI.id('ord-search').value || '').toLowerCase();
-        let items = DATA.orders;
-        // Status filter
-        if (this.statusFilter === 'new') items = items.filter(o => o.status === 'new');
-        else if (this.statusFilter === 'work') items = items.filter(o => ['in_work', 'assembled', 'shipped'].includes(o.status));
-        else if (this.statusFilter === 'done') items = items.filter(o => ['done', 'archived', 'canceled'].includes(o.status));
-        // Period filter
-        items = Period.filter(items, this.periodFilter);
-        // Search
-        if (q) items = items.filter(o => (o.name || '').toLowerCase().includes(q) || (o.phone || '').includes(q) || (o.order_id || '').toLowerCase().includes(q));
+        const itemsHtml = (o.items || []).map(it => `• ${it.name} <b>×${it.qty}</b>`).join('<br>');
 
-        const list = UI.id('orders-list');
-        if (!items.length) { list.innerHTML = '<div class="empty-state"><i class="fa-solid fa-bag-shopping"></i><p>Нет заказов</p></div>'; return; }
+        let fullAddress = '';
+        if (o.city && o.comment) fullAddress = `${o.city}, ${o.comment}`;
+        else if (o.city) fullAddress = o.city;
+        else if (o.comment) fullAddress = o.comment;
 
-        list.innerHTML = items.map(o => {
-          const elapsed = UI.elapsedH(o.ts);
-          const isActive = ['new', 'in_work', 'assembled', 'shipped'].includes(o.status);
-          let timerHtml = '';
-          if (isActive) {
-            const cls = elapsed > 4 ? 'danger' : elapsed > 2 ? 'warn' : '';
-            timerHtml = `<span class="ord-timer ${cls}"><i class="fa-regular fa-clock"></i> ${elapsed > 0 ? elapsed + 'ч' : '<1ч'}</span>`;
-          }
-          const statusClasses = { new: 'status-new', in_work: 'status-in_work', assembled: 'status-in_work', shipped: 'status-in_work', done: 'status-done', canceled: 'status-canceled', archived: 'status-archived' };
-          const statusLabels = { new: '🔵 Новый', in_work: '🟡 В работе', assembled: '🟡 Собран', shipped: '🟡 Отправлен', done: '🟢 Выдан', canceled: '⚫ Отменён', archived: '⚫ Архив' };
-          const badge = `<span class="status-badge ${statusClasses[o.status] || ''}">${statusLabels[o.status] || o.status}</span>`;
+        const addrHtml = fullAddress ? `<div class="ord-addr" style="margin-top: 8px; color: var(--gold); font-size: 13px;"><i class="fa-solid fa-location-dot"></i> ${fullAddress}</div>` : '';
 
-          const itemsHtml = (o.items || []).map(it => `• ${it.name} <b>×${it.qty}</b>`).join(' &nbsp;');
-          const addrHtml = (o.comment || o.city) ? `<div class="ord-addr"><i class="fa-solid fa-location-dot"></i> ${o.comment || o.city}</div>` : '';
-
-          let actions = '';
-          if (o.status === 'new') actions = `<button class="btn-sm green" onclick="Orders.set('${o.order_id}','in_work')">Принять</button>`;
-          else if (['in_work', 'assembled', 'shipped'].includes(o.status)) {
-            actions = `
+        let actions = '';
+        if (o.status === 'new') actions = `<button class="btn-sm green" onclick="Orders.set('${o.order_id}','in_work')">Принять</button>`;
+        else if (['in_work', 'assembled', 'shipped'].includes(o.status)) {
+          actions = `
         <button class="btn-sm" onclick="Orders.set('${o.order_id}','assembled')">Собран</button>
         <button class="btn-sm" onclick="Orders.set('${o.order_id}','shipped')">Отправлен</button>
         <button class="btn-sm green" onclick="Orders.set('${o.order_id}','done')">✓ Готов</button>
         <button class="btn-sm red" onclick="Orders.set('${o.order_id}','canceled')">Отмена</button>`;
-          }
-          else actions = `<button class="btn-sm" onclick="Orders.set('${o.order_id}','in_work')">Вернуть</button>`;
-          if (!['new'].includes(o.status) && o.status !== 'archived') actions += `<button class="btn-sm" onclick="Orders.set('${o.order_id}','archived')">Архив</button>`;
+        }
+        else actions = `<button class="btn-sm" onclick="Orders.set('${o.order_id}','in_work')">Вернуть</button>`;
+        if (!['new'].includes(o.status) && o.status !== 'archived') actions += `<button class="btn-sm" onclick="Orders.set('${o.order_id}','archived')">Архив</button>`;
 
-          return `<div class="ord-card">
+        return `<div class="ord-card">
         <div class="ord-head">
           <div>
             <span class="ord-id">#${o.order_id}</span>
@@ -1762,70 +1770,72 @@
           <div style="display:flex;gap:8px;align-items:center">${timerHtml}${badge}</div>
         </div>
         <div class="ord-info">
-          <div class="ord-row"><i class="fa-solid fa-user"></i><b>${o.name || '—'}</b></div>
-          <div class="ord-row"><i class="fa-solid fa-phone"></i><span class="copy-btn" onclick="navigator.clipboard.writeText('${o.phone || ''}');this.style.color='var(--green)';setTimeout(()=>this.style.color='',1000)">${o.phone || '—'}</span></div>
+          <div style="display:flex; gap: 16px;">
+            <div class="ord-row"><i class="fa-solid fa-user"></i><b>${o.name || '—'}</b></div>
+            <div class="ord-row"><i class="fa-solid fa-phone"></i><span class="copy-btn" onclick="navigator.clipboard.writeText('${o.phone || ''}');this.style.color='var(--green)';setTimeout(()=>this.style.color='',1000)">${o.phone || '—'}</span></div>
+          </div>
+          ${addrHtml}
         </div>
-        ${addrHtml}
-        <div class="ord-items">${itemsHtml || 'Нет товаров'}</div>
+        <div class="ord-items" style="margin-top: 12px; line-height: 1.4;">${itemsHtml || 'Нет товаров'}</div>
         <div class="ord-foot">
           <div class="ord-total">${UI.fmtMoney(o.total)}</div>
           <div class="ord-actions">${actions}</div>
         </div>
       </div>`;
-        }).join('');
-      },
-      async set(id, st) {
-        // --- OPTIMISTIC UI: immediately dim the card ---
-        const cards = document.querySelectorAll('.ord-card');
-        let targetCard = null;
-        cards.forEach(card => { if (card.innerHTML.includes('#' + id)) targetCard = card; });
-        if (targetCard) {
-          targetCard.style.opacity = '0.45';
-          targetCard.style.pointerEvents = 'none';
-          targetCard.style.transition = 'opacity 0.2s';
-          // Add spinning indicator over card
-          const overlay = document.createElement('div');
-          overlay.style.cssText = 'position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(99,102,241,0.08);border-radius:14px;z-index:10';
-          overlay.innerHTML = '<span style="font-size:13px;font-weight:700;color:var(--primary)"><i class="fa-solid fa-spinner fa-spin"></i> Применяю...</span>';
-          targetCard.style.position = 'relative';
-          targetCard.appendChild(overlay);
-        }
-        await API.adminUpdateOrderStatus(UI.id('token').value, id, st);
-        Orders.load();
+      }).join('');
+    },
+    async set(id, st) {
+      // --- OPTIMISTIC UI: immediately dim the card ---
+      const cards = document.querySelectorAll('.ord-card');
+      let targetCard = null;
+      cards.forEach(card => { if (card.innerHTML.includes('#' + id)) targetCard = card; });
+      if (targetCard) {
+        targetCard.style.opacity = '0.45';
+        targetCard.style.pointerEvents = 'none';
+        targetCard.style.transition = 'opacity 0.2s';
+        // Add spinning indicator over card
+        const overlay = document.createElement('div');
+        overlay.style.cssText = 'position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(99,102,241,0.08);border-radius:14px;z-index:10';
+        overlay.innerHTML = '<span style="font-size:13px;font-weight:700;color:var(--primary)"><i class="fa-solid fa-spinner fa-spin"></i> Применяю...</span>';
+        targetCard.style.position = 'relative';
+        targetCard.appendChild(overlay);
       }
-    };
+      await API.adminUpdateOrderStatus(UI.id('token').value, id, st);
+      Orders.load();
+    }
+  };
 
-    // ---- PRODUCTS ----
-    const Products = {
-      async load() {
-        const token = UI.id('token').value;
-        const res = await API.fetchJson('admin_products', { params: { token } });
-        if (res && res.ok) {
-          DATA.products = res.products; DATA.categories = res.categories || [];
-          const sel = UI.id('prod-cat-filter');
-          sel.innerHTML = '<option value="">Все категории</option>' + DATA.categories.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
-          // Also populate product category select in modal
-          const pcat = UI.id('p-cat');
-          if (pcat) pcat.innerHTML = '<option value="">Без категории</option>' + DATA.categories.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
-          this.render();
-          // Refresh dashboard so top-products and metrics use latest data
-          if (DATA.orders.length) Dashboard.render();
-        }
-      },
-      render() {
-        const q = (UI.id('prod-search').value || '').toLowerCase();
-        const catFilter = UI.id('prod-cat-filter').value;
-        let items = DATA.products;
-        if (q) items = items.filter(p => (p.title || p.name || '').toLowerCase().includes(q));
-        if (catFilter) items = items.filter(p => (p.category || p.category_id) === catFilter);
-        // Count sales
-        const salesMap = {};
-        DATA.orders.forEach(o => (o.items || []).forEach(it => { salesMap[it.id] = (salesMap[it.id] || 0) + Number(it.qty || 1); }));
+  // ---- PRODUCTS ----
+  const Products = {
+    async load() {
+      const token = UI.id('token').value;
+      const res = await API.fetchJson('admin_products', { params: { token } });
+      if (res && res.ok) {
+        DATA.products = res.products; DATA.categories = res.categories || [];
+        const sel = UI.id('prod-cat-filter');
+        sel.innerHTML = '<option value="">Все категории</option>' + DATA.categories.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+        // Also populate product category select in modal
+        const pcat = UI.id('p-cat');
+        if (pcat) pcat.innerHTML = '<option value="">Без категории</option>' + DATA.categories.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+        this.render();
+        // Refresh dashboard so top-products and metrics use latest data
+        if (DATA.orders.length) Dashboard.render();
+      }
+    },
+    render() {
+      const q = (UI.id('prod-search').value || '').toLowerCase();
+      const catFilter = UI.id('prod-cat-filter').value;
+      let items = DATA.products;
+      if (q) items = items.filter(p => (p.title || p.name || '').toLowerCase().includes(q));
+      if (catFilter) items = items.filter(p => (p.category || p.category_id) === catFilter);
+      // Count sales
+      const salesMap = {};
+      DATA.orders.forEach(o => (o.items || []).forEach(it => { salesMap[it.id] = (salesMap[it.id] || 0) + Number(it.qty || 1); }));
 
-        UI.id('products-list').innerHTML = items.map(p => {
-          const sales = salesMap[p.id] || 0;
-          const img = p.image_url ? `<img src="${p.image_url}">` : `<i class="fa-regular fa-image"></i>`;
-          return `<div class="prod-card" onclick='Products.edit(${JSON.stringify(p)})'>
+      UI.id('products-list').innerHTML = items.map(p => {
+        const sales = salesMap[p.id] || 0;
+        const img = p.image_url ? `<img src="${p.image_url}">` : `<i class="fa-regular fa-image"></i>`;
+        return `<div class="prod-card" onclick='Products.edit(${JSON.stringify(p)})'>
         <div class="prod-img-box">${img}${sales > 0 ? `<div class="prod-sales-badge">× ${sales} прод.</div>` : ''}</div>
         <div class="prod-body">
           <div class="prod-title">${p.title || p.name || ''}</div>
@@ -1838,147 +1848,147 @@
           </div>
         </div>
       </div>`;
-        }).join('');
-      },
-      togglePriceEdit(id) {
-        const disp = UI.id('price-disp-' + id), inp = UI.id('price-inp-' + id);
-        if (!disp || !inp) return;
-        const editing = inp.style.display === 'block';
-        disp.style.display = editing ? '' : 'none';
-        inp.style.display = editing ? 'none' : 'block';
-        if (!editing) setTimeout(() => inp.focus(), 50);
-      },
-      async savePrice(ev, id) {
-        const inp = ev.target; const newPrice = Number(inp.value);
-        if (!newPrice || newPrice < 0) return;
-        const p = DATA.products.find(x => x.id === id); if (!p) return;
-        const updated = { ...p, price: newPrice };
-        await API.fetchJson('admin_save_product', { method: 'POST', body: { token: UI.id('token').value, item: updated } });
-        p.price = newPrice;
-        UI.id('price-disp-' + id).textContent = UI.fmtMoney(newPrice);
-        this.togglePriceEdit(id);
-      },
-      edit(p) {
-        UI.id('modal-prod-title').textContent = p.id ? 'Редактировать товар' : 'Новый товар';
-        UI.id('p-id').value = p.id || '';
-        UI.id('p-title').value = p.title || p.name || '';
-        UI.id('p-price').value = p.price || '';
-        UI.id('p-old').value = p.old_price || '';
-        UI.id('p-img-url').value = p.image_url || '';
+      }).join('');
+    },
+    togglePriceEdit(id) {
+      const disp = UI.id('price-disp-' + id), inp = UI.id('price-inp-' + id);
+      if (!disp || !inp) return;
+      const editing = inp.style.display === 'block';
+      disp.style.display = editing ? '' : 'none';
+      inp.style.display = editing ? 'none' : 'block';
+      if (!editing) setTimeout(() => inp.focus(), 50);
+    },
+    async savePrice(ev, id) {
+      const inp = ev.target; const newPrice = Number(inp.value);
+      if (!newPrice || newPrice < 0) return;
+      const p = DATA.products.find(x => x.id === id); if (!p) return;
+      const updated = { ...p, price: newPrice };
+      await API.fetchJson('admin_save_product', { method: 'POST', body: { token: UI.id('token').value, item: updated } });
+      p.price = newPrice;
+      UI.id('price-disp-' + id).textContent = UI.fmtMoney(newPrice);
+      this.togglePriceEdit(id);
+    },
+    edit(p) {
+      UI.id('modal-prod-title').textContent = p.id ? 'Редактировать товар' : 'Новый товар';
+      UI.id('p-id').value = p.id || '';
+      UI.id('p-title').value = p.title || p.name || '';
+      UI.id('p-price').value = p.price || '';
+      UI.id('p-old').value = p.old_price || '';
+      UI.id('p-img-url').value = p.image_url || '';
 
-        // Популярные характеристики
-        this.currentProductDesc = p.desc || p.specs || '';
-        this.currentProductSpecs = null;
-        if (p.specs_json) {
-          try { this.currentProductSpecs = JSON.parse(p.specs_json); } catch (e) { }
-        }
-
-        const prev = UI.id('p-prev'), ph = UI.id('p-ph');
-        if (p.image_url) { prev.src = p.image_url; prev.style.display = 'block'; ph.style.display = 'none'; }
-        else { prev.style.display = 'none'; ph.style.display = 'block'; }
-
-        const catSelect = UI.id('p-cat');
-        catSelect.innerHTML = '<option value="">Без категории</option>' + DATA.categories.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
-        catSelect.value = p.category_id || p.category || '';
-        // Отловить изменение/установку категории
-        catSelect.onchange = () => this.onCategoryChange();
-
-        UI.id('btn-del-prod').style.display = p.id ? '' : 'none';
-
-        // Отрисовка полей после установки значения
-        this.onCategoryChange();
-
-        UI.modal('prod', true);
-      },
-      async upload(el) {
-        const file = el.files[0]; if (!file) return;
-        const lo = UI.id('p-loading'); lo.style.display = 'flex';
-        const r = new FileReader();
-        r.onload = e => {
-          const img = new Image();
-          img.onload = async () => {
-            const c = document.createElement('canvas'), ctx = c.getContext('2d');
-            const MAX = 1200; let w = img.width, h = img.height;
-            if (w > MAX) { h = h * MAX / w; w = MAX; } else if (h > MAX) { w = w * MAX / h; h = MAX; }
-            c.width = w; c.height = h; ctx.drawImage(img, 0, 0, w, h);
-            const b64 = c.toDataURL('image/jpeg', .8).split(',')[1];
-            const res = await API.fetchJson('admin_upload_image', { method: 'POST', body: { token: UI.id('token').value, data: b64, mime: 'image/jpeg' } });
-            lo.style.display = 'none';
-            if (res.ok) { UI.id('p-img-url').value = res.url; UI.id('p-prev').src = res.url; UI.id('p-prev').style.display = 'block'; UI.id('p-ph').style.display = 'none'; }
-            else alert('Ошибка загрузки: ' + res.error);
-          };
-          img.src = e.target.result;
-        };
-        r.readAsDataURL(file);
-      },
-      CATEGORY_SPECS: {
-        "Материнские платы": ["Форм-фактор", "Чипсет", "Сокет", "RAM слотов", "Макс. RAM (ГБ)", "SATA", "M.2"],
-        "Оперативная память": ["Объем (ГБ)", "Тип (DDR)", "Заявленная частота (МГц)", "Тайминги", "Радиатор", "Кол-во планок"],
-        "Процессоры": ["Сокет", "Ядер / Потоков", "Базовая частота (ГГц)", "TDP (Вт)"]
-      },
-      onCategoryChange() {
-        const catId = UI.id('p-cat').value;
-        const cat = DATA.categories.find(c => String(c.id) === String(catId));
-        const catName = cat ? cat.name.trim() : "";
-        const specsNames = this.CATEGORY_SPECS[catName];
-
-        const wrap = UI.id('p-specs-wrapper');
-        if (specsNames) {
-          let html = '<div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-top:8px;">';
-          specsNames.forEach(s => {
-            let val = this.currentProductSpecs ? (this.currentProductSpecs[s] || '') : '';
-            html += `<div><label style="font-size:11px;color:var(--muted);display:block;margin-bottom:4px;">${s}</label><input class="form-in dyn-spec-in" data-key="${s}" value="${UI.escapeAttr(val)}" placeholder="..." /></div>`;
-          });
-          html += '</div>';
-          wrap.innerHTML = html;
-        } else {
-          let val = this.currentProductDesc || '';
-          wrap.innerHTML = `<textarea id="p-desc" class="form-in" rows="3" placeholder="Свободное описание товара...">${UI.escapeHtml(val)}</textarea>`;
-        }
-      },
-      async save() {
-        // Собрать JSON характеристики если есть
-        let descVal = '';
-        let specsJsonStr = '';
-        const dynInputs = document.querySelectorAll('.dyn-spec-in');
-        if (dynInputs.length > 0) {
-          const obj = {};
-          dynInputs.forEach(inp => {
-            const k = inp.getAttribute('data-key');
-            if (k && inp.value.trim()) obj[k] = inp.value.trim();
-          });
-          if (Object.keys(obj).length > 0) specsJsonStr = JSON.stringify(obj);
-        } else {
-          const dInp = UI.id('p-desc');
-          if (dInp) descVal = dInp.value;
-        }
-
-        const item = {
-          id: UI.id('p-id').value,
-          title: UI.id('p-title').value,
-          price: UI.id('p-price').value,
-          old_price: UI.id('p-old').value,
-          category: UI.id('p-cat').value,
-          image_url: UI.id('p-img-url').value,
-          desc: descVal,
-          specs_json: specsJsonStr,
-          in_stock: true
-        };
-        if (!item.title) return alert('Введите название');
-        const btn = UI.id('btn-save-prod'); btn.textContent = 'Сохранение...'; btn.disabled = true;
-        const res = await API.fetchJson('admin_save_product', { method: 'POST', body: { token: UI.id('token').value, item } });
-        btn.textContent = 'Сохранить'; btn.disabled = false;
-        if (res.ok) { UI.modal('prod', false); Products.load(); } else alert('Ошибка: ' + res.error);
-      },
-      async del() {
-        if (!confirm('Удалить товар?')) return;
-        await API.fetchJson('admin_delete_product', { method: 'POST', body: { token: UI.id('token').value, id: UI.id('p-id').value } });
-        UI.modal('prod', false); Products.load();
+      // Популярные характеристики
+      this.currentProductDesc = p.desc || p.specs || '';
+      this.currentProductSpecs = null;
+      if (p.specs_json) {
+        try { this.currentProductSpecs = JSON.parse(p.specs_json); } catch (e) { }
       }
-    };
 
-    Auth.init();
-  </script>
+      const prev = UI.id('p-prev'), ph = UI.id('p-ph');
+      if (p.image_url) { prev.src = p.image_url; prev.style.display = 'block'; ph.style.display = 'none'; }
+      else { prev.style.display = 'none'; ph.style.display = 'block'; }
+
+      const catSelect = UI.id('p-cat');
+      catSelect.innerHTML = '<option value="">Без категории</option>' + DATA.categories.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+      catSelect.value = p.category_id || p.category || '';
+      // Отловить изменение/установку категории
+      catSelect.onchange = () => this.onCategoryChange();
+
+      UI.id('btn-del-prod').style.display = p.id ? '' : 'none';
+
+      // Отрисовка полей после установки значения
+      this.onCategoryChange();
+
+      UI.modal('prod', true);
+    },
+    async upload(el) {
+      const file = el.files[0]; if (!file) return;
+      const lo = UI.id('p-loading'); lo.style.display = 'flex';
+      const r = new FileReader();
+      r.onload = e => {
+        const img = new Image();
+        img.onload = async () => {
+          const c = document.createElement('canvas'), ctx = c.getContext('2d');
+          const MAX = 1200; let w = img.width, h = img.height;
+          if (w > MAX) { h = h * MAX / w; w = MAX; } else if (h > MAX) { w = w * MAX / h; h = MAX; }
+          c.width = w; c.height = h; ctx.drawImage(img, 0, 0, w, h);
+          const b64 = c.toDataURL('image/jpeg', .8).split(',')[1];
+          const res = await API.fetchJson('admin_upload_image', { method: 'POST', body: { token: UI.id('token').value, data: b64, mime: 'image/jpeg' } });
+          lo.style.display = 'none';
+          if (res.ok) { UI.id('p-img-url').value = res.url; UI.id('p-prev').src = res.url; UI.id('p-prev').style.display = 'block'; UI.id('p-ph').style.display = 'none'; }
+          else alert('Ошибка загрузки: ' + res.error);
+        };
+        img.src = e.target.result;
+      };
+      r.readAsDataURL(file);
+    },
+    CATEGORY_SPECS: {
+      "Материнские платы": ["Форм-фактор", "Чипсет", "Сокет", "RAM слотов", "Макс. RAM (ГБ)", "SATA", "M.2"],
+      "Оперативная память": ["Объем (ГБ)", "Тип (DDR)", "Заявленная частота (МГц)", "Тайминги", "Радиатор", "Кол-во планок"],
+      "Процессоры": ["Сокет", "Ядер / Потоков", "Базовая частота (ГГц)", "TDP (Вт)"]
+    },
+    onCategoryChange() {
+      const catId = UI.id('p-cat').value;
+      const cat = DATA.categories.find(c => String(c.id) === String(catId));
+      const catName = cat ? cat.name.trim() : "";
+      const specsNames = this.CATEGORY_SPECS[catName];
+
+      const wrap = UI.id('p-specs-wrapper');
+      if (specsNames) {
+        let html = '<div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-top:8px;">';
+        specsNames.forEach(s => {
+          let val = this.currentProductSpecs ? (this.currentProductSpecs[s] || '') : '';
+          html += `<div><label style="font-size:11px;color:var(--muted);display:block;margin-bottom:4px;">${s}</label><input class="form-in dyn-spec-in" data-key="${s}" value="${UI.escapeAttr(val)}" placeholder="..." /></div>`;
+        });
+        html += '</div>';
+        wrap.innerHTML = html;
+      } else {
+        let val = this.currentProductDesc || '';
+        wrap.innerHTML = `<textarea id="p-desc" class="form-in" rows="3" placeholder="Свободное описание товара...">${UI.escapeHtml(val)}</textarea>`;
+      }
+    },
+    async save() {
+      // Собрать JSON характеристики если есть
+      let descVal = '';
+      let specsJsonStr = '';
+      const dynInputs = document.querySelectorAll('.dyn-spec-in');
+      if (dynInputs.length > 0) {
+        const obj = {};
+        dynInputs.forEach(inp => {
+          const k = inp.getAttribute('data-key');
+          if (k && inp.value.trim()) obj[k] = inp.value.trim();
+        });
+        if (Object.keys(obj).length > 0) specsJsonStr = JSON.stringify(obj);
+      } else {
+        const dInp = UI.id('p-desc');
+        if (dInp) descVal = dInp.value;
+      }
+
+      const item = {
+        id: UI.id('p-id').value,
+        title: UI.id('p-title').value,
+        price: UI.id('p-price').value,
+        old_price: UI.id('p-old').value,
+        category: UI.id('p-cat').value,
+        image_url: UI.id('p-img-url').value,
+        desc: descVal,
+        specs_json: specsJsonStr,
+        in_stock: true
+      };
+      if (!item.title) return alert('Введите название');
+      const btn = UI.id('btn-save-prod'); btn.textContent = 'Сохранение...'; btn.disabled = true;
+      const res = await API.fetchJson('admin_save_product', { method: 'POST', body: { token: UI.id('token').value, item } });
+      btn.textContent = 'Сохранить'; btn.disabled = false;
+      if (res.ok) { UI.modal('prod', false); Products.load(); } else alert('Ошибка: ' + res.error);
+    },
+    async del() {
+      if (!confirm('Удалить товар?')) return;
+      await API.fetchJson('admin_delete_product', { method: 'POST', body: { token: UI.id('token').value, id: UI.id('p-id').value } });
+      UI.modal('prod', false); Products.load();
+    }
+  };
+
+  Auth.init();
+</script>
 </body>
 
 </html>
