@@ -607,6 +607,14 @@ const App = {
 
       const tgUser = this.tg.initDataUnsafe?.user || {};
 
+      // Защита от переполнения ячеек Google Sheets и перегрузки бэкенда огромными текстами
+      const safeProfile = {
+        name: String(this.state.profile.name || "").slice(0, 100).trim(),
+        phone: String(this.state.profile.phone || "").slice(0, 50).trim(),
+        city: String(this.state.profile.city || "").slice(0, 200).trim(),
+        comment: String(this.state.profile.comment || "").slice(0, 500).trim()
+      };
+
       const payload = {
         source: "miniapp",
         ts: Date.now(),
@@ -616,7 +624,7 @@ const App = {
           first_name: tgUser.first_name || "",
           last_name: tgUser.last_name || ""
         },
-        profile: { ...this.state.profile },
+        profile: safeProfile,
         items,
         total,
         meta: { app_version: "1.0.0", platform: this.tg.platform || "unknown" }

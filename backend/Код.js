@@ -382,8 +382,10 @@ function getUserOrdersList_(e) {
   if (!tgId) return { ok: true, notifications: [] };
 
   const rows = readSheetData_("Orders");
-  // Фильтруем и сортируем
-  const userRows = rows.filter(r => String(r.tg_id) === tgId).sort((a, b) => new Date(b.ts) - new Date(a.ts));
+  // Фильтруем, сортируем и берем только последние 50 заказов для безопасности от утечки
+  const userRows = rows.filter(r => String(r.tg_id) === tgId)
+    .sort((a, b) => new Date(b.ts) - new Date(a.ts))
+    .slice(0, 50);
 
   const out = userRows.map(r => {
     const items = parseJsonMaybe_(r.items_json);
@@ -528,15 +530,15 @@ function adminSaveProduct_(e) {
       }
     });
 
-    // Записываем описание в обе колонки (desc и specs) для совместимости
-    var descVal = item.desc || "";
+    // Записываем описание в обе колонки (desc и specs) для совместимости. Обрезаем до 45000 символов (лимит Google Sheets 50000)
+    var descVal = String(item.desc || "").slice(0, 45000);
     var descIdx = h.indexOf("desc");
     var specsIdx = h.indexOf("specs");
     if (descIdx !== -1) sh.getRange(rowIdx, descIdx + 1).setValue(descVal);
     if (specsIdx !== -1) sh.getRange(rowIdx, specsIdx + 1).setValue(descVal);
 
-    // Сохраняем переданный specs_json
-    var specsJsonVal = item.specs_json || "";
+    // Сохраняем переданный specs_json. Обрезаем до 45000 символов
+    var specsJsonVal = String(item.specs_json || "").slice(0, 45000);
     var specsJsonIdx = h.indexOf("specs_json");
     if (specsJsonIdx !== -1) sh.getRange(rowIdx, specsJsonIdx + 1).setValue(specsJsonVal);
 

@@ -1874,9 +1874,9 @@
         const itemsHtml = (o.items || []).map(it => `• ${it.name} <b>×${it.qty}</b>`).join('<br>');
 
         let fullAddress = '';
-        if (o.city && o.comment) fullAddress = `${o.city}, ${o.comment}`;
-        else if (o.city) fullAddress = o.city;
-        else if (o.comment) fullAddress = o.comment;
+        if (o.city && o.comment) fullAddress = `${UI.escapeHtml(o.city)}, ${UI.escapeHtml(o.comment)}`;
+        else if (o.city) fullAddress = UI.escapeHtml(o.city);
+        else if (o.comment) fullAddress = UI.escapeHtml(o.comment);
 
         const addrHtml = fullAddress ? `<div class="ord-addr" style="margin-top: 8px; color: var(--gold); font-size: 13px;"><i class="fa-solid fa-location-dot"></i> ${fullAddress}</div>` : '';
 
