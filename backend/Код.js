@@ -44,7 +44,17 @@ function handleRequest_(e) {
     if (action === "debug_sheet") {
       const sh = getSS_().getSheetByName("products");
       const h = sh.getRange(1, 1, 1, sh.getLastColumn()).getValues()[0];
-      return json_({ headers: h, maxCol: sh.getMaxColumns(), lastCol: sh.getLastColumn() });
+      const data = sh.getRange(Math.max(2, sh.getLastRow() - 5), 1, 5, sh.getLastColumn()).getValues();
+      return json_({ headers: h, maxCol: sh.getMaxColumns(), lastCol: sh.getLastColumn(), rows: data });
+    }
+    if (action === "debug_write_test") {
+      const sh = getSS_().getSheetByName("products");
+      const data = sh.getDataRange().getValues();
+      const col = data[0].map(String).indexOf("specs_json") + 1;
+      sh.getRange(2, col).setValue("TEST_SAVE_123");
+      SpreadsheetApp.flush();
+      const readBack = sh.getRange(2, col).getValue();
+      return json_({ col: col, readBack: readBack });
     }
 
     // --- ADMIN ENDPOINTS ---

@@ -7,7 +7,7 @@
     "repo:push": "git add . && git diff --cached --quiet && echo 'Nothing to commit, skipping push' || (git commit -m 'Auto deploy: $(date +\"%Y-%m-%d %H:%M\")' && git push origin main)",
     "gas:push": "npx clasp push",
     "gas:deploy": "node scripts/deploy-gas.js",
-    "deploy:all": "npm run repo:push && npm run gas:deploy"
+    "deploy:all": "npm run repo:push && npm run gas:push && npm run gas:deploy"
   },
   "repository": {
     "type": "git",
