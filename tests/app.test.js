@@ -33,7 +33,7 @@ function toggleFaq(el) {
 // ─────────────────────────────────────────────
 function buildDom() {
     document.body.innerHTML = `
-    <div id="sheet-product" class="sheet"></div>
+    <div id="page-product" class="page"></div>
     <div id="sheet-search" class="sheet"></div>
     <div id="overlay" class="overlay"></div>
     <div id="cart-badge" class="hidden">0</div>
@@ -64,6 +64,7 @@ function buildDom() {
     <input id="inp-comment" />
     <input id="inp-search" />
     <div id="search-results"></div>
+    <div id="pd-content-wrapper"></div>
     <div id="pd-content"></div>
     <div id="pd-price"></div>
     <div id="pd-old-price" class="hidden"></div>
@@ -431,7 +432,7 @@ describe("Шторка товара — CSS классы (БАГ 1+2)", () => {
                 if (!product) return;
                 this.state.productSheet.id = id;
                 this.state.productSheet.qty = 1;
-                const sheet = document.getElementById("sheet-product");
+                const pageProd = document.getElementById("page-product");
                 const body = document.getElementById("pd-content");
 
                 let specsHtml = "";
@@ -468,16 +469,25 @@ describe("Шторка товара — CSS классы (БАГ 1+2)", () => {
                     btnAdd.disabled = false;
                 }
                 this.renderCrossSell(product);
-                // ── Правильная версия (после фикса): должен быть .open, не .active
 
-                sheet.classList.add("open");
-                document.getElementById("overlay").classList.add("open");
-                document.body.classList.add("no-scroll");
+                // Новая логика: скрываем другие .page, добавляем .active на page-product
+                document.querySelectorAll(".page").forEach((el) => el.classList.remove("active"));
+                if (pageProd) pageProd.classList.add("active");
+                const wrapper = document.getElementById("pd-content-wrapper");
+                if (wrapper) wrapper.scrollTop = 0;
+            },
+            closeProductPage() {
+                this.switchTab(this.state.activeTab);
+            },
+            switchTab(tab) {
+                document.querySelectorAll(".page").forEach((el) => el.classList.remove("active"));
+                const page = document.getElementById("page-" + tab);
+                if (page) page.classList.add("active");
             },
             closeSheet(name) {
                 const sheet = document.getElementById("sheet-" + name);
                 if (sheet) sheet.classList.remove("open");
-                if (name === "product" || name === "search") {
+                if (name === "search") {
                     document.getElementById("overlay").classList.remove("open");
                     document.body.classList.remove("no-scroll");
                 }
@@ -485,51 +495,28 @@ describe("Шторка товара — CSS классы (БАГ 1+2)", () => {
         };
     }
 
-    test("openProduct() добавляет класс .open на шторке (не .active)", () => {
+    test("openProduct() добавляет класс .active на страницу товара", () => {
         const app = makeApp();
         app.openProduct("p1");
-        const sheet = document.getElementById("sheet-product");
-        expect(sheet.classList.contains("open")).toBe(true);
-        expect(sheet.classList.contains("active")).toBe(false);
+        const pageProd = document.getElementById("page-product");
+        expect(pageProd.classList.contains("active")).toBe(true);
+        // оверлей и шторка для товара не используются в новой версии
     });
 
-    test("openProduct() добавляет класс .open на оверлей", () => {
+    test("closeProductPage() возвращает на активную вкладку магазина", () => {
         const app = makeApp();
+        app.state.activeTab = "shop";
         app.openProduct("p1");
-        expect(document.getElementById("overlay").classList.contains("open")).toBe(true);
-    });
+        app.closeProductPage();
 
-    test("openProduct() блокирует скролл (body.no-scroll)", () => {
-        const app = makeApp();
-        app.openProduct("p1");
-        expect(document.body.classList.contains("no-scroll")).toBe(true);
-    });
-
-    test("closeSheet() убирает класс .open с шторки", () => {
-        const app = makeApp();
-        app.openProduct("p1");
-        app.closeSheet("product");
-        expect(document.getElementById("sheet-product").classList.contains("open")).toBe(false);
-    });
-
-    test("closeSheet() убирает оверлей", () => {
-        const app = makeApp();
-        app.openProduct("p1");
-        app.closeSheet("product");
-        expect(document.getElementById("overlay").classList.contains("open")).toBe(false);
-    });
-
-    test("closeSheet() разблокирует скролл", () => {
-        const app = makeApp();
-        app.openProduct("p1");
-        app.closeSheet("product");
-        expect(document.body.classList.contains("no-scroll")).toBe(false);
+        expect(document.getElementById("page-product").classList.contains("active")).toBe(false);
+        expect(document.getElementById("page-shop").classList.contains("active")).toBe(true);
     });
 
     test("openProduct() с несуществующим id — ничего не делает", () => {
         const app = makeApp();
         app.openProduct("nonexistent");
-        expect(document.getElementById("sheet-product").classList.contains("open")).toBe(false);
+        expect(document.getElementById("page-product").classList.contains("active")).toBe(false);
     });
 
     test("кнопка 'Добавить' задизейблена для товара без остатка", () => {

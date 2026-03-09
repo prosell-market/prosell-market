@@ -888,48 +888,25 @@
       overscroll-behavior: contain;
     }
 
-    /* Картинка товара — edge-to-edge без полос */
+    /* Картинка товара */
     .pd-img-box {
       width: 100%;
-      aspect-ratio: 4 / 5;
+      aspect-ratio: 4 / 4.5;
       position: relative;
       overflow: hidden;
-      background: var(--card-hi);
-    }
-
-    /* Blurred bg — трюк без чёрных полос */
-    .pd-img-box::before {
-      content: "";
-      position: absolute;
-      inset: -30px;
-      background-image: var(--pd-img-src);
-      background-size: cover;
-      background-position: center;
-      filter: blur(30px) brightness(0.5) saturate(1.6);
-      transform: scale(1.1);
-      z-index: 0;
+      background: #0D1017;
+      /* Глубокий темный фон вместо размытия */
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-bottom: 1px solid var(--border);
     }
 
     .pd-img-box img {
-      position: relative;
-      z-index: 1;
       width: 100%;
       height: 100%;
       object-fit: contain;
       display: block;
-    }
-
-    /* Нижняя тень на картинке товара */
-    .pd-img-box::after {
-      content: "";
-      position: absolute;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      height: 80px;
-      background: linear-gradient(to bottom, transparent, rgba(10, 13, 22, 0.97));
-      z-index: 2;
-      pointer-events: none;
     }
 
     /* Контент под картинкой */
@@ -1568,26 +1545,48 @@
     </div>
   </div>
 
-  <div class="sheet" id="sheet-product">
-    <div class="sheet-head">
-      <div class="sheet-title">Товар</div>
-      <i class="fa-solid fa-xmark" style="font-size:24px" data-close="product"></i>
+  <section id="page-product" class="page"
+    style="display: flex; flex-direction: column; height: 100vh; background: var(--bg); overflow: hidden;">
+    <!-- Липкая шапка товара -->
+    <div class="topbar"
+      style="position: sticky; top: 0; z-index: 50; flex-shrink: 0; display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; background: rgba(7, 9, 15, 0.98); border-bottom: 1px solid var(--border);">
+      <button class="icon-btn" id="btn-pd-close"
+        style="background: transparent; border: none; color: white; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 12px; cursor: pointer;">
+        <i class="fa-solid fa-chevron-left" style="font-size: 20px;"></i>
+      </button>
+      <div style="font-weight: 700; font-size: 16px;">О товаре</div>
+      <div style="width: 40px;"></div> <!-- Placeholder -->
     </div>
-    <div class="sheet-scroll" id="pd-content"></div>
-    <div class="sheet-foot">
-      <div style="display:flex; align-items:flex-end; gap:8px; margin-bottom:12px;">
-        <span id="pd-price" style="font-size:24px; font-weight:900;">0 ₽</span>
-        <span id="pd-old-price" class="hidden"
-          style="font-size:16px; color:var(--text-muted); text-decoration:line-through;">0 ₽</span>
-      </div>
-      <div style="display:flex; align-items:center; gap:12px; margin-bottom:12px;">
-        <button class="c-btn" id="btn-pd-minus"><i class="fa-solid fa-minus"></i></button>
-        <span id="pd-qty-val" style="font-weight:800; font-size:16px; width:20px; text-align:center;">1</span>
-        <button class="c-btn" id="btn-pd-plus"><i class="fa-solid fa-plus"></i></button>
-      </div>
-      <button class="btn-main" id="btn-pd-add">Добавить в корзину</button>
+
+    <!-- Скроллящийся контент товара -->
+    <div style="flex: 1; overflow-y: auto; overflow-x: hidden; scroll-behavior: smooth;" id="pd-content-wrapper">
+      <div id="pd-content"></div>
     </div>
-  </div>
+
+    <!-- Липкий футер - всегда внизу экрана -->
+    <div class="product-footer"
+      style="position: sticky; bottom: 0; background: rgba(7, 9, 15, 0.98); border-top: 1px solid var(--border); padding: 16px 20px; padding-bottom: calc(16px + env(safe-area-inset-bottom)); flex-shrink: 0; z-index: 50; display: flex; flex-direction: column; gap: 16px;">
+      <div style="display:flex; justify-content: space-between; align-items: center;">
+        <div style="display:flex; flex-direction: column;">
+          <span id="pd-price" style="font-size:24px; font-weight:900; color: #fff;">0 ₽</span>
+          <span id="pd-old-price" class="hidden"
+            style="font-size:14px; color:var(--text-muted); text-decoration:line-through;">0 ₽</span>
+        </div>
+        <div
+          style="display:flex; align-items:center; gap:16px; background: var(--card-hi); padding: 6px; border-radius: 14px; border: 1px solid var(--border);">
+          <button class="c-btn" id="btn-pd-minus"
+            style="background: var(--card); border: 1px solid var(--border); border-radius: 10px; width: 36px; height: 36px; color: white; display: flex; align-items: center; justify-content: center;"><i
+              class="fa-solid fa-minus"></i></button>
+          <span id="pd-qty-val" style="font-weight:800; font-size:16px; min-width: 20px; text-align: center;">1</span>
+          <button class="c-btn" id="btn-pd-plus"
+            style="background: var(--card); border: 1px solid var(--border); border-radius: 10px; width: 36px; height: 36px; color: white; display: flex; align-items: center; justify-content: center;"><i
+              class="fa-solid fa-plus"></i></button>
+        </div>
+      </div>
+      <button class="btn-main" id="btn-pd-add" style="width: 100%; font-size: 16px; font-weight: 700;">Добавить в
+        корзину</button>
+    </div>
+  </section>
 
   <div id="modal-confirm">
     <div class="confirm-sheet">

@@ -381,9 +381,19 @@ const App = {
       document.getElementById("checkout-bar")?.classList.add("hidden");
     }
 
+    // Скрываем кнопку "Назад" Telegram, так как мы на главных табах
+    try {
+      if (this.tg.BackButton) this.tg.BackButton.hide();
+    } catch (e) { }
+    this.state.history = []; // Сброс истории
+
     this.updateMainButton();
   },
 
+  closeProductPage() {
+    // Возвращаемся на предыдущий активный таб
+    this.switchTab(this.state.activeTab);
+  },
 
   openProduct(id) {
     const product = (this.state.data?.products || []).find((p) => p.id === id);
@@ -443,10 +453,26 @@ const App = {
       if (btnAdd) btnAdd.textContent = this.state.data?.ui?.buttons?.add || "Добавить";
     }
 
+    // Открываем страницу с товаром (пряча другие .page)
+    document.querySelectorAll(".page").forEach((el) => el.classList.remove("active"));
+    const pageProd = document.getElementById("page-product");
+    if (pageProd) pageProd.classList.add("active");
 
-    sheet.classList.add("open");
-    document.getElementById("overlay").classList.add("open");
-    document.body.classList.add("no-scroll");
+    // Сбрасываем скролл
+    const wrapper = document.getElementById("pd-content-wrapper");
+    if (wrapper) wrapper.scrollTop = 0;
+
+    // Включаем Telegram BackButton если доступно
+    try {
+      if (this.tg.BackButton) {
+        this.tg.BackButton.show();
+      }
+    } catch (e) { }
+
+    // Добавляем запись в History API для кнопки "назад" в браузере/Android
+    try {
+      history.pushState({ page: 'product', id: id }, "Товар", "#product");
+    } catch (e) { }
   },
 
   closeSheet(name) {
@@ -758,6 +784,53 @@ const App = {
 
     document.querySelectorAll("[data-close]").forEach((el) => {
       el.addEventListener("click", () => this.closeSheet(el.dataset.close));
+    });
+
+    // Обработка кнопок на странице товара (#page-product)
+    document.getElementById("btn-pd-close")?.addEventListener("click", () => {
+      if (document.getElementById("page-product").classList.contains("active")) {
+        history.back(); // Попытка вернуться через системную историю
+      }
+    });
+
+    document.getElementById("btn-pd-minus")?.addEventListener("click", () => {
+      if (this.state.productSheet.qty > 1) {
+        this.state.productSheet.qty--;
+        document.getElementById("pd-qty-val").textContent = String(this.state.productSheet.qty);
+        this.haptic("selection");
+      }
+    });
+
+    document.getElementById("btn-pd-plus")?.addEventListener("click", () => {
+      this.state.productSheet.qty++;
+      document.getElementById("pd-qty-val").textContent = String(this.state.productSheet.qty);
+      this.haptic("selection");
+    });
+
+    document.getElementById("btn-pd-add")?.addEventListener("click", () => {
+      if (this.state.productSheet.id) {
+        this.addToCart(this.state.productSheet.id, this.state.productSheet.qty);
+        // Можно опционально закрыть товар после добавления
+        // history.back();
+      }
+    });
+
+    // Обработка кнопки Назад в Telegram
+    try {
+      if (this.tg.BackButton) {
+        this.tg.BackButton.onClick(() => {
+          if (document.getElementById("page-product").classList.contains("active")) {
+            history.back();
+          }
+        });
+      }
+    } catch (e) { }
+
+    // Слушатель системной кнопки Назад (браузер / Android свайп)
+    window.addEventListener("popstate", (e) => {
+      if (document.getElementById("page-product").classList.contains("active")) {
+        this.closeProductPage();
+      }
     });
 
     document.getElementById("retry-init-btn").addEventListener("click", () => {
