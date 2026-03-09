@@ -1835,7 +1835,7 @@
       UI.id('products-list').innerHTML = items.map(p => {
         const sales = salesMap[p.id] || 0;
         const img = p.image_url ? `<img src="${p.image_url}">` : `<i class="fa-regular fa-image"></i>`;
-        return `<div class="prod-card" onclick='Products.edit(${JSON.stringify(p)})'>
+        return `<div class="prod-card" onclick="Products.edit('${p.id}')">
         <div class="prod-img-box">${img}${sales > 0 ? `<div class="prod-sales-badge">× ${sales} прод.</div>` : ''}</div>
         <div class="prod-body">
           <div class="prod-title">${p.title || p.name || ''}</div>
@@ -1868,7 +1868,8 @@
       UI.id('price-disp-' + id).textContent = UI.fmtMoney(newPrice);
       this.togglePriceEdit(id);
     },
-    edit(p) {
+    edit(idOrObj) {
+      const p = typeof idOrObj === 'string' ? DATA.products.find(x => x.id === idOrObj) || {} : (idOrObj || {});
       UI.id('modal-prod-title').textContent = p.id ? 'Редактировать товар' : 'Новый товар';
       UI.id('p-id').value = p.id || '';
       UI.id('p-title').value = p.title || p.name || '';
