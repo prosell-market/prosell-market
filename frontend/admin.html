@@ -1271,6 +1271,133 @@
       color: var(--muted);
       white-space: nowrap;
     }
+
+    /* ========================================= */
+    /* MOBILE ADAPTATION (PHASE 9)               */
+    /* ========================================= */
+    @media(max-width: 600px) {
+
+      /* Лейаут и шапка */
+      .topbar {
+        padding: 12px 16px;
+      }
+
+      .topbar-title {
+        font-size: 16px;
+      }
+
+      .view {
+        padding: 16px;
+      }
+
+      /* Дашборд */
+      .metrics-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+        margin-bottom: 16px;
+      }
+
+      .metric-card {
+        padding: 14px;
+      }
+
+      .metric-card::before {
+        top: -20px;
+        right: -20px;
+        width: 70px;
+        height: 70px;
+      }
+
+      .metric-icon {
+        width: 30px;
+        height: 30px;
+        font-size: 13px;
+        margin-bottom: 8px;
+      }
+
+      .chart-card,
+      .goal-card,
+      .top-products {
+        padding: 16px;
+        margin-bottom: 16px;
+      }
+
+      .goal-pct {
+        font-size: 20px;
+      }
+
+      /* Карточки заказов */
+      .ord-card {
+        padding: 14px;
+      }
+
+      .ord-info {
+        grid-template-columns: 1fr;
+        /* Отключаем сетку в 2 колонки, чтобы адреса влезали */
+        gap: 8px;
+      }
+
+      .ord-foot {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+      }
+
+      .ord-actions {
+        width: 100%;
+        justify-content: space-between;
+      }
+
+      .btn-sm {
+        flex: 1;
+        text-align: center;
+        padding: 10px 8px;
+        font-size: 13px;
+      }
+
+      .ord-total {
+        font-size: 16px;
+      }
+
+      /* Карточки товаров */
+      .prod-grid {
+        grid-template-columns: 1fr;
+        /* Карточка растягивается на 100% ширины */
+      }
+
+      .btn-quick-edit {
+        padding: 6px 12px;
+        /* Увеличиваем хитбокс для пальца */
+        font-size: 14px;
+      }
+
+      /* Модальные окна */
+      .modal-box {
+        padding: 20px;
+        width: 95%;
+        max-height: 90vh;
+        /* Предотвращаем обрезку на малых экранах */
+        overflow-y: auto;
+        /* Включаем внутренний скролл */
+      }
+
+      .modal-acts {
+        flex-direction: column-reverse;
+        /* На мобилке "Отмена" обычно ниже, чем основное действие */
+        gap: 8px;
+        margin-top: 24px;
+      }
+
+      .btn-lg {
+        width: 100%;
+        padding: 14px;
+      }
+
+      .btn-del-product {
+        margin-top: 16px;
+        width: 100%;
+      }
+    }
   </style>
 </head>
 
@@ -1510,8 +1637,8 @@
 
     <!-- SCRIPTS -->
     <!-- Подключаем API и логику -->
-    <script src="api.js?v=4"></script>
-    <script src="admin.js?v=4"></script>
+    <script src="api.js?v=5"></script>
+    <script src="admin.js?v=5"></script>
 </body>
 <script>
   // ---- DATA ----
