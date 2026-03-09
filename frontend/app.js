@@ -424,11 +424,18 @@ const App = {
     body.innerHTML = `
       ${imgHtml}
       <div class="pd-scroll-inner">
-        <div class="pd-title">${escapeHtml(product.name || "")}</div>
+        <div class="pd-title" style="margin-bottom: 8px;">${escapeHtml(product.name || "")}</div>
+        
+        <!-- Блок цены прямо под названием товара -->
+        <div style="display: flex; align-items: baseline; gap: 12px; margin-bottom: 16px;">
+          <span id="pd-price" style="font-size: 28px; font-weight: 900; color: #fff;"></span>
+          <span id="pd-old-price" class="hidden" style="font-size: 16px; color: var(--text-muted); text-decoration: line-through;"></span>
+        </div>
+
         ${product.desc ? `<div class="pd-desc">${escapeHtml(product.desc)}</div>` : ""}
         ${specsHtml}
       </div>
-      `;
+    `;
 
     document.getElementById("pd-price").textContent = formatMoney(product.price);
 

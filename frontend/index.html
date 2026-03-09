@@ -1546,45 +1546,33 @@
   </div>
 
   <section id="page-product" class="page"
-    style="display: flex; flex-direction: column; height: 100vh; background: var(--bg); overflow: hidden;">
-    <!-- Липкая шапка товара -->
-    <div class="topbar"
-      style="position: sticky; top: 0; z-index: 50; flex-shrink: 0; display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; background: rgba(7, 9, 15, 0.98); border-bottom: 1px solid var(--border);">
-      <button class="icon-btn" id="btn-pd-close"
-        style="background: transparent; border: none; color: white; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 12px; cursor: pointer;">
-        <i class="fa-solid fa-chevron-left" style="font-size: 20px;"></i>
-      </button>
-      <div style="font-weight: 700; font-size: 16px;">О товаре</div>
-      <div style="width: 40px;"></div> <!-- Placeholder -->
+    style="position: fixed; inset: 0; z-index: 200; background: var(--bg); overflow: hidden;">
+
+    <!-- Скроллящийся контент товара (картинка, название, цена, описание) -->
+    <div id="pd-content-wrapper"
+      style="flex: 1; overflow-y: auto; overflow-x: hidden; scroll-behavior: smooth; height: 100vh;">
+      <div id="pd-content" style="padding-bottom: 120px;"></div>
     </div>
 
-    <!-- Скроллящийся контент товара -->
-    <div style="flex: 1; overflow-y: auto; overflow-x: hidden; scroll-behavior: smooth;" id="pd-content-wrapper">
-      <div id="pd-content"></div>
-    </div>
+    <!-- Плавающая панель управления снизу (Floating bar) -->
+    <div class="product-floating-bar"
+      style="position: fixed; bottom: max(20px, env(safe-area-inset-bottom)); left: 16px; right: 16px; background: rgba(32, 35, 43, 0.95); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.08); border-radius: 24px; padding: 8px; display: flex; align-items: center; gap: 12px; z-index: 50; box-shadow: 0 12px 32px rgba(0,0,0,0.4);">
 
-    <!-- Липкий футер - всегда внизу экрана -->
-    <div class="product-footer"
-      style="position: sticky; bottom: 0; background: rgba(7, 9, 15, 0.98); border-top: 1px solid var(--border); padding: 16px 20px; padding-bottom: calc(16px + env(safe-area-inset-bottom)); flex-shrink: 0; z-index: 50; display: flex; flex-direction: column; gap: 16px;">
-      <div style="display:flex; justify-content: space-between; align-items: center;">
-        <div style="display:flex; flex-direction: column;">
-          <span id="pd-price" style="font-size:24px; font-weight:900; color: #fff;">0 ₽</span>
-          <span id="pd-old-price" class="hidden"
-            style="font-size:14px; color:var(--text-muted); text-decoration:line-through;">0 ₽</span>
-        </div>
-        <div
-          style="display:flex; align-items:center; gap:16px; background: var(--card-hi); padding: 6px; border-radius: 14px; border: 1px solid var(--border);">
-          <button class="c-btn" id="btn-pd-minus"
-            style="background: var(--card); border: 1px solid var(--border); border-radius: 10px; width: 36px; height: 36px; color: white; display: flex; align-items: center; justify-content: center;"><i
-              class="fa-solid fa-minus"></i></button>
-          <span id="pd-qty-val" style="font-weight:800; font-size:16px; min-width: 20px; text-align: center;">1</span>
-          <button class="c-btn" id="btn-pd-plus"
-            style="background: var(--card); border: 1px solid var(--border); border-radius: 10px; width: 36px; height: 36px; color: white; display: flex; align-items: center; justify-content: center;"><i
-              class="fa-solid fa-plus"></i></button>
-        </div>
+      <!-- Контроллер количества -->
+      <div
+        style="display:flex; align-items:center; gap:8px; background: rgba(0,0,0,0.3); border-radius: 16px; padding: 4px;">
+        <button class="c-btn" id="btn-pd-minus"
+          style="width: 38px; height: 38px; border-radius: 14px; background: transparent; border: none; color: white; cursor: pointer;"><i
+            class="fa-solid fa-minus"></i></button>
+        <span id="pd-qty-val" style="font-weight:700; font-size:16px; min-width: 24px; text-align: center;">1</span>
+        <button class="c-btn" id="btn-pd-plus"
+          style="width: 38px; height: 38px; border-radius: 14px; background: var(--card); border: none; color: white; cursor: pointer;"><i
+            class="fa-solid fa-plus"></i></button>
       </div>
-      <button class="btn-main" id="btn-pd-add" style="width: 100%; font-size: 16px; font-weight: 700;">Добавить в
-        корзину</button>
+
+      <!-- Кнопка купить -->
+      <button class="btn-main" id="btn-pd-add"
+        style="flex: 1; margin: 0; padding: 14px 16px; border-radius: 16px; font-size: 16px; height: 46px;">Добавить</button>
     </div>
   </section>
 
